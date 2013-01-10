@@ -63,6 +63,8 @@ class FileLoader implements ResourceLoader {
     if (path != null) {
       if (path.startsWith('/'))
         path = path.substring(1);
+      if (path.startsWith("webapp/") || path == "webapp")
+        return null; //protect webapp from access
 
       final p = rootDir.append(path);
       var fl = new File.fromPath(p);

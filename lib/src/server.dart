@@ -13,6 +13,10 @@ abstract class StreamServer {
   factory StreamServer({Map<String, Function> urlMapping})
   => new _StreamServer(urlMapping: urlMapping);
 
+  /** The home directory.
+   */
+  final Directory homeDir;
+
   /** The port. Default: 8080.
    */
   int port;
@@ -52,18 +56,19 @@ abstract class StreamServer {
 class _StreamServer implements StreamServer {
   final String version = "0.1.0";
   final HttpServer _server;
-  Map<String, dynamic> _urlMapping;
   String _host = "127.0.0.1";
   int _port = 8080;
   int _sessTimeout = 20 * 60; //20 minutes
   final Logger logger;
+  Directory _homeDir;
   bool _running = false;
 
-  _StreamServer({Map<String, Function> urlMapping}):
+  _StreamServer({Map<String, Function> urlMapping, String homeDir}):
   _server = new HttpServer(), logger = new Logger("stream") {
     loggingConfigurer.configure(logger);
     _init();
-    _urlMapping = urlMapping;
+    _initDir(homeDir);
+    _initMapping(urlMapping);
   }
   void _init() {
     _server.onError = (e) {
@@ -71,6 +76,40 @@ class _StreamServer implements StreamServer {
         onError(e);
     };
   }
+  void _initDir(String homeDir) {
+    var path;
+    if (homeDir != null) {
+      path = new Path(homeDir);
+    } else {
+      homeDir = new Options().script;
+      path = homeDir != null ? new Path(homeDir).directoryPath: new Path("");
+    }
+
+    if (!path.isAbsolute)
+      path = new Path.fromNative(new Directory.current().path).join(path);
+
+    //look for webapp
+    for (final orgpath = path;;) {
+      final nm = path.filename;
+      path = path.directoryPath;
+      if (nm == "webapp")
+        break; //found and we use its parent as homeDir
+      final ps = path.toString();
+      if (ps.isEmpty || ps == "/")
+        throw new StreamException(
+          "The application must be under the webapp directory, not ${orgpath.toNativePath()}");
+    }
+
+    _homeDir = new Directory.fromPath(path);
+    if (!_homeDir.existsSync())
+      throw new StreamException("$homeDir doesn't exist.");
+  }
+  void _initMapping(Map<String, Function> mapping) {
+
+  }
+
+  @override
+  Directory get homeDir => _homeDir;
 
   @override
   int get port => _port;
@@ -107,7 +146,8 @@ class _StreamServer implements StreamServer {
       _server.listen(host, port);
 
     logger.info("Rikulo Stream Server $version starting on "
-      "${socket != null ? '$socket': '$host:$port'}");
+      "${socket != null ? '$socket': '$host:$port'}\n"
+      "Home: ${homeDir.path}");
   }
   //@override
   void stop() {

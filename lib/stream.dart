@@ -5,6 +5,7 @@
 library stream;
 
 import "dart:io";
+import 'package:args/args.dart' show Options;
 import "package:logging/logging.dart" show Logger;
 
 import "package:rikulo_commons/util.dart";
@@ -14,3 +15,12 @@ import "plugin.dart";
 
 part "src/http.dart";
 part "src/server.dart";
+
+/** A general Stream error.
+ */
+class StreamError implements Error {
+  final String message;
+
+  StreamError(String this.message);
+  String toString() => "StreamError($message)";
+}

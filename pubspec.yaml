@@ -8,3 +8,4 @@ homepage: http://rikulo.org
 dependencies:
   rikulo_commons: any
   logging: any
+  args: any

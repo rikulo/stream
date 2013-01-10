@@ -8,7 +8,7 @@
 * [Discussion](http://stackoverflow.com/questions/tagged/rikulo-stream)
 * [Issues](https://github.com/rikulo/stream/issues)
 
-Rikulo is distributed under an Apache 2.0 License.
+Rikulo Stream is distributed under an Apache 2.0 License.
 
 ##Install from Dart Pub Repository
 
@@ -35,7 +35,7 @@ For more information, please refer to [Pub: Dependencies](http://pub.dartlang.or
 
 ##Usage
 
-*Under Construction* Please refer to the following examples
+*(Under Construction)* Please refer to the following examples
 
 * [Hello Static Resources](https://github.com/rikulo/stream/tree/master/example/hello-static)
 * [Hello Dynamic Resources](https://github.com/rikulo/stream/tree/master/example/hello-dynamic)
@@ -48,6 +48,6 @@ For more information, please refer to [Pub: Dependencies](http://pub.dartlang.or
 
 If you'd like to contribute back to the core, you can [fork this repository](https://help.github.com/articles/fork-a-repo) and send us a pull request, when it is ready.
 
-Please be aware that one of Rikulo's design goals is to keep the sphere of API as neat and consistency as possible. Strong enhancement always demands greater consensus.
+Please be aware that one of Rikulo Stream's design goals is to keep the sphere of API as neat and consistency as possible. Strong enhancement always demands greater consensus.
 
 If you are new to Git or GitHub, please read [this guide](https://help.github.com/) first.

@@ -35,15 +35,16 @@ For more information, please refer to [Pub: Dependencies](http://pub.dartlang.or
 
 ##Usage
 
-n/a
+*Under Construction* Please refer to the following examples
+
+* [Hello Static Resources](example/hello-static)
+* [Hello Dynamic Resources](example/hello-dynamic)
+* [Hello Templates](example/hello-template)
+* [Hello MVC](example/hello-mvc)
 
 ##Notes to Contributors
 
-###Create Addons
-
-Rikulo is easy to extend. The simplest way to enhance Rikulo is to [create a new repository](https://help.github.com/articles/create-a-repo) and add your own great widgets and libraries to it.
-
-###Fork Rikulo
+###Fork Rikulo Stream
 
 If you'd like to contribute back to the core, you can [fork this repository](https://help.github.com/articles/fork-a-repo) and send us a pull request, when it is ready.
 

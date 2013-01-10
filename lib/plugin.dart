@@ -7,3 +7,4 @@ import "dart:io";
 import "package:logging/logging.dart";
 
 part "src/plugin/configurer.dart";
+part "src/plugin/loader.dart";

@@ -10,12 +10,13 @@ typedef void ErrorHandler(e);
  * Stream server.
  */
 abstract class StreamServer {
-  factory StreamServer({Map<String, Function> urlMapping})
-  => new _StreamServer(urlMapping: urlMapping);
+  factory StreamServer({Map<String, Function> urlMapping, String homeDir,
+    LoggingConfigurer loggingConfigurer})
+  => new _StreamServer(urlMapping, homeDir, loggingConfigurer);
 
-  /** The home directory.
+  /** The path of the home directory.
    */
-  final Directory homeDir;
+  final Path homeDir;
 
   /** The port. Default: 8080.
    */
@@ -32,6 +33,12 @@ abstract class StreamServer {
   /** The error handler that is called when a connection error occur.
    */
   ErrorHandler onError;
+
+  /** The resource loader used to load the static resources.
+   * It is called if the path of a request doesn't match any of the URL
+   * mapping given in the constructor.
+   */
+  ResourceLoader resourceLoader;
 
   /** Indicates whether the server is running.
    */
@@ -60,12 +67,15 @@ class _StreamServer implements StreamServer {
   int _port = 8080;
   int _sessTimeout = 20 * 60; //20 minutes
   final Logger logger;
-  Directory _homeDir;
+  Path _homeDir;
+  ResourceLoader _resLoader;
   bool _running = false;
 
-  _StreamServer({Map<String, Function> urlMapping, String homeDir}):
-  _server = new HttpServer(), logger = new Logger("stream") {
-    loggingConfigurer.configure(logger);
+  _StreamServer(Map<String, Function> urlMapping, String homeDir,
+    LoggingConfigurer loggingConfigurer)
+    : _server = new HttpServer(), logger = new Logger("stream") {
+    (loggingConfigurer != null ? loggingConfigurer: new LoggingConfigurer())
+      .configure(logger);
     _init();
     _initDir(homeDir);
     _initMapping(urlMapping);
@@ -100,16 +110,31 @@ class _StreamServer implements StreamServer {
           "The application must be under the webapp directory, not ${orgpath.toNativePath()}");
     }
 
-    _homeDir = new Directory.fromPath(path);
-    if (!_homeDir.existsSync())
+    _homeDir = path;
+    if (!new Directory.fromPath(_homeDir).existsSync())
       throw new StreamException("$homeDir doesn't exist.");
+    _resLoader = new ResourceLoader(_homeDir);
   }
   void _initMapping(Map<String, Function> mapping) {
-
+    if (mapping != null)
+      ; //TODO
+    _initDefaultMapping();
+  }
+  void _initDefaultMapping() {
+    _server.addRequestHandler(
+      (HttpRequest req) => resourceLoader.exists(req.uri),
+      (HttpRequest req, HttpResponse res) {
+        try {
+          resourceLoader.load(req, res, req.uri);
+        } catch (e) {
+          res.outputStream.close();//TODO: error handling
+          logger.shout(e);
+        }
+      });
   }
 
   @override
-  Directory get homeDir => _homeDir;
+  Path get homeDir => _homeDir;
 
   @override
   int get port => _port;
@@ -136,6 +161,14 @@ class _StreamServer implements StreamServer {
   ErrorHandler onError;
 
   @override
+  ResourceLoader get resourceLoader => _resLoader;
+  void set resourceLoader(ResourceLoader loader) {
+    if (loader == null)
+      throw new ArgumentError("null");
+    _resLoader = loader;
+  }
+
+  @override
   bool get isRunning => _running;
   //@override
   void run([ServerSocket socket]) {
@@ -147,7 +180,7 @@ class _StreamServer implements StreamServer {
 
     logger.info("Rikulo Stream Server $version starting on "
       "${socket != null ? '$socket': '$host:$port'}\n"
-      "Home: ${homeDir.path}");
+      "Home: ${homeDir}");
   }
   //@override
   void stop() {

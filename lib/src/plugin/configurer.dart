@@ -5,10 +5,10 @@ part of stream_plugin;
 
 /**
  * The configurer for logging.
- * If you prefer to configure the logging directly, assign your own implementation
- * and assign it to [loggingConfigurer] before instantiates the Stream server.
  */
 abstract class LoggingConfigurer {
+  factory LoggingConfigurer() => new _LoggingConfigurer();
+
   /** Configure the logger.
    */
   void configure(Logger logger);
@@ -27,4 +27,3 @@ class _LoggingConfigurer implements LoggingConfigurer {
     });
   }
 }
-LoggingConfigurer loggingConfigurer = new _LoggingConfigurer();

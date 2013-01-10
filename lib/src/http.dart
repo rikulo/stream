@@ -44,11 +44,6 @@ class StreamSession implements HttpSession {
 class StreamRequest extends HttpRequestWrapper {
   StreamRequest(HttpRequest origin): super(origin);
 
-  /** A map of application-specific models.
-   * It is used to pass models from the action (aka., controller) to the view.
-   */
-  final Map<String, dynamic> models = {};
-
   /** A map of application-specific attributes.
    */
   final Map<String, dynamic> attributes = {};

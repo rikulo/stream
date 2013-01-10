@@ -1,0 +1,10 @@
+name: stream
+version: 0.1.0
+description: > 
+  Stream is a Dart Web server framework.
+authors:
+- Tom Yeh <tomyeh@rikulo.org>
+homepage: http://rikulo.org
+dependencies:
+  rikulo_commons: any
+  logging: any

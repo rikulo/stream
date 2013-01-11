@@ -102,15 +102,15 @@ class HttpException implements Exception {
 /** HTTP 403 exception.
  */
 class Http403 extends HttpException {
-  Http403([String message]): super(403, _status2msg(403, message));
+  Http403([String uri]): super(403, _status2msg(403, uri));
 }
 /** HTTP 404 exception.
  */
 class Http404 extends HttpException {
-  Http404([String message]): super(404, _status2msg(404, message));
+  Http404([String uri]): super(404, _status2msg(404, uri));
 }
-String _status2msg(int code, String path)
-=> path != null ? "${statusMessages[code]}:  $path": null;
+String _status2msg(int code, String uri)
+=> uri != null ? "${statusMessages[code]}: $uri": null;
 
 /** A map of content types. For example,
  *
@@ -160,7 +160,23 @@ Map<int, String> get statusMessages {
   if (_stmsgs == null) {
     _stmsgs = new Map();
     for (List<dynamic> inf in [
-  //TODO: http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
+  //http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
+  [100, "Continue"],
+  [101, "Switching Protocols"],
+  [200, "OK"],
+  [201, "Created"],
+  [202, "Accepted"],
+  [203, "Non-Authoritative Information"],
+  [204, "No Content"],
+  [205, "Reset Content"],
+  [206, "Partial Content"],
+  [300, "Multiple Choices"],
+  [301, "Moved Permanently"],
+  [302, "Found"],
+  [303, "See Other"],
+  [304, "Not Modified"],
+  [305, "Use Proxy"],
+  [307, "Temporary Redirect"],
   [400, "Bad Request"],
   [401, "Unauthorized"],
   [402, "Payment Required"],

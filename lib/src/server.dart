@@ -13,8 +13,8 @@ typedef void ConnexErrorHandler(HttpConnex connex, e);
  */
 abstract class StreamServer {
   factory StreamServer({Map<String, Function> urlMapping, String homeDir,
-    LoggingConfigurer loggingConfigurer})
-  => new _StreamServer(urlMapping, homeDir, loggingConfigurer);
+    LoggingConfigurer loggingConfigurer, bool debug: true})
+  => new _StreamServer(urlMapping, homeDir, loggingConfigurer, debug);
 
   /** The path of the home directory.
    */
@@ -61,6 +61,9 @@ abstract class StreamServer {
    * The default level is `INFO`.
    */
   final Logger logger;
+  /** Whether to show the debugging information. Default: true.
+   */
+  bool debug;
 }
 /** A generic server error.
  */
@@ -102,10 +105,10 @@ class _StreamServer implements StreamServer {
   final Logger logger;
   Path _homeDir;
   ResourceLoader _resLoader;
-  bool _running = false;
+  bool _running = false, debug;
 
   _StreamServer(Map<String, Function> urlMapping, String homeDir,
-    LoggingConfigurer loggingConfigurer)
+    LoggingConfigurer loggingConfigurer, bool this.debug)
     : _server = new HttpServer(), logger = new Logger("stream") {
     (loggingConfigurer != null ? loggingConfigurer: new LoggingConfigurer())
       .configure(logger);
@@ -178,10 +181,11 @@ class _StreamServer implements StreamServer {
           connex.response.outputStream.close();
         } catch (e) { //silent
         }
-        logger.shout("$error");
+
+        logger.shout(error);
       }
     } else {
-      logger.shout("$error");
+      logger.shout(error);
     }
   }
 

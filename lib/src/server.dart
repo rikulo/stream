@@ -5,6 +5,8 @@ part of stream;
 
 /** The error handler. */
 typedef void ErrorHandler(e);
+/** The error handler for HTTP connection. */
+typedef void ConnexErrorHandler(HttpConnex connex, e);
 
 /**
  * Stream server.
@@ -17,6 +19,12 @@ abstract class StreamServer {
   /** The path of the home directory.
    */
   final Path homeDir;
+  /** A list of names that will be used to locate the resource if
+   * the given path is a directory.
+   *
+   * Default: `[index.html]`
+   */
+  final List<String> indexNames;
 
   /** The port. Default: 8080.
    */
@@ -29,16 +37,6 @@ abstract class StreamServer {
    * Default: 1200 (unit: seconds)
    */
   int sessionTimeout;
-
-  /** The error handler that is called when a connection error occur.
-   */
-  ErrorHandler onError;
-
-  /** The resource loader used to load the static resources.
-   * It is called if the path of a request doesn't match any of the URL
-   * mapping given in the constructor.
-   */
-  ResourceLoader resourceLoader;
 
   /** Indicates whether the server is running.
    */
@@ -54,12 +52,47 @@ abstract class StreamServer {
    */
   void stop();
 
+  /** The resource loader used to load the static resources.
+   * It is called if the path of a request doesn't match any of the URL
+   * mapping given in the constructor.
+   */
+  ResourceLoader resourceLoader;
   /** The logger for logging information.
    * The default level is `INFO`.
    */
   final Logger logger;
 }
+/** A generic server error.
+ */
+class ServerError implements Error {
+  final String message;
 
+  ServerError(String this.message);
+  String toString() => "ServerError($message)";
+}
+
+/** A safe invocation of `Future.then(onValue)`. It will invoke `connex.error(e)`
+ * automatically if there is an exception.
+ * It is strongly suggested to use this method instead of calling `then` directly
+ * when handling an request asynchronously. For example,
+ *
+ *     safeThen(file.exists, connex, (exists) {
+ *       if (exists)
+ *           doSomething(); //any exception will be caught and handled
+ *       throw new Http404();
+ *     }
+ */
+void safeThen(Future future, HttpConnex connex, onValue(value)) {
+  future.then((value) {
+    try {
+      onValue(value);
+    } catch (e) {
+      connex.error(e);
+    }
+  }/*, onError: connex.error*/); //TODO: wait for next SDK
+}
+
+///The implementation
 class _StreamServer implements StreamServer {
   final String version = "0.1.0";
   final HttpServer _server;
@@ -81,9 +114,22 @@ class _StreamServer implements StreamServer {
     _initMapping(urlMapping);
   }
   void _init() {
+    _server.defaultRequestHandler =
+      (HttpRequest req, HttpResponse res) {
+        final connex = new HttpConnex(this, req, res, (HttpConnex cnn, e) {
+            _handleError(cnn, e);
+          });
+
+        try {
+          //TODO: handle url mapping
+
+          resourceLoader.load(connex, req.uri);
+        } catch (e) {
+          _handleError(connex, e);
+        }
+      };
     _server.onError = (e) {
-      if (onError != null)
-        onError(e);
+      _handleError(null, e);
     };
   }
   void _initDir(String homeDir) {
@@ -106,35 +152,43 @@ class _StreamServer implements StreamServer {
         break; //found and we use its parent as homeDir
       final ps = path.toString();
       if (ps.isEmpty || ps == "/")
-        throw new StreamException(
+        throw new ServerError(
           "The application must be under the webapp directory, not ${orgpath.toNativePath()}");
     }
 
     _homeDir = path;
     if (!new Directory.fromPath(_homeDir).existsSync())
-      throw new StreamException("$homeDir doesn't exist.");
+      throw new ServerError("$homeDir doesn't exist.");
     _resLoader = new ResourceLoader(_homeDir);
   }
   void _initMapping(Map<String, Function> mapping) {
     if (mapping != null)
       ; //TODO
-    _initDefaultMapping();
   }
-  void _initDefaultMapping() {
-    _server.addRequestHandler(
-      (HttpRequest req) => resourceLoader.exists(req.uri),
-      (HttpRequest req, HttpResponse res) {
+
+  void _handle(HttpConnex connex) {
+
+  }
+  void _handleError(HttpConnex connex, error) {
+    //TODO
+    if (connex != null) {
+      if (!connex.isError) {
+        connex.isError = true;
         try {
-          resourceLoader.load(req, res, req.uri);
-        } catch (e) {
-          res.outputStream.close();//TODO: error handling
-          logger.shout(e);
+          connex.response.outputStream.close();
+        } catch (e) { //silent
         }
-      });
+        logger.shout("$error");
+      }
+    } else {
+      logger.shout("$error");
+    }
   }
 
   @override
   Path get homeDir => _homeDir;
+  @override
+  final List<String> indexNames = ['index.html'];
 
   @override
   int get port => _port;
@@ -156,9 +210,6 @@ class _StreamServer implements StreamServer {
   void set sessionTimeout(int timeout) {
     _sessTimeout = _server.sessionTimeout = timeout;
   }
-
-  @override
-  ErrorHandler onError;
 
   @override
   ResourceLoader get resourceLoader => _resLoader;

@@ -15,12 +15,3 @@ import "plugin.dart";
 
 part "src/http.dart";
 part "src/server.dart";
-
-/** A general Stream error.
- */
-class StreamError implements Error {
-  final String message;
-
-  StreamError(String this.message);
-  String toString() => "StreamError($message)";
-}

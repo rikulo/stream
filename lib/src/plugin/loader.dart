@@ -10,27 +10,13 @@ abstract class ResourceLoader {
   factory ResourceLoader(Path rootDir)
   => new FileLoader(rootDir);
 
-  /** A map of content types. For example,
-   *
-   *     ContentType ctype = resouceLoader.contentTypes['js'];
-   */
-  final Map<String, ContentType> contentTypes;
-  /** A list of names that will be used to locate the resource if
-   * the given path is a directory.
-   *
-   * Default: `index.html` and `index.htm`
-   */
-  final List<String> indexNames;
   /** The root directory.
    */
   final Path rootDir;
 
-  /** Test if the resource of the given path exists.
-   */
-  bool exists(String path);
   /** Loads the resource of the given path to the given response.
    */
-  void load(HttpRequest request, HttpResponse response, String path);
+  void load(HttpConnex connex, String path);
 }
 
 /** A file-system-based resource loader.
@@ -42,85 +28,51 @@ class FileLoader implements ResourceLoader {
   final Path rootDir;
 
   //@override
-  bool exists(String path) => _fileOf(path) != null;
-  void load(HttpRequest req, HttpResponse res, String path) {
-    final fl = _fileOf(path);
-    if (fl == null)
-      throw new FileIOException("Not found: $path");
+  void load(HttpConnex connex, String path) {
+    if (path == null)
+      throw new Http404();
+    var p = path.startsWith('/') ? path.substring(1): path;
+    if (p.startsWith("webapp/") || p == "webapp")
+      throw new Http403(path);
+    p = rootDir.append(p);
 
-    //TODO: handle headers
-    final headers = res.headers;
-    final ctype = contentTypes[new Path(fl.name).extension];
-    if (ctype != null)
-      headers.contentType = ctype;
+    var file = new File.fromPath(p);
+    safeThen(file.exists(), connex, (exists) {
+      if (exists) {
+        loadFile(connex, file);
+        return;
+      }
 
-    //write content
-    final out = res.outputStream;
-    final inp = fl.openInputStream();
-    inp.pipe(out, close: true);
+      //try path / indexNames
+      final dir = new Directory.fromPath(p);
+      safeThen(dir.exists(), connex, (exists) {
+        if (exists)
+          for (final nm in connex.server.indexNames) {
+            file = new File.fromPath(p.append(nm));
+            if (file.existsSync()) {
+              loadFile(connex, file);
+              return;
+            }
+          }
+        throw new Http404(path);
+      });
+    });
   }
-  File _fileOf(String path) {
-    if (path != null) {
-      if (path.startsWith('/'))
-        path = path.substring(1);
-      if (path.startsWith("webapp/") || path == "webapp")
-        return null; //protect webapp from access
+}
 
-      final p = rootDir.append(path);
-      var fl = new File.fromPath(p);
-      if (fl.existsSync())
-        return fl;
+/** Loads a file into the given response.
+ * Notice that this method assumes the file exists.
+ */
+void loadFile(HttpConnex connex, File file) {
+  //TODO: handle headers
+  final headers = connex.response.headers;
+  final ctype = contentTypes[new Path(file.name).extension];
+  if (ctype != null)
+    headers.contentType = ctype;
 
-      var dir = new Directory.fromPath(p);
-      if (dir.existsSync())
-        for (final nm in indexNames) {
-          fl = new File.fromPath(p.append(nm));
-          if (fl.existsSync())
-            return fl;
-        }
-    }
-    return null;
-  }
-
-  @override
-  final List<String> indexNames = ['index.html', 'index.htm'];
-  @override
-  final Map<String, ContentType> contentTypes = {
-    'aac': new ContentType.fromString('audio/aac'),
-    'aiff': new ContentType.fromString('audio/aiff'),
-    'css': new ContentType.fromString('text/css'),
-    'csv': new ContentType.fromString('text/csv'),
-    'doc': new ContentType.fromString('application/vnd.ms-word'),
-    'docx': new ContentType.fromString('application/vnd.openxmlformats-officedocument.wordprocessingml.document'),
-    'gif': new ContentType.fromString('image/gif'),
-    'htm': new ContentType.fromString('text/html'),
-    'html': new ContentType.fromString('text/html'),
-    'ico': new ContentType.fromString('image/x-icon'),
-    'jpg': new ContentType.fromString('image/jpeg'),
-    'jpeg': new ContentType.fromString('image/jpeg'),
-'    js': new ContentType.fromString('text/javascript'),
-    'mid': new ContentType.fromString('audio/mid'),
-    'mp3': new ContentType.fromString('audio/mp3'),
-    'mp4': new ContentType.fromString('audio/mp4'),
-    'mpg': new ContentType.fromString('video/mpeg'),
-    'mpeg': new ContentType.fromString('video/mpeg'),
-    'mpp': new ContentType.fromString('application/vnd.ms-project'),
-    'odf': new ContentType.fromString('application/vnd.oasis.opendocument.formula'),
-    'odg': new ContentType.fromString('application/vnd.oasis.opendocument.graphics'),
-    'odp': new ContentType.fromString('application/vnd.oasis.opendocument.presentation'),
-    'ods': new ContentType.fromString('application/vnd.oasis.opendocument.spreadsheet'),
-    'odt': new ContentType.fromString('application/vnd.oasis.opendocument.text'),
-    'pdf': new ContentType.fromString('application/pdf'),
-    'png': new ContentType.fromString('image/png'),
-    'ppt': new ContentType.fromString('application/vnd.ms-powerpoint'),
-    'pptx': new ContentType.fromString('application/vnd.openxmlformats-officedocument.presentationml.presentation'),
-    'rar': new ContentType.fromString('application/x-rar-compressed'),
-    'rtf': new ContentType.fromString('application/rtf'),
-    'txt': new ContentType.fromString('text/plain'),
-    'wav': new ContentType.fromString('audio/wav'),
-    'xls': new ContentType.fromString('application/vnd.ms-excel'),
-    'xlsx': new ContentType.fromString('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'),
-    'xml': new ContentType.fromString('text/xml'),
-    'zip': new ContentType.fromString('application/zip')
-  };
+  //write content
+  final out = connex.response.outputStream;
+  file.openInputStream()
+    ..onError = connex.error
+    ..pipe(out, close: true);
 }

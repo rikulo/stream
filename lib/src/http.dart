@@ -3,61 +3,191 @@
 // Author: tomyeh
 part of stream;
 
-/** The session.
+/** A HTTP request connection.
+ */
+abstract class HttpConnex {
+  factory HttpConnex(StreamServer server, HttpRequest request,
+    HttpResponse response, ConnexErrorHandler errorHandler)
+  => new _HttpConnex(server, request, response, errorHandler);
+
+  ///The Stream server
+  final StreamServer server;
+  ///The HTTP request.
+  final HttpRequest request;
+  ///The HTTP response.
+  final HttpResponse response;
+
+  /** The error handler.
+   *
+   * Notice that it is important to invoke this method if an error occurs.
+   * Otherwise, the HTTP connection won't be closed.
+   *
+   * ##Use [safeThen] instead of `Future.then`
+   *
+   * To use with `Future.then`, you have to implement a catch-all statement
+   * to invoke this method when an error occurs.
+   *
+   * To simplify the job, you can
+   * use [safeThen] instead of invoking `Future.then` directly.
+   * [safeThen] will invoke this method automatically if necessary.
+   *
+   * ##Assign onError with this method
+   *
+   * For example,
+   *
+   *     file.openInputStream()
+   *       ..onError = connex.error
+   *       ..pipe(connex.response.outputStream, close: true);
+   */
+  final ErrorHandler error;
+  /** Indicates if any error occurs (i.e., [error] has been called).
+   */
+  bool isError;
+
+  /** A map of application-specific attributes.
+   */
+  final Map<String, dynamic> attributes;
+}
+
+class _HttpConnex implements HttpConnex {
+  final ConnexErrorHandler _cxerrh;
+  ErrorHandler _errh;
+  bool _isErr = false;
+
+  _HttpConnex(StreamServer this.server, HttpRequest this.request,
+    HttpResponse this.response, ConnexErrorHandler this._cxerrh) {
+    _init();
+  }
+  void _init() {
+    _errh = (e) {
+      _cxerrh(this, e);
+    };
+  }
+
+  @override
+  final StreamServer server;
+  @override
+  final HttpRequest request;
+  @override
+  final HttpResponse response;
+
+  @override
+  ErrorHandler get error => _errh;
+  @override
+  bool isError;
+  @override
+  final Map<String, dynamic> attributes = {};
+}
+
+/** A HTTP exception.
+ */
+class HttpException implements Exception {
+  final int statusCode;
+  String _msg;
+
+  HttpException(int this.statusCode, [String message]) {
+    if (message == null) {
+      message = statusMessages[statusCode];
+      if (message == null)
+        message = "Error";
+    }
+    _msg = message;
+  }
+
+  /** The error message. */
+  String get message => _msg;
+
+  String toString() => "HttpException($statusCode, $message)";
+}
+/** HTTP 403 exception.
+ */
+class Http403 extends HttpException {
+  Http403([String message]): super(403, _status2msg(403, message));
+}
+/** HTTP 404 exception.
+ */
+class Http404 extends HttpException {
+  Http404([String message]): super(404, _status2msg(404, message));
+}
+String _status2msg(int code, String path)
+=> path != null ? "${statusMessages[code]}:  $path": null;
+
+/** A map of content types. For example,
  *
- * Unlike `HttpSession`, [data] is not writable. You shall use [attributes]
- * instead.
+ *     ContentType ctype = resouceLoader.contentTypes['js'];
  */
-class StreamSession implements HttpSession {
-  final HttpSession _origin;
+Map<String, ContentType> contentTypes = {
+  'aac': new ContentType.fromString('audio/aac'),
+  'aiff': new ContentType.fromString('audio/aiff'),
+  'css': new ContentType.fromString('text/css'),
+  'csv': new ContentType.fromString('text/csv'),
+  'doc': new ContentType.fromString('application/vnd.ms-word'),
+  'docx': new ContentType.fromString('application/vnd.openxmlformats-officedocument.wordprocessingml.document'),
+  'gif': new ContentType.fromString('image/gif'),
+  'htm': new ContentType.fromString('text/html'),
+  'html': new ContentType.fromString('text/html'),
+  'ico': new ContentType.fromString('image/x-icon'),
+  'jpg': new ContentType.fromString('image/jpeg'),
+  'jpeg': new ContentType.fromString('image/jpeg'),
+'    js': new ContentType.fromString('text/javascript'),
+  'mid': new ContentType.fromString('audio/mid'),
+  'mp3': new ContentType.fromString('audio/mp3'),
+  'mp4': new ContentType.fromString('audio/mp4'),
+  'mpg': new ContentType.fromString('video/mpeg'),
+  'mpeg': new ContentType.fromString('video/mpeg'),
+  'mpp': new ContentType.fromString('application/vnd.ms-project'),
+  'odf': new ContentType.fromString('application/vnd.oasis.opendocument.formula'),
+  'odg': new ContentType.fromString('application/vnd.oasis.opendocument.graphics'),
+  'odp': new ContentType.fromString('application/vnd.oasis.opendocument.presentation'),
+  'ods': new ContentType.fromString('application/vnd.oasis.opendocument.spreadsheet'),
+  'odt': new ContentType.fromString('application/vnd.oasis.opendocument.text'),
+  'pdf': new ContentType.fromString('application/pdf'),
+  'png': new ContentType.fromString('image/png'),
+  'ppt': new ContentType.fromString('application/vnd.ms-powerpoint'),
+  'pptx': new ContentType.fromString('application/vnd.openxmlformats-officedocument.presentationml.presentation'),
+  'rar': new ContentType.fromString('application/x-rar-compressed'),
+  'rtf': new ContentType.fromString('application/rtf'),
+  'txt': new ContentType.fromString('text/plain'),
+  'wav': new ContentType.fromString('audio/wav'),
+  'xls': new ContentType.fromString('application/vnd.ms-excel'),
+  'xlsx': new ContentType.fromString('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'),
+  'xml': new ContentType.fromString('text/xml'),
+  'zip': new ContentType.fromString('application/zip')
+};
 
-  StreamSession(HttpSession this._origin) {
-    _origin.data = this;
+///A map of HTTP status code to messages
+Map<int, String> get statusMessages {
+  if (_stmsgs == null) {
+    _stmsgs = new Map();
+    for (List<dynamic> inf in [
+  //TODO: http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
+  [400, "Bad Request"],
+  [401, "Unauthorized"],
+  [402, "Payment Required"],
+  [403, "Forbidden"],
+  [404, "Not found"],
+  [405, "Method Not Allowed"],
+  [406, "Not Acceptable"],
+  [407, "Proxy Authentication Required"],
+  [408, "Request Timeout"],
+  [409, "Conflict"],
+  [410, "Gone"],
+  [411, "Length Required"],
+  [412, "Precondition Failed"],
+  [413, "Request Entity Too Large"],
+  [414, "Request-URI Too Long"],
+  [415, "Unsupported Media Type"],
+  [416, "Requested Range Not Satisfiable"],
+  [417, "Expectation Failed"],
+  [500, "Internal Server Error"],
+  [501, "Not Implemented"],
+  [502, "Bad Gateway"],
+  [503, "Service Unavailable"],
+  [504, "Gateway Timeout"],
+  [505, "HTTP Version Not Supported"]]) {
+      _stmsgs[inf[0]] = inf[1];
+    }
   }
-
-  /** A map of application-specific attributes.
-   */
-  final Map<String, dynamic> attributes = {};
-
-  @override
-  String get id => _origin.id;
-
-  //@override
-  /// It is the same as [attributes].
-  dynamic get data => attributes;
-  //@override
-  /// Unsupported. Please use [attributes] instead.
-  void set data(dynamic data) {
-    throw new UnsupportedError("Reserved for internal use; use attributes instead.");
-  }
-
-  //@override
-  void destroy() => _origin.destroy();
-  @override
-  void set onTimeout(void callback()) {
-    _origin.onTimeout = callback;
-  }
+  return _stmsgs;
 }
-
-/** The request.
- */
-class StreamRequest extends HttpRequestWrapper {
-  StreamRequest(HttpRequest origin): super(origin);
-
-  /** A map of application-specific attributes.
-   */
-  final Map<String, dynamic> attributes = {};
-
-  //@override
-  StreamSession session([init(HttpSession session)])
-  => origin.session(init == null ? _initSess:
-      (HttpSession session) => init(_initSess(session)))
-    .data; //origin.data is StreamSession
-}
-_initSess(HttpSession session) => new StreamSession(session);
-
-/** The response.
- */
-class StreamResponse extends HttpResponseWrapper {
-  StreamResponse(HttpResponse origin): super(origin);
-}
+Map<int, String> _stmsgs;

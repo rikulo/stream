@@ -6,5 +6,7 @@ library stream_plugin;
 import "dart:io";
 import "package:logging/logging.dart";
 
+import "stream.dart";
+
 part "src/plugin/configurer.dart";
 part "src/plugin/loader.dart";

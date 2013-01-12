@@ -29,11 +29,7 @@ class FileLoader implements ResourceLoader {
 
   //@override
   void load(HttpConnex connex, String uri) {
-    if (uri == null)
-      throw new Http404();
-    var path = uri.startsWith('/') ? uri.substring(1): uri;
-    if (path.startsWith("webapp/") || path == "webapp")
-      throw new Http403(uri);
+    var path = uri.substring(1); //must start with '/'
     path = rootDir.append(path);
 
     var file = new File.fromPath(path);

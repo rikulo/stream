@@ -105,6 +105,7 @@ class _StreamServer implements StreamServer {
   final Logger logger;
   Path _homeDir;
   ResourceLoader _resLoader;
+  ConnexErrorHandler _cxerrh;
   bool _running = false, debug;
 
   _StreamServer(Map<String, Function> urlMapping, String homeDir,
@@ -117,19 +118,12 @@ class _StreamServer implements StreamServer {
     _initMapping(urlMapping);
   }
   void _init() {
+    _cxerrh = (HttpConnex cnn, e) {
+      _handleError(cnn, e);
+    };
     _server.defaultRequestHandler =
       (HttpRequest req, HttpResponse res) {
-        final connex = new HttpConnex(this, req, res, (HttpConnex cnn, e) {
-            _handleError(cnn, e);
-          });
-
-        try {
-          //TODO: handle url mapping
-
-          resourceLoader.load(connex, req.uri);
-        } catch (e) {
-          _handleError(connex, e);
-        }
+        _handle(new _HttpConnex(this, req, res, _cxerrh), req.uri);
       };
     _server.onError = (e) {
       _handleError(null, e);
@@ -169,8 +163,29 @@ class _StreamServer implements StreamServer {
       ; //TODO
   }
 
-  void _handle(HttpConnex connex) {
+  /** Forward the given [connex] to the given [uri].
+   *
+   * If [request] or [response] is ignored, [connex] is assumed.
+   */
+  void forward(HttpConnex connex, String uri,
+    {HttpRequest request, HttpResponse response}) {
+    _handle(new _ForwardedConnex(connex, request, response, _cxerrh), uri);
+  }
+  void _handle(HttpConnex connex, String uri) {
+    try {
+      if (!uri.startsWith('/')) uri = "/$uri";
 
+      //TODO: handle url mapping
+
+      //protect from access
+      if (connex.forwarder == null &&
+      (uri.startsWith("/webapp/") || uri == "/webapp"))
+        throw new Http403(uri);
+
+      resourceLoader.load(connex, uri);
+    } catch (e) {
+      _handleError(connex, e);
+    }
   }
   void _handleError(HttpConnex connex, error) {
     //TODO

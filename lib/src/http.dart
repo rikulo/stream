@@ -6,16 +6,15 @@ part of stream;
 /** A HTTP request connection.
  */
 abstract class HttpConnex {
-  factory HttpConnex(StreamServer server, HttpRequest request,
-    HttpResponse response, ConnexErrorHandler errorHandler)
-  => new _HttpConnex(server, request, response, errorHandler);
-
   ///The Stream server
-  final StreamServer server;
+  StreamServer get server;
   ///The HTTP request.
-  final HttpRequest request;
+  HttpRequest get request;
   ///The HTTP response.
-  final HttpResponse response;
+  HttpResponse get response;
+  ///The source connection that forwards to this connection, or null if not
+  ///forwarded.
+  HttpConnex get forwarder;
 
   /** The error handler.
    *
@@ -39,20 +38,15 @@ abstract class HttpConnex {
    *       ..onError = connex.error
    *       ..pipe(connex.response.outputStream, close: true);
    */
-  final ErrorHandler error;
+  ErrorHandler get error;
   /** Indicates if any error occurs (i.e., [error] has been called).
    */
   bool isError;
-
-  /** A map of application-specific attributes.
-   */
-  final Map<String, dynamic> attributes;
 }
 
 class _HttpConnex implements HttpConnex {
   final ConnexErrorHandler _cxerrh;
   ErrorHandler _errh;
-  bool _isErr = false;
 
   _HttpConnex(StreamServer this.server, HttpRequest this.request,
     HttpResponse this.response, ConnexErrorHandler this._cxerrh) {
@@ -70,13 +64,26 @@ class _HttpConnex implements HttpConnex {
   final HttpRequest request;
   @override
   final HttpResponse response;
+  @override
+  HttpConnex get forwarder => null;
 
   @override
   ErrorHandler get error => _errh;
   @override
   bool isError;
+}
+
+class _ForwardedConnex extends _HttpConnex {
+  _ForwardedConnex(HttpConnex connex, HttpRequest request,
+    HttpResponse response, ConnexErrorHandler errorHandler):
+    super(connex.server, request != null ? request: connex.request,
+      response != null ? response: connex.response, errorHandler),
+    forwarder = connex;
+
   @override
-  final Map<String, dynamic> attributes = {};
+  final HttpConnex forwarder;
+  @override
+  bool get isError => super.isError || forwarder.isError;
 }
 
 /** A HTTP exception.
@@ -112,10 +119,7 @@ class Http404 extends HttpException {
 String _status2msg(int code, String uri)
 => uri != null ? "${statusMessages[code]}: $uri": null;
 
-/** A map of content types. For example,
- *
- *     ContentType ctype = resouceLoader.contentTypes['js'];
- */
+///A map of content types. For example, `contentTypes['js']` is `"text/javascript"`.
 Map<String, ContentType> contentTypes = {
   'aac': new ContentType.fromString('audio/aac'),
   'aiff': new ContentType.fromString('audio/aiff'),
@@ -129,7 +133,7 @@ Map<String, ContentType> contentTypes = {
   'ico': new ContentType.fromString('image/x-icon'),
   'jpg': new ContentType.fromString('image/jpeg'),
   'jpeg': new ContentType.fromString('image/jpeg'),
-'    js': new ContentType.fromString('text/javascript'),
+  'js': new ContentType.fromString('text/javascript'),
   'mid': new ContentType.fromString('audio/mid'),
   'mp3': new ContentType.fromString('audio/mp3'),
   'mp4': new ContentType.fromString('audio/mp4'),

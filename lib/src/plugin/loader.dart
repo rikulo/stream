@@ -43,7 +43,7 @@ class FileLoader implements ResourceLoader {
       final dir = new Directory.fromPath(path);
       safeThen(dir.exists(), connex, (exists) {
         if (exists)
-          _loadFirstFile(connex, uri, path, new List.from(connex.server.indexNames));
+          _loadFileAt(connex, uri, path, connex.server.indexNames, 0);
         else
           throw new Http404(uri);
       });
@@ -51,17 +51,16 @@ class FileLoader implements ResourceLoader {
   }
 }
 
-bool _loadFirstFile(HttpConnex connex, String uri, Path dir, List names) {
-  if (names.isEmpty)
+bool _loadFileAt(HttpConnex connex, String uri, Path dir, List<String> names, int j) {
+  if (j >= names.length)
     throw new Http404(uri);
 
-  final nm = names.removeAt(0);
-  final file = new File.fromPath(dir.append(nm));
+  final file = new File.fromPath(dir.append(names[j]));
   safeThen(file.exists(), connex, (exists) {
     if (exists)
       loadFile(connex, file);
     else
-      _loadFirstFile(connex, uri, dir, names);
+      _loadFileAt(connex, uri, dir, names, j + 1);
   });
 }
 

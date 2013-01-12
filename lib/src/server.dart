@@ -4,9 +4,9 @@
 part of stream;
 
 /** The error handler. */
-typedef void ErrorHandler(e);
+typedef void ErrorHandler(e, [stackTrace]);
 /** The error handler for HTTP connection. */
-typedef void ConnexErrorHandler(HttpConnex connex, e);
+typedef void ConnexErrorHandler(HttpConnex connex, e, [stackTrace]);
 
 /**
  * Stream server.
@@ -74,8 +74,8 @@ class ServerError implements Error {
   String toString() => "ServerError($message)";
 }
 
-/** A safe invocation of `Future.then(onValue)`. It will invoke `connex.error(e)`
- * automatically if there is an exception.
+/** A safe invocation of `Future.then(onValue)`. It will invoke
+ * `connex.error(e, stackTrace)` automatically if there is an exception.
  * It is strongly suggested to use this method instead of calling `then` directly
  * when handling an request asynchronously. For example,
  *
@@ -89,8 +89,8 @@ void safeThen(Future future, HttpConnex connex, onValue(value)) {
   future.then((value) {
     try {
       onValue(value);
-    } catch (e) {
-      connex.error(e);
+    } catch (e, st) {
+      connex.error(e, st);
     }
   }/*, onError: connex.error*/); //TODO: wait for next SDK
 }
@@ -118,8 +118,8 @@ class _StreamServer implements StreamServer {
     _initMapping(urlMapping);
   }
   void _init() {
-    _cxerrh = (HttpConnex cnn, e) {
-      _handleError(cnn, e);
+    _cxerrh = (HttpConnex cnn, e, [st]) {
+      _handleError(cnn, e, st);
     };
     _server.defaultRequestHandler =
       (HttpRequest req, HttpResponse res) {
@@ -183,11 +183,11 @@ class _StreamServer implements StreamServer {
         throw new Http403(uri);
 
       resourceLoader.load(connex, uri);
-    } catch (e) {
-      _handleError(connex, e);
+    } catch (e, st) {
+      _handleError(connex, e, st);
     }
   }
-  void _handleError(HttpConnex connex, error) {
+  void _handleError(HttpConnex connex, error, [stackTrace]) {
     //TODO
     if (connex != null) {
       if (!connex.isError) {
@@ -197,10 +197,12 @@ class _StreamServer implements StreamServer {
         } catch (e) { //silent
         }
 
-        logger.shout(error);
+        if (debug) logger.shout("$error:\n$stackTrace");
+        else logger.shout(error);
       }
     } else {
-      logger.shout(error);
+      if (debug) logger.shout("$error:\n$stackTrace");
+      else logger.shout(error);
     }
   }
 

@@ -53,8 +53,8 @@ class _HttpConnex implements HttpConnex {
     _init();
   }
   void _init() {
-    _errh = (e) {
-      _cxerrh(this, e);
+    _errh = (e, [st]) {
+      _cxerrh(this, e, st);
     };
   }
 
@@ -104,7 +104,7 @@ class HttpException implements Exception {
   /** The error message. */
   String get message => _msg;
 
-  String toString() => "HttpException($statusCode, $message)";
+  String toString() => "HttpException($statusCode: $message)";
 }
 /** HTTP 403 exception.
  */

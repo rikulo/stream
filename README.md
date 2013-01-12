@@ -38,6 +38,7 @@ For more information, please refer to [Pub: Dependencies](http://pub.dartlang.or
 *(Under Construction)* Please refer to the following examples
 
 * [Hello Static Resources](https://github.com/rikulo/stream/tree/master/example/hello-static)
+* [Hello Dynamic Contents](https://github.com/rikulo/stream/tree/master/example/hello-dynamic)
 * [Hello Templates](https://github.com/rikulo/stream/tree/master/example/hello-template)
 * [Hello MVC](https://github.com/rikulo/stream/tree/master/example/hello-mvc)
 

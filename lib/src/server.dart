@@ -4,27 +4,34 @@
 part of stream;
 
 /** The error handler. */
-typedef void ErrorHandler(e, [stackTrace]);
+typedef void ErrorHandler(err, [stackTrace]);
 /** The error handler for HTTP connection. */
-typedef void ConnexErrorHandler(HttpConnex connex, e, [stackTrace]);
+typedef void ConnexErrorHandler(HttpConnex connex, err, [stackTrace]);
 
 /**
  * Stream server.
  */
 abstract class StreamServer {
-  factory StreamServer({Map<String, Function> urlMapping, String homeDir,
-    LoggingConfigurer loggingConfigurer, bool debug: true})
-  => new _StreamServer(urlMapping, homeDir, loggingConfigurer, debug);
+  /** Constructor.
+   *
+   * * [uriMapping] - a map of URI mappings, `<String uri, Function handler>`.
+   * * [errorMapping] - a list of pairs of error mappings. Each pair is
+   * `[int statusCode, String uri]`.
+   */
+  factory StreamServer({Map<String, Function> uriMapping,
+    List<List> errorMapping, String homeDir,
+    LoggingConfigurer loggingConfigurer})
+  => new _StreamServer(uriMapping, errorMapping, homeDir, loggingConfigurer);
 
   /** The path of the home directory.
    */
-  final Path homeDir;
+  Path get homeDir;
   /** A list of names that will be used to locate the resource if
    * the given path is a directory.
    *
    * Default: `[index.html]`
    */
-  final List<String> indexNames;
+  List<String> get indexNames;
 
   /** The port. Default: 8080.
    */
@@ -40,7 +47,7 @@ abstract class StreamServer {
 
   /** Indicates whether the server is running.
    */
-  final bool isRunning;
+  bool get isRunning;
   /** Starts the server
    *
    * If [serverSocket] is given (not null), it will be used ([host] and [port])
@@ -57,13 +64,18 @@ abstract class StreamServer {
    * mapping given in the constructor.
    */
   ResourceLoader resourceLoader;
+
+  /** The error mapping to map the status code to URI for displaying
+   * the error.
+   */
+  Map<int, String> get errorMapping;
+  /** The error handler. Default: null.
+   */
+  ConnexErrorHandler onError;
   /** The logger for logging information.
    * The default level is `INFO`.
    */
-  final Logger logger;
-  /** Whether to show the debugging information. Default: true.
-   */
-  bool debug;
+  Logger get logger;
 }
 /** A generic server error.
  */
@@ -106,27 +118,28 @@ class _StreamServer implements StreamServer {
   Path _homeDir;
   ResourceLoader _resLoader;
   ConnexErrorHandler _cxerrh;
-  bool _running = false, debug;
+  bool _running = false;
 
-  _StreamServer(Map<String, Function> urlMapping, String homeDir,
-    LoggingConfigurer loggingConfigurer, bool this.debug)
+  _StreamServer(Map<String, Function> uriMapping,
+    List<List> errorMapping, String homeDir,
+    LoggingConfigurer loggingConfigurer)
     : _server = new HttpServer(), logger = new Logger("stream") {
     (loggingConfigurer != null ? loggingConfigurer: new LoggingConfigurer())
       .configure(logger);
     _init();
     _initDir(homeDir);
-    _initMapping(urlMapping);
+    _initMapping(uriMapping, errorMapping);
   }
   void _init() {
-    _cxerrh = (HttpConnex cnn, e, [st]) {
-      _handleError(cnn, e, st);
+    _cxerrh = (HttpConnex cnn, err, [st]) {
+      _handleError(cnn, err, st);
     };
     _server.defaultRequestHandler =
       (HttpRequest req, HttpResponse res) {
         _handle(new _HttpConnex(this, req, res, _cxerrh), req.uri);
       };
-    _server.onError = (e) {
-      _handleError(null, e);
+    _server.onError = (err) {
+      _handleError(null, err);
     };
   }
   void _initDir(String homeDir) {
@@ -158,9 +171,17 @@ class _StreamServer implements StreamServer {
       throw new ServerError("$homeDir doesn't exist.");
     _resLoader = new ResourceLoader(_homeDir);
   }
-  void _initMapping(Map<String, Function> mapping) {
-    if (mapping != null)
+  void _initMapping(Map<String, Function> uriMapping, List<List> errorMapping) {
+    if (uriMapping != null)
       ; //TODO
+    if (errorMapping != null)
+      for (final mapping in errorMapping) {
+        final code = mapping[0],
+          uri = mapping[1];
+        if (uri == null || uri.isEmpty)
+          throw new ServerError("Invalid error mapping: URI required for $code");
+        this.errorMapping[code] = uri;
+      }
   }
 
   /** Forward the given [connex] to the given [uri].
@@ -188,21 +209,53 @@ class _StreamServer implements StreamServer {
     }
   }
   void _handleError(HttpConnex connex, error, [stackTrace]) {
-    //TODO
-    if (connex != null) {
-      if (!connex.isError) {
-        connex.isError = true;
-        try {
-          connex.response.outputStream.close();
-        } catch (e) { //silent
-        }
+    if (connex == null) {
+      _shout(error, stackTrace);
+      return;
+    }
 
-        if (debug) logger.shout("$error:\n$stackTrace");
-        else logger.shout(error);
+    try {
+      if (onError != null)
+        onError(connex, error, stackTrace);
+      if (connex.isError) {
+        _shout(error, stackTrace);
+        _close(connex);
+        return; //done
       }
+
+      connex.isError = true;
+      if (error is HttpException) {
+        _forwardErr(connex, error, error, stackTrace);
+      } else {
+        _forwardErr(connex, new Http500(error) , error, stackTrace);
+        _shout(error, stackTrace);
+      }
+    } catch (e) {
+      _close(connex);
+    }
+  }
+  void _forwardErr(HttpConnex connex, HttpException err, srcErr, st) {
+    final code = err.statusCode;
+    connex.response
+      ..statusCode = code
+      ..reasonPhrase = err.message;
+
+    final uri = errorMapping[code];
+    if (uri != null) {
+      //TODO: store srcErr and st to HttpRequest.data (when SDK supports it)
+      forward(connex, uri);
     } else {
-      if (debug) logger.shout("$error:\n$stackTrace");
-      else logger.shout(error);
+      //TODO: render a page
+      _close(connex);
+    }
+  }
+  void _shout(err, st) {
+    logger.shout(st != null ? "$err:\n$st": err);
+  }
+  void _close(HttpConnex connex) {
+    try {
+      connex.response.outputStream.close();
+    } catch (e) { //silent
     }
   }
 
@@ -239,6 +292,11 @@ class _StreamServer implements StreamServer {
       throw new ArgumentError("null");
     _resLoader = loader;
   }
+
+  @override
+  final Map<int, String> errorMapping = new Map();
+  @override
+  ConnexErrorHandler onError;
 
   @override
   bool get isRunning => _running;

@@ -96,7 +96,7 @@ class HttpException implements Exception {
     if (message == null) {
       message = statusMessages[statusCode];
       if (message == null)
-        message = "Error";
+        message = "Unknown error";
     }
     _msg = message;
   }
@@ -106,18 +106,20 @@ class HttpException implements Exception {
 
   String toString() => "HttpException($statusCode: $message)";
 }
-/** HTTP 403 exception.
- */
+/// HTTP 403 exception.
 class Http403 extends HttpException {
   Http403([String uri]): super(403, _status2msg(403, uri));
 }
-/** HTTP 404 exception.
- */
+/// HTTP 404 exception.
 class Http404 extends HttpException {
   Http404([String uri]): super(404, _status2msg(404, uri));
 }
-String _status2msg(int code, String uri)
-=> uri != null ? "${statusMessages[code]}: $uri": null;
+/// HTTP 500 exception.
+class Http500 extends HttpException {
+  Http500([String cause]): super(500, _status2msg(500, cause));
+}
+String _status2msg(int code, String cause)
+=> cause != null ? "${statusMessages[code]}: $cause": null;
 
 ///A map of content types. For example, `contentTypes['js']` is `"text/javascript"`.
 Map<String, ContentType> contentTypes = {

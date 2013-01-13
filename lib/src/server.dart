@@ -14,7 +14,17 @@ typedef void ConnexErrorHandler(HttpConnex connex, err, [stackTrace]);
 abstract class StreamServer {
   /** Constructor.
    *
-   * * [uriMapping] - a map of URI mappings, `<String uri, Function handler>`.
+   * ##Request Handlers
+   *
+   * A request handler is responsible for handling a request. It is mapped
+   * to particular URI patterns with [uriMapping].
+   *
+   * The first argument of a handler must be [HttpConnex]. It can have optional
+   * arguments. If it renders the response, it doesn't need to return anything
+   * (i.e., `void`). If not, it shall return an URI (which is a non-empty string,
+   * starting with * `/`) that the request shall be forwarded to.
+   *
+   * * [uriMapping] - a map of URI mappings, `<String uri, Function handler>`. 
    * * [errorMapping] - a list of pairs of error mappings. Each pair is
    * `[int statusCode, String uri]`.
    */
@@ -116,6 +126,7 @@ class _StreamServer implements StreamServer {
   int _sessTimeout = 20 * 60; //20 minutes
   final Logger logger;
   Path _homeDir;
+  final List<_Mapping> _uriMapping = [];
   ResourceLoader _resLoader;
   ConnexErrorHandler _cxerrh;
   bool _running = false;
@@ -132,14 +143,14 @@ class _StreamServer implements StreamServer {
   }
   void _init() {
     _cxerrh = (HttpConnex cnn, err, [st]) {
-      _handleError(cnn, err, st);
+      _handleErr(cnn, err, st);
     };
     _server.defaultRequestHandler =
       (HttpRequest req, HttpResponse res) {
         _handle(new _HttpConnex(this, req, res, _cxerrh), req.uri);
       };
     _server.onError = (err) {
-      _handleError(null, err);
+      _handleErr(null, err);
     };
   }
   void _initDir(String homeDir) {
@@ -173,7 +184,15 @@ class _StreamServer implements StreamServer {
   }
   void _initMapping(Map<String, Function> uriMapping, List<List> errorMapping) {
     if (uriMapping != null)
-      ; //TODO
+      for (final uri in uriMapping.keys) {
+        if (!uri.startsWith("/"))
+          throw new ServerError("URI must start with '/': $uri");
+        final hd = uriMapping[uri];
+        if (hd is! Function)
+          throw new ServerError("Function is required for $uri");
+        _uriMapping.add(new _Mapping(new RegExp("^$uri\$"), hd));
+      }
+
     if (errorMapping != null)
       for (final mapping in errorMapping) {
         final code = mapping[0],
@@ -196,7 +215,13 @@ class _StreamServer implements StreamServer {
     try {
       if (!uri.startsWith('/')) uri = "/$uri";
 
-      //TODO: handle url mapping
+      final hdl = _getHandler(uri);
+      if (hdl != null) {
+        final ret = hdl(connex);
+        if (ret is String)
+          forward(connex, ret);
+        return;
+      }
 
       //protect from access
       if (connex.forwarder == null &&
@@ -205,10 +230,16 @@ class _StreamServer implements StreamServer {
 
       resourceLoader.load(connex, uri);
     } catch (e, st) {
-      _handleError(connex, e, st);
+      _handleErr(connex, e, st);
     }
   }
-  void _handleError(HttpConnex connex, error, [stackTrace]) {
+  Function _getHandler(String uri) {
+    //TODO: cache the matched result for better performance
+    for (final mp in _uriMapping)
+      if (mp.regexp.hasMatch(uri))
+        return mp.handler;
+  }
+  void _handleErr(HttpConnex connex, error, [stackTrace]) {
     if (connex == null) {
       _shout(error, stackTrace);
       return;
@@ -321,4 +352,10 @@ class _StreamServer implements StreamServer {
       throw new StateError("Already running");
     _server.close();
   }
+}
+
+class _Mapping {
+  final RegExp regexp;
+  final Function handler;
+  _Mapping(this.regexp, this.handler);
 }

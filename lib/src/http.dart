@@ -136,6 +136,7 @@ Map<String, ContentType> contentTypes = {
   'jpg': new ContentType.fromString('image/jpeg'),
   'jpeg': new ContentType.fromString('image/jpeg'),
   'js': new ContentType.fromString('text/javascript'),
+  'json': new ContentType.fromString('application/json'),
   'mid': new ContentType.fromString('audio/mid'),
   'mp3': new ContentType.fromString('audio/mp3'),
   'mp4': new ContentType.fromString('audio/mp4'),

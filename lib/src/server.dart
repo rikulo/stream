@@ -148,8 +148,12 @@ class _StreamServer implements StreamServer {
     _cxerrh = (HttpConnex cnn, err, [st]) {
       _handleErr(cnn, err, st);
     };
+    final server = "Rikulo Stream $version";
     _server.defaultRequestHandler =
       (HttpRequest req, HttpResponse res) {
+        res.headers
+          ..add(HttpHeaders.SERVER, server)
+          ..date = new Date.now();
         _handle(new _HttpConnex(this, req, res, _cxerrh), req.uri);
       };
     _server.onError = (err) {

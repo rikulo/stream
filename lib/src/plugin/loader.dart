@@ -68,15 +68,23 @@ bool _loadFileAt(HttpConnex connex, String uri, Path dir, List<String> names, in
  * Notice that this method assumes the file exists.
  */
 void loadFile(HttpConnex connex, File file) {
-  //TODO: handle headers
   final headers = connex.response.headers;
   final ctype = contentTypes[new Path(file.name).extension];
   if (ctype != null)
     headers.contentType = ctype;
 
-  //write content
-  final out = connex.response.outputStream;
-  file.openInputStream()
-    ..onError = connex.error
-    ..pipe(out, close: true);
+  safeThen(file.length(), connex, (length) {
+    connex.response.contentLength = length;
+
+    safeThen(file.lastModified(), connex, (date) {
+      headers.add(HttpHeaders.LAST_MODIFIED, date);
+
+      //write content
+      final out = connex.response.outputStream;
+      file.openInputStream()
+        ..onError = connex.error
+        ..pipe(out, close: true);
+    });
+  });
+
 }

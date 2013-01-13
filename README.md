@@ -3,7 +3,7 @@
 [Stream](http://rikulo.org) is a Dart Web server framework.
 
 * [Home](http://rikulo.org)
-* [Documentation](http://docs.rikulo.org/stream)
+* [Documentation](http://docs.rikulo.org/stream/latest)
 * [API Reference](http://api.rikulo.org/stream/latest)
 * [Discussion](http://stackoverflow.com/questions/tagged/rikulo-stream)
 * [Issues](https://github.com/rikulo/stream/issues)

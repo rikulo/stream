@@ -216,11 +216,17 @@ class _StreamServer implements StreamServer {
    */
   void forward(HttpConnect connect, String uri,
     {HttpRequest request, HttpResponse response}) {
+    if (!uri.startsWith('/')) {
+      final pre = connect.request.uri;
+      final i = pre.lastIndexOf('/');
+      if (i >= 0)
+        uri = "${pre.substring(0, i + 1)}$uri";
+    }
     _handle(new _ForwardedConnex(connect, request, response, _cxerrh), uri);
   }
   void _handle(HttpConnect connect, String uri) {
     try {
-      if (!uri.startsWith('/')) uri = "/$uri";
+      if (!uri.startsWith('/')) uri = "/$uri"; //not possible; just in case
 
       final hdl = _getHandler(uri);
       if (hdl != null) {

@@ -33,6 +33,9 @@ abstract class StreamServer {
     LoggingConfigurer loggingConfigurer})
   => new _StreamServer(uriMapping, errorMapping, homeDir, loggingConfigurer);
 
+  /** The version.
+   */
+  String get version;
   /** The path of the home directory.
    */
   Path get homeDir;

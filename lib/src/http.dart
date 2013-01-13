@@ -121,22 +121,23 @@ class Http500 extends HttpException {
 String _status2msg(int code, String cause)
 => cause != null ? "${statusMessages[code]}: $cause": null;
 
-///A map of content types. For example, `contentTypes['js']` is `"text/javascript"`.
+///A map of content types. For example, `contentTypes['js']` is
+///`new ContentType.fromString("text/javascript;charset=utf-8")`.
 Map<String, ContentType> contentTypes = {
   'aac': new ContentType.fromString('audio/aac'),
   'aiff': new ContentType.fromString('audio/aiff'),
-  'css': new ContentType.fromString('text/css'),
-  'csv': new ContentType.fromString('text/csv'),
+  'css': new ContentType.fromString('text/css;charset=utf-8'),
+  'csv': new ContentType.fromString('text/csv;charset=utf-8'),
   'doc': new ContentType.fromString('application/vnd.ms-word'),
   'docx': new ContentType.fromString('application/vnd.openxmlformats-officedocument.wordprocessingml.document'),
   'gif': new ContentType.fromString('image/gif'),
-  'htm': new ContentType.fromString('text/html'),
-  'html': new ContentType.fromString('text/html'),
+  'htm': new ContentType.fromString('text/html;charset=utf-8'),
+  'html': new ContentType.fromString('text/html;charset=utf-8'),
   'ico': new ContentType.fromString('image/x-icon'),
   'jpg': new ContentType.fromString('image/jpeg'),
   'jpeg': new ContentType.fromString('image/jpeg'),
-  'js': new ContentType.fromString('text/javascript'),
-  'json': new ContentType.fromString('application/json'),
+  'js': new ContentType.fromString('text/javascript;charset=utf-8'),
+  'json': new ContentType.fromString('application/json;charset=utf-8'),
   'mid': new ContentType.fromString('audio/mid'),
   'mp3': new ContentType.fromString('audio/mp3'),
   'mp4': new ContentType.fromString('audio/mp4'),
@@ -154,11 +155,11 @@ Map<String, ContentType> contentTypes = {
   'pptx': new ContentType.fromString('application/vnd.openxmlformats-officedocument.presentationml.presentation'),
   'rar': new ContentType.fromString('application/x-rar-compressed'),
   'rtf': new ContentType.fromString('application/rtf'),
-  'txt': new ContentType.fromString('text/plain'),
+  'txt': new ContentType.fromString('text/plain;charset=utf-8'),
   'wav': new ContentType.fromString('audio/wav'),
   'xls': new ContentType.fromString('application/vnd.ms-excel'),
   'xlsx': new ContentType.fromString('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'),
-  'xml': new ContentType.fromString('text/xml'),
+  'xml': new ContentType.fromString('text/xml;charset=utf-8'),
   'zip': new ContentType.fromString('application/zip')
 };
 

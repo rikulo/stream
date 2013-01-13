@@ -5,7 +5,7 @@ part of stream;
 
 /** A HTTP request connection.
  */
-abstract class HttpConnex {
+abstract class HttpConnect {
   ///The Stream server
   StreamServer get server;
   ///The HTTP request.
@@ -14,7 +14,7 @@ abstract class HttpConnex {
   HttpResponse get response;
   ///The source connection that forwards to this connection, or null if not
   ///forwarded.
-  HttpConnex get forwarder;
+  HttpConnect get forwarder;
 
   /** The error handler.
    *
@@ -35,8 +35,8 @@ abstract class HttpConnex {
    * For example,
    *
    *     file.openInputStream()
-   *       ..onError = connex.error
-   *       ..pipe(connex.response.outputStream, close: true);
+   *       ..onError = connect.error
+   *       ..pipe(connect.response.outputStream, close: true);
    */
   ErrorHandler get error;
   /** Indicates if any error occurs (i.e., [error] has been called).
@@ -44,7 +44,7 @@ abstract class HttpConnex {
   bool isError;
 }
 
-class _HttpConnex implements HttpConnex {
+class _HttpConnex implements HttpConnect {
   final ConnexErrorHandler _cxerrh;
   ErrorHandler _errh;
 
@@ -65,7 +65,7 @@ class _HttpConnex implements HttpConnex {
   @override
   final HttpResponse response;
   @override
-  HttpConnex get forwarder => null;
+  HttpConnect get forwarder => null;
 
   @override
   ErrorHandler get error => _errh;
@@ -74,14 +74,14 @@ class _HttpConnex implements HttpConnex {
 }
 
 class _ForwardedConnex extends _HttpConnex {
-  _ForwardedConnex(HttpConnex connex, HttpRequest request,
+  _ForwardedConnex(HttpConnect connect, HttpRequest request,
     HttpResponse response, ConnexErrorHandler errorHandler):
-    super(connex.server, request != null ? request: connex.request,
-      response != null ? response: connex.response, errorHandler),
-    forwarder = connex;
+    super(connect.server, request != null ? request: connect.request,
+      response != null ? response: connect.response, errorHandler),
+    forwarder = connect;
 
   @override
-  final HttpConnex forwarder;
+  final HttpConnect forwarder;
   @override
   bool get isError => super.isError || forwarder.isError;
 }

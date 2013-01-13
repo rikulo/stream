@@ -6,10 +6,10 @@ import "package:stream/stream.dart";
 
 part "config.dart";
 
-void serverInfo(HttpConnex connex) {
-  final info = {"name": "Rikulo Stream", "version": connex.server.version};
-  connex.response.headers.contentType = contentTypes["json"];
-  connex.response.outputStream
+void serverInfo(HttpConnect connect) {
+  final info = {"name": "Rikulo Stream", "version": connect.server.version};
+  connect.response.headers.contentType = contentTypes["json"];
+  connect.response.outputStream
     ..writeString(JSON.stringify(info))..close();
 }
 

@@ -16,7 +16,7 @@ abstract class ResourceLoader {
 
   /** Loads the resource of the given URI to the given response.
    */
-  void load(HttpConnex connex, String uri);
+  void load(HttpConnect connect, String uri);
 }
 
 /** A file-system-based resource loader.
@@ -28,22 +28,22 @@ class FileLoader implements ResourceLoader {
   final Path rootDir;
 
   //@override
-  void load(HttpConnex connex, String uri) {
+  void load(HttpConnect connect, String uri) {
     var path = uri.substring(1); //must start with '/'
     path = rootDir.append(path);
 
     var file = new File.fromPath(path);
-    safeThen(file.exists(), connex, (exists) {
+    safeThen(file.exists(), connect, (exists) {
       if (exists) {
-        loadFile(connex, file);
+        loadFile(connect, file);
         return;
       }
 
       //try uri / indexNames
       final dir = new Directory.fromPath(path);
-      safeThen(dir.exists(), connex, (exists) {
+      safeThen(dir.exists(), connect, (exists) {
         if (exists)
-          _loadFileAt(connex, uri, path, connex.server.indexNames, 0);
+          _loadFileAt(connect, uri, path, connect.server.indexNames, 0);
         else
           throw new Http404(uri);
       });
@@ -51,38 +51,38 @@ class FileLoader implements ResourceLoader {
   }
 }
 
-bool _loadFileAt(HttpConnex connex, String uri, Path dir, List<String> names, int j) {
+bool _loadFileAt(HttpConnect connect, String uri, Path dir, List<String> names, int j) {
   if (j >= names.length)
     throw new Http404(uri);
 
   final file = new File.fromPath(dir.append(names[j]));
-  safeThen(file.exists(), connex, (exists) {
+  safeThen(file.exists(), connect, (exists) {
     if (exists)
-      loadFile(connex, file);
+      loadFile(connect, file);
     else
-      _loadFileAt(connex, uri, dir, names, j + 1);
+      _loadFileAt(connect, uri, dir, names, j + 1);
   });
 }
 
 /** Loads a file into the given response.
  * Notice that this method assumes the file exists.
  */
-void loadFile(HttpConnex connex, File file) {
-  final headers = connex.response.headers;
+void loadFile(HttpConnect connect, File file) {
+  final headers = connect.response.headers;
   final ctype = contentTypes[new Path(file.name).extension];
   if (ctype != null)
     headers.contentType = ctype;
 
-  safeThen(file.length(), connex, (length) {
-    connex.response.contentLength = length;
+  safeThen(file.length(), connect, (length) {
+    connect.response.contentLength = length;
 
-    safeThen(file.lastModified(), connex, (date) {
+    safeThen(file.lastModified(), connect, (date) {
       headers.add(HttpHeaders.LAST_MODIFIED, date);
 
       //write content
-      final out = connex.response.outputStream;
+      final out = connect.response.outputStream;
       file.openInputStream()
-        ..onError = connex.error
+        ..onError = connect.error
         ..pipe(out, close: true);
     });
   });

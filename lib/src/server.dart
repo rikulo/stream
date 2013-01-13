@@ -6,7 +6,7 @@ part of stream;
 /** The error handler. */
 typedef void ErrorHandler(err, [stackTrace]);
 /** The error handler for HTTP connection. */
-typedef void ConnexErrorHandler(HttpConnex connex, err, [stackTrace]);
+typedef void ConnexErrorHandler(HttpConnect connect, err, [stackTrace]);
 
 /**
  * Stream server.
@@ -19,7 +19,7 @@ abstract class StreamServer {
    * A request handler is responsible for handling a request. It is mapped
    * to particular URI patterns with [uriMapping].
    *
-   * The first argument of a handler must be [HttpConnex]. It can have optional
+   * The first argument of a handler must be [HttpConnect]. It can have optional
    * arguments. If it renders the response, it doesn't need to return anything
    * (i.e., `void`). If not, it shall return an URI (which is a non-empty string,
    * starting with * `/`) that the request shall be forwarded to.
@@ -100,24 +100,24 @@ class ServerError implements Error {
 }
 
 /** A safe invocation of `Future.then(onValue)`. It will invoke
- * `connex.error(e, stackTrace)` automatically if there is an exception.
+ * `connect.error(e, stackTrace)` automatically if there is an exception.
  * It is strongly suggested to use this method instead of calling `then` directly
  * when handling an request asynchronously. For example,
  *
- *     safeThen(file.exists, connex, (exists) {
+ *     safeThen(file.exists, connect, (exists) {
  *       if (exists)
  *           doSomething(); //any exception will be caught and handled
  *       throw new Http404();
  *     }
  */
-void safeThen(Future future, HttpConnex connex, onValue(value)) {
+void safeThen(Future future, HttpConnect connect, onValue(value)) {
   future.then((value) {
     try {
       onValue(value);
     } catch (e, st) {
-      connex.error(e, st);
+      connect.error(e, st);
     }
-  }/*, onError: connex.error*/); //TODO: wait for next SDK
+  }/*, onError: connect.error*/); //TODO: wait for next SDK
 }
 
 ///The implementation
@@ -145,7 +145,7 @@ class _StreamServer implements StreamServer {
     _initMapping(uriMapping, errorMapping);
   }
   void _init() {
-    _cxerrh = (HttpConnex cnn, err, [st]) {
+    _cxerrh = (HttpConnect cnn, err, [st]) {
       _handleErr(cnn, err, st);
     };
     final server = "Rikulo Stream $version";
@@ -210,34 +210,34 @@ class _StreamServer implements StreamServer {
       }
   }
 
-  /** Forward the given [connex] to the given [uri].
+  /** Forward the given [connect] to the given [uri].
    *
-   * If [request] or [response] is ignored, [connex] is assumed.
+   * If [request] or [response] is ignored, [connect] is assumed.
    */
-  void forward(HttpConnex connex, String uri,
+  void forward(HttpConnect connect, String uri,
     {HttpRequest request, HttpResponse response}) {
-    _handle(new _ForwardedConnex(connex, request, response, _cxerrh), uri);
+    _handle(new _ForwardedConnex(connect, request, response, _cxerrh), uri);
   }
-  void _handle(HttpConnex connex, String uri) {
+  void _handle(HttpConnect connect, String uri) {
     try {
       if (!uri.startsWith('/')) uri = "/$uri";
 
       final hdl = _getHandler(uri);
       if (hdl != null) {
-        final ret = hdl(connex);
+        final ret = hdl(connect);
         if (ret is String)
-          forward(connex, ret);
+          forward(connect, ret);
         return;
       }
 
       //protect from access
-      if (connex.forwarder == null &&
+      if (connect.forwarder == null &&
       (uri.startsWith("/webapp/") || uri == "/webapp"))
         throw new Http403(uri);
 
-      resourceLoader.load(connex, uri);
+      resourceLoader.load(connect, uri);
     } catch (e, st) {
-      _handleErr(connex, e, st);
+      _handleErr(connect, e, st);
     }
   }
   Function _getHandler(String uri) {
@@ -246,53 +246,53 @@ class _StreamServer implements StreamServer {
       if (mp.regexp.hasMatch(uri))
         return mp.handler;
   }
-  void _handleErr(HttpConnex connex, error, [stackTrace]) {
-    if (connex == null) {
+  void _handleErr(HttpConnect connect, error, [stackTrace]) {
+    if (connect == null) {
       _shout(error, stackTrace);
       return;
     }
 
     try {
       if (onError != null)
-        onError(connex, error, stackTrace);
-      if (connex.isError) {
+        onError(connect, error, stackTrace);
+      if (connect.isError) {
         _shout(error, stackTrace);
-        _close(connex);
+        _close(connect);
         return; //done
       }
 
-      connex.isError = true;
+      connect.isError = true;
       if (error is HttpException) {
-        _forwardErr(connex, error, error, stackTrace);
+        _forwardErr(connect, error, error, stackTrace);
       } else {
-        _forwardErr(connex, new Http500(error) , error, stackTrace);
+        _forwardErr(connect, new Http500(error) , error, stackTrace);
         _shout(error, stackTrace);
       }
     } catch (e) {
-      _close(connex);
+      _close(connect);
     }
   }
-  void _forwardErr(HttpConnex connex, HttpException err, srcErr, st) {
+  void _forwardErr(HttpConnect connect, HttpException err, srcErr, st) {
     final code = err.statusCode;
-    connex.response
+    connect.response
       ..statusCode = code
       ..reasonPhrase = err.message;
 
     final uri = errorMapping[code];
     if (uri != null) {
       //TODO: store srcErr and st to HttpRequest.data (when SDK supports it)
-      forward(connex, uri);
+      forward(connect, uri);
     } else {
       //TODO: render a page
-      _close(connex);
+      _close(connect);
     }
   }
   void _shout(err, st) {
     logger.shout(st != null ? "$err:\n$st": err);
   }
-  void _close(HttpConnex connex) {
+  void _close(HttpConnect connect) {
     try {
-      connex.response.outputStream.close();
+      connect.response.outputStream.close();
     } catch (e) { //silent
     }
   }

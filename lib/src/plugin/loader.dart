@@ -33,7 +33,7 @@ class FileLoader implements ResourceLoader {
     path = rootDir.append(path);
 
     var file = new File.fromPath(path);
-    safeThen(file.exists(), connect, (exists) {
+    connect.then(file.exists(), (exists) {
       if (exists) {
         loadFile(connect, file);
         return;
@@ -41,7 +41,7 @@ class FileLoader implements ResourceLoader {
 
       //try uri / indexNames
       final dir = new Directory.fromPath(path);
-      safeThen(dir.exists(), connect, (exists) {
+      connect.then(dir.exists(), (exists) {
         if (exists)
           _loadFileAt(connect, uri, path, connect.server.indexNames, 0);
         else
@@ -56,7 +56,7 @@ bool _loadFileAt(HttpConnect connect, String uri, Path dir, List<String> names, 
     throw new Http404(uri);
 
   final file = new File.fromPath(dir.append(names[j]));
-  safeThen(file.exists(), connect, (exists) {
+  connect.then(file.exists(), (exists) {
     if (exists)
       loadFile(connect, file);
     else
@@ -73,10 +73,10 @@ void loadFile(HttpConnect connect, File file) {
   if (ctype != null)
     headers.contentType = ctype;
 
-  safeThen(file.length(), connect, (length) {
+  connect.then(file.length(), (length) {
     connect.response.contentLength = length;
 
-    safeThen(file.lastModified(), connect, (date) {
+    connect.then(file.lastModified(), (date) {
       headers.add(HttpHeaders.LAST_MODIFIED, date);
 
       //write content

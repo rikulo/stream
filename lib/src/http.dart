@@ -16,19 +16,39 @@ abstract class HttpConnect {
   ///forwarded.
   HttpConnect get forwarder;
 
+  /** A safe invocation for `Future.then(onValue)`. It will invoke
+   * `connect.error(err, stackTrace)` automatically if there is an exception.
+   * It is strongly suggested to use this method instead of calling `Future.then`
+   * directly when handling an request asynchronously. For example,
+   *
+   *     connect.then(file.exists, (exists) {
+   *       if (exists)
+   *           doSomething(); //any exception will be caught and handled
+   *       throw new Http404();
+   *     }
+   */
+  void then(Future future, onValue(value));
+
   /** The error handler.
    *
    * Notice that it is important to invoke this method if an error occurs.
    * Otherwise, the HTTP connection won't be closed.
    *
-   * ##Use [safeThen] instead of `Future.then`
+   * ##Use `HttpConnect.then` instead of `Future.then`
    *
-   * To use with `Future.then`, you have to implement a catch-all statement
-   * to invoke this method when an error occurs.
+   * When using with `Future.then`, you have to implement a catch-all statement
+   * to invoke `connect.error(err, st)` when an error occurs.
    *
-   * To simplify the job, you can
-   * use [safeThen] instead of invoking `Future.then` directly.
-   * [safeThen] will invoke this method automatically if necessary.
+   * To simplify the job, you can invoke [then] (of `HttpConnect`) instead of
+   * invoking `Future.then` directly.
+   * [then] will invoke `connect.error(err, st)` automatically if necessary.
+   * For example,
+   *
+   *     connect.then(file.exists, (exists) {
+   *       if (exists)
+   *           doSomething(); //any exception will be caught and handled
+   *       throw new Http404();
+   *     }
    *
    * ##Assign onError with this method
    *
@@ -66,6 +86,17 @@ class _HttpConnex implements HttpConnect {
   final HttpResponse response;
   @override
   HttpConnect get forwarder => null;
+
+  //@override
+  void then(Future future, onValue(value)) {
+    future.then((value) {
+      try {
+        onValue(value);
+      } catch (e, st) {
+        error(e, st);
+      }
+    }/*, onError: error*/); //TODO: wait for next SDK
+  }
 
   @override
   ErrorHandler get error => _errh;

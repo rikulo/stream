@@ -99,27 +99,6 @@ class ServerError implements Error {
   String toString() => "ServerError($message)";
 }
 
-/** A safe invocation of `Future.then(onValue)`. It will invoke
- * `connect.error(e, stackTrace)` automatically if there is an exception.
- * It is strongly suggested to use this method instead of calling `then` directly
- * when handling an request asynchronously. For example,
- *
- *     safeThen(file.exists, connect, (exists) {
- *       if (exists)
- *           doSomething(); //any exception will be caught and handled
- *       throw new Http404();
- *     }
- */
-void safeThen(Future future, HttpConnect connect, onValue(value)) {
-  future.then((value) {
-    try {
-      onValue(value);
-    } catch (e, st) {
-      connect.error(e, st);
-    }
-  }/*, onError: connect.error*/); //TODO: wait for next SDK
-}
-
 ///The implementation
 class _StreamServer implements StreamServer {
   final String version = "0.1.0";

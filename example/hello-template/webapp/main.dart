@@ -4,6 +4,7 @@ library hello_template;
 import "package:stream/stream.dart";
 
 part "config.dart";
+part "helloView.rsp.dart"; //generated from helloView.rsp.html
 
 void main() {
   new StreamServer(uriMapping: _mapping).run();

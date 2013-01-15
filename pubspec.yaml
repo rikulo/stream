@@ -1,5 +1,5 @@
 name: stream
-version: 0.1.0
+version: 0.5.0
 description: > 
   Stream is a Dart Web server framework.
 authors:
@@ -9,3 +9,4 @@ dependencies:
   rikulo_commons: any
   logging: any
   args: any
+  html5plus: any

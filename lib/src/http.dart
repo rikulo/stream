@@ -152,8 +152,7 @@ class Http500 extends HttpException {
 String _status2msg(int code, String cause)
 => cause != null ? "${statusMessages[code]}: $cause": null;
 
-///A map of content types. For example, `contentTypes['js']` is
-///`new ContentType.fromString("text/javascript;charset=utf-8")`.
+///A map of content types. For example, `contentTypes['js']` is `new ContentType.fromString("text/javascript;charset=utf-8")`.
 Map<String, ContentType> contentTypes = {
   'aac': new ContentType.fromString('audio/aac'),
   'aiff': new ContentType.fromString('audio/aiff'),
@@ -194,7 +193,7 @@ Map<String, ContentType> contentTypes = {
   'zip': new ContentType.fromString('application/zip')
 };
 
-///A map of HTTP status code to messages
+///A map of HTTP status code to messages.
 Map<int, String> get statusMessages {
   if (_stmsgs == null) {
     _stmsgs = new Map();

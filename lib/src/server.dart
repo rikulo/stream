@@ -10,6 +10,19 @@ typedef void ConnexErrorHandler(HttpConnect connect, err, [stackTrace]);
 
 /**
  * Stream server.
+ *
+ * ##Start a server serving static resources only
+ *
+ *     new StreamServer().run();
+ *
+ * ##Start a full-featured server
+ *
+ *     new StreamServer({ //URI mapping
+ *         "/your-uri-in-regex": yourHandler
+ *       },[ //Error mapping
+ *         [404, "/webapp/404.html"]
+ *       ]).run();
+ *  )
  */
 abstract class StreamServer {
   /** Constructor.
@@ -101,7 +114,7 @@ class ServerError implements Error {
 
 ///The implementation
 class _StreamServer implements StreamServer {
-  final String version = "0.1.0";
+  final String version = "0.5.0";
   final HttpServer _server;
   String _host = "127.0.0.1";
   int _port = 8080;

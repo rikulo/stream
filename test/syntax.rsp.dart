@@ -42,9 +42,37 @@ void syntax(HttpConnect connect, {foo, bool detailed:false}) { //7
 
   output.writeString("""
 
+    <p>This is not a tag: [foo ], [another and [/none].
+    <ul>
+    """); //#17
+
+    output.writeString("""
+
+      <li>"""); //#20
+
+    _ep_ = user.name; //#21
+    if (_ep_ != null) output.writeString(_ep_);
+
+    output.writeString("""
+
+      """); //#21
+
+      output.writeString("""
+
+      <i>!important!</i>
+      """); //#22
+
+    output.writeString("""
+]
+      </li>
+    """); //#24
+
+  output.writeString("""
+]
+    </ul>
   </body>
 </html>
 
 
-"""); //#16
+"""); //#26
 }

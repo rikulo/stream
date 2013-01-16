@@ -43,6 +43,9 @@ abstract class Tag {
   /** Whether this tag requires a closing tag, such as  `[/if]`.
    */
   bool get hasClosing;
+  /** The tag name.
+   */
+  String get name;
 }
 
 /** A map of tags that RSP compiler uses to handle the tags.
@@ -50,14 +53,16 @@ abstract class Tag {
  * The name of tag must start with a lower-case letter (a-z), and it can
  * have only letters (a-z and A-Z).
  */
-Map<String, Tag> tags = {
-  "page": new PageTag(),
-  "dart": new DartTag(),
-  "include": new IncludeTag(),
-  "for": new ForTag(),
-  "if": new IfTag(),
-  "else": new ElseTag()
-};
+Map<String, Tag> get tags {
+  if (_tags == null) {
+    _tags = new Map();
+    for (Tag tag in [new PageTag(), new DartTag(), new IncludeTag(),
+      new ForTag(), new IfTag(), new ElseTag()])
+      _tags[tag.name] = tag;
+  }
+  return _tags;
+}
+Map<String, Tag> _tags;
 
 ///The page tag.
 class PageTag implements Tag {
@@ -92,6 +97,7 @@ class PageTag implements Tag {
   void end(TagContext context) {
   }
   bool get hasClosing => false;
+  final String name = "page";
 }
 
 ///The dart tag.
@@ -102,6 +108,7 @@ class DartTag implements Tag {
   void end(TagContext context) {
   }
   bool get hasClosing => true;
+  final String name = "dart";
 }
 
 ///The include tag.
@@ -112,6 +119,7 @@ class IncludeTag implements Tag {
   void end(TagContext context) {
   }
   bool get hasClosing => false;
+  final String name = "include";
 }
 
 ///The for tag.
@@ -123,6 +131,7 @@ class ForTag implements Tag {
 
   }
   bool get hasClosing => true;
+  final String name = "for";
 }
 
 ///The if tag.
@@ -134,6 +143,7 @@ class IfTag implements Tag {
 
   }
   bool get hasClosing => true;
+  final String name = "if";
 }
 
 /** The else tag.
@@ -147,4 +157,5 @@ class ElseTag implements Tag {
   void end(TagContext context) {
   }
   bool get hasClosing => false;
+  final String name = "unless";
 }

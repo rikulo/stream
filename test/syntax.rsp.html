@@ -13,7 +13,18 @@ import "packages:stream/stream.dart";
   <body>
     <p>This is a test with """.
     <p>Another expresion: [= foo.description]
-    <p>An empty expression: [=   ]
+    <p>An empty expression: [=   
+      ]
+    <p>This is not a tag: [foo ], [another and [/none].
+    <ul>
+    [for user in foo.friends]
+      <li>[= user.name]
+      [if user.isCustomer]
+      <i>!important!</i>
+      [/if]
+      </li>
+    [/for]
+    </ul>
   </body>
 </html>
 [**]

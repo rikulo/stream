@@ -53,12 +53,12 @@ class Compiler {
         _writeExpr();
       } else if (token is PageTag) {
         if (pgFound)
-          error("Only one page directive is allowed");
+          error("Only one page tag is allowed");
         if (started)
-          error("The page directive must be in front of any non-empty content");
+          error("The page tag must be in front of any non-empty content");
         pgFound = true;
 
-        push(token);
+        push(token, pre: false);
         token.begin(_current, _tagData());
         token.end(_current);
         pop();
@@ -68,6 +68,22 @@ class Compiler {
         token.end(_current);
         pop();
       } else if (token is Tag) {
+        if (!started) {
+          started = true;
+          _start();
+        }
+        push(token);
+        token.begin(_current, _tagData());
+        if (!token.hasClosing) {
+          token.end(_current);
+          pop();
+        }
+      } else if (token is _Ending) {
+        final _Ending ending = token;
+        if (_current.tag.name != ending.name)
+          error("Unexpected [/${ending.name}] (no beginning tag found)");
+        _current.tag.end(_current);
+        pop();
       } else {
         error("Unknown token, $token");
       }
@@ -88,7 +104,7 @@ class Compiler {
     if (line == null) line = _current.line;
     if (_name == null) {
       if (sourceName == null || sourceName.isEmpty)
-        error("The page directive with the name attribute is required", line);
+        error("The page tag with the name attribute is required", line);
 
       final i = sourceName.lastIndexOf('/') + 1,
         j = sourceName.indexOf('.', i);
@@ -156,7 +172,23 @@ class Compiler {
           } else if (c2 == '=') { //exprssion
             _pos = j + 1;
             return new _Expr();
-          } else if (StringUtil.isChar(c2, lower:true)) {
+          } else if (c2 == '/') { //ending tag
+            int k = j + 1;
+            if (k < _len) {
+              final c3 = source[k];
+              if (StringUtil.isChar(c3, lower:true)) {
+                int m = _skipId(k);
+                final tagnm = source.substring(k, m);
+                final tag = tags[tagnm];
+                if (tag != null) { //tag found
+                  if (!tag.hasClosing)
+                    error("[/$tagnm] not allowed. It doesn't need the ending tag.");
+                  _pos = m;
+                  return new _Ending(tagnm);
+                }
+              }
+            }
+          } else if (StringUtil.isChar(c2, lower:true)) { //beginning tag
             int k = _skipId(j);
             final tag = tags[source.substring(j, k)];
             if (tag != null) { //tag found
@@ -229,12 +261,13 @@ class Compiler {
   String _dartData() {
     String data = _tagData();
     if (!data.isEmpty)
-      warning("The data directive has no attribute");
+      warning("The dart tag has no attribute");
     int k = _skipUntil("[/dart]", _pos);
     data = source.substring(_pos, k).trim();
     _pos = k + 7;
     return data;
   }
+
   //Utilities//
   void _writeText(String text, [int line]) {
     if (line == null) line = _current.line;
@@ -289,7 +322,7 @@ class Compiler {
 
   void push(Tag tag, {bool pre: true}) {
     _tags.add(
-      _current = new _TagContext.child(_current, tag, pre ? "  ":"", _current.line));
+      _current = new _TagContext.child(_current, tag, pre, _current.line));
   }
   void pop() {
     final prev = _tags.removeLast();
@@ -320,8 +353,12 @@ class _TagContext extends TagContext {
   _TagContext(Tag this.tag, int this.line, Tag parent, OutputStream output, String pre,
     Compiler compiler)
     : super(parent, output, pre, compiler);
-  _TagContext.child(_TagContext prev, Tag this.tag, String pre, int this.line)
-    : super(prev.tag, prev.output, "$pre${prev.pre}", prev.compiler);
+  _TagContext.child(_TagContext prev, Tag this.tag, bool pre, int this.line)
+    : super(prev.tag, prev.output, pre ? "  ${prev.pre}": prev.pre, prev.compiler);
 }
 class _Expr {
+}
+class _Ending {
+  final String name;
+  _Ending(this.name);
 }

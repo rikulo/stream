@@ -6,4 +6,9 @@ part of hello_template;
 
 /** Template, helloView, for rendering the view. */
 void helloView(HttpConnect connect) { //5
+  HttpRequest request = connect.request;
+  HttpRequest response = connect.response;
+  HttpRequest output = response.outputStream;
+
+  response.headers.contentType = new ContentType.fromString("text/html; charset=utf-8/");
 }

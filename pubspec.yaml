@@ -9,4 +9,3 @@ dependencies:
   rikulo_commons: any
   logging: any
   args: any
-  html5plus: any

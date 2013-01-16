@@ -1,11 +1,12 @@
 //Copyright (C) 2013 Potix Corporation. All Rights Reserved.
 //History: Mon, Jan 14, 2013  4:33:10 PM
 // Author: tomyeh
+part of stream_rspc;
 
 /** Compiles the given [source] RSP document to the given output stream [out].
  * Notice that the caller has to close the output stream by himself.
  */
-void compile(Document source, OutputStream out, {
+void compile(String source, OutputStream out, {
 String sourceName, Encoding encoding: Encoding.UTF_8, bool verbose: false}) {
   new Compiler(source, out, sourceName: sourceName, encoding: encoding, verbose: verbose)
     .compile();
@@ -13,11 +14,9 @@ String sourceName, Encoding encoding: Encoding.UTF_8, bool verbose: false}) {
 
 /** Compiles the RSP document of the given [sourceName] and write the result to
  * the file of given [destinationName].
- *
- * * [fragment] specifies whether the content is a fragment.
  */
 void compileFile(String sourceName, {String destinationName, bool verbose : false, 
-Encoding encoding : Encoding.UTF_8, bool fragment: false}) {
+Encoding encoding : Encoding.UTF_8}) {
   final source = new File(sourceName);
   if (!source.existsSync()) {
     print("File not found: ${sourceName}");
@@ -39,11 +38,9 @@ Encoding encoding : Encoding.UTF_8, bool fragment: false}) {
   source.readAsString(encoding).then((text) {
     final out = dest.openOutputStream();
     try {
-      final parser = new HtmlParser(text, encoding: encoding.name,
-        lowercaseElementName: false, lowercaseAttrName: false, cdataOK: true);
-      compile(
-          fragment ? parser.parseFragment(): parser.parse(),
-          out, sourceName: sourceName, encoding: encoding, verbose: verbose);
+      compile(text, out, sourceName: sourceName, encoding: encoding, verbose: verbose);
+    } on SyntaxException catch (e) {
+      print("${e.message}\nCompilation aborted.");
     } finally {
       out.close();
     }
@@ -52,6 +49,8 @@ Encoding encoding : Encoding.UTF_8, bool fragment: false}) {
 
 /** Compile changed RSP files. This method shall be called within build.dart,
  * with new Options().arguments as its [arguments].
+ *
+ * Notice that it accepts files ending with `.rsp.whatever`.
  */
 void build(List<String> arguments) {
   final ArgParser argParser = new ArgParser()
@@ -70,33 +69,34 @@ void build(List<String> arguments) {
       if (name.endsWith(".rsp.dart"))
         new File(name).delete();
     };
-    
+
   } else if (removed.isEmpty && changed.isEmpty) { // full build
     new Directory.current().list(recursive: true).onFile = (String name) {
-      bool rsp = name.endsWith(".rsp.html") || name.endsWith(".rsp");
-      if (rsp || name.endsWith(".rsf.html") || name.endsWith(".rsf"))
-        compileFile(name, fragment: !rsp); //rsf => fragment
+      if (_rspSource(name) >= 0)
+          compileFile(name);
     };
-    
+
   } else {
     for (String name in removed) {
-      var gennm;
-      if (name.endsWith(".rsp.html") || name.endsWith(".rsf.html"))
-        gennm = name.substring(0, name.length - 5);
-      else if (name.endsWith(".rsp") || name.endsWith(".rsf"))
-        gennm = name;
-
-      if (gennm != null) {
-        final File gen = new File("$gennm.dart");
+      final i = _rspSource(name);
+      if (i >= 0) {
+        final File gen = new File("${name.substring(0, i)}dart");
         if (gen.existsSync())
           gen.delete();
       }
     }
 
     for (String name in changed) {
-      bool rsp = name.endsWith(".rsp.html") || name.endsWith(".rsp");
-      if (rsp || name.endsWith(".rsf.html") || name.endsWith(".rsf"))
-        compileFile(name, fragment: !rsp); //rsf => fragment
+      if (_rspSource(name) >= 0)
+          compileFile(name);
     }
   }
+}
+int _rspSource(String name) {
+  if (!name.endsWith(".rsp.dart")) {
+    final i = name.indexOf(".rsp.");
+    if (i >= 0 && name.indexOf('/', i += 5) < 0 && name.indexOf('.', i) < 0)
+      return i;
+  }
+  return -1;
 }

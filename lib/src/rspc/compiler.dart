@@ -43,9 +43,18 @@ class Compiler {
           if (text.trim().isEmpty)
             continue; //skip it
           started = true;
-          _start(line);
+          _start(line); //use previous line number since it could be multiple lines
         }
         _writeText(text, line);
+      } else if (token is _Expr) {
+        if (!started) {
+          started = true;
+          _start();
+        }
+      } else if (token is Tag) {
+
+      } else {
+        _error("Unknown token, $token");
       }
     }
 
@@ -61,7 +70,8 @@ class Compiler {
     _pos = 0;
     _len = source.length;
   }
-  void _start(int line) {
+  void _start([int line]) {
+    if (line == null) line = _current.line;
     if (_name == null) {
       if (sourceName == null || sourceName.isEmpty)
         _error("The page directive with the name attribute is required", line);
@@ -195,6 +205,7 @@ class Compiler {
 
   //Utilities//
   void _writeText(String text, [int line]) {
+    if (line == null) line = _current.line;
     final pre = _current.pre;
     int i = 0, j;
     while ((j = text.indexOf('"""', i)) >= 0) {

@@ -1,15 +1,19 @@
-[* Syntax  Test *]
-[page args="foo, bool detailed:false"]
+[* Syntax Test *]
 [dart]
 library syntax;
+
+import "packages:stream/stream.dart";
 [/dart]
+[page args="foo, bool detailed:false"]
 <!DOCTYPE html>
 <html>
   <head>
-    <title>[= foo.name ]</title>
+    <title>[= "$foo.name [${foo.title}]" ]</title>
   </head>
   <body>
     <p>This is a test with """.
+    <p>Another expresion: [= foo.description]
+    <p>An empty expression: [=   ]
   </body>
 </html>
 [**]

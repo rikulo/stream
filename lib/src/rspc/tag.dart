@@ -39,14 +39,10 @@ abstract class Tag {
   void begin(TagContext context, String data);
   /** Called when the ending of a tag is encountered.
    */
-  void end(TagContext);
+  void end(TagContext context);
   /** Whether this tag requires a closing tag, such as  `[/if]`.
    */
   bool get hasClosing;
-  /** Whether to skip the processing of tags between the beginning and the ending.
-   * For example, [DartTag] does it this way.
-   */
-  bool get isBlind;
 }
 
 /** A map of tags that RSP compiler uses to handle the tags.
@@ -66,23 +62,46 @@ Map<String, Tag> tags = {
 ///The page tag.
 class PageTag implements Tag {
   void begin(TagContext context, String data) {
-
+    String name, desc, args, ctype;
+    final attrs = MapUtil.parse(data, backslash:false, defaultValue:"");
+    for (final nm in attrs.keys) {
+      switch (nm) {
+        case "name":
+          name = attrs[nm];
+          break;
+        case "content-type":
+        case "contentType":
+          ctype = attrs[nm];
+          break;
+        case "args":
+        case "arguments":
+          args = attrs[nm];
+          if (args.trim().isEmpty)
+            args = null;
+          break;
+        case "description":
+          desc = attrs[nm];
+          break;
+        default:
+          context.compiler.warning("Unknow attribute, $nm");
+          break;
+      }
+    }
+    context.compiler.setPage(name, desc, args, ctype);
   }
-  void end(TagContext) {
+  void end(TagContext context) {
   }
   bool get hasClosing => false;
-  bool get isBlind => false;
 }
+
 ///The dart tag.
 class DartTag implements Tag {
   void begin(TagContext context, String data) {
-
+    context.writeln(data);
   }
-  void end(TagContext) {
-
+  void end(TagContext context) {
   }
   bool get hasClosing => true;
-  bool get isBlind => true;
 }
 
 ///The include tag.
@@ -90,10 +109,9 @@ class IncludeTag implements Tag {
   void begin(TagContext context, String data) {
 //TODO
   }
-  void end(TagContext) {
+  void end(TagContext context) {
   }
   bool get hasClosing => false;
-  bool get isBlind => false;
 }
 
 ///The for tag.
@@ -101,11 +119,10 @@ class ForTag implements Tag {
   void begin(TagContext context, String data) {
 
   }
-  void end(TagContext) {
+  void end(TagContext context) {
 
   }
   bool get hasClosing => true;
-  bool get isBlind => false;
 }
 
 ///The if tag.
@@ -113,11 +130,10 @@ class IfTag implements Tag {
   void begin(TagContext context, String data) {
 
   }
-  void end(TagContext) {
+  void end(TagContext context) {
 
   }
   bool get hasClosing => true;
-  bool get isBlind => false;
 }
 
 /** The else tag.
@@ -128,8 +144,7 @@ class ElseTag implements Tag {
   void begin(TagContext context, String data) {
 
   }
-  void end(TagContext) {
+  void end(TagContext context) {
   }
   bool get hasClosing => false;
-  bool get isBlind => false;
 }

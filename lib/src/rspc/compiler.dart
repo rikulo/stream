@@ -13,8 +13,7 @@ class Compiler {
   final Encoding encoding;
   final bool verbose;
   //the closure's name, args
-  String _name, _args, _desc;
-  ContentType _contentType;
+  String _name, _args, _desc, _contentType;
   final List<_TagContext> _tags = [];
   _TagContext _current;
   //The position of the source
@@ -35,26 +34,42 @@ class Compiler {
     _init();
 
     bool pgFound = false, started = false;
-    int line = 1;
-    for (var token; (token = _nextToken()) != null; line = _current.line) {
+    int prevln = 1;
+    for (var token; (token = _nextToken()) != null; prevln = _current.line) {
       if (token is String) {
         String text = token;
         if (!started) {
           if (text.trim().isEmpty)
             continue; //skip it
           started = true;
-          _start(line); //use previous line number since it could be multiple lines
+          _start(prevln); //use previous line number since it could be multiple lines
         }
-        _writeText(text, line);
+        _writeText(text, prevln);
       } else if (token is _Expr) {
         if (!started) {
           started = true;
           _start();
         }
-      } else if (token is Tag) {
+        _writeExpr();
+      } else if (token is PageTag) {
+        if (pgFound)
+          error("Only one page directive is allowed");
+        if (started)
+          error("The page directive must be in front of any non-empty content");
+        pgFound = true;
 
+        push(token);
+        token.begin(_current, _tagData());
+        token.end(_current);
+        pop();
+      } else if (token is DartTag) {
+        push(token, pre: false);
+        token.begin(_current, _dartData());
+        token.end(_current);
+        pop();
+      } else if (token is Tag) {
       } else {
-        _error("Unknown token, $token");
+        error("Unknown token, $token");
       }
     }
 
@@ -65,8 +80,7 @@ class Compiler {
     _lookAhead.clear();
     _tags.clear();
     _tags.add(_current = new _TagContext(null, 1, null, destination, "", this));
-    _name = _args = _desc = null;
-    _contentType = null;
+    _name = _args = _desc = _contentType = null;
     _pos = 0;
     _len = source.length;
   }
@@ -74,7 +88,7 @@ class Compiler {
     if (line == null) line = _current.line;
     if (_name == null) {
       if (sourceName == null || sourceName.isEmpty)
-        _error("The page directive with the name attribute is required", line);
+        error("The page directive with the name attribute is required", line);
 
       final i = sourceName.lastIndexOf('/') + 1,
         j = sourceName.indexOf('.', i);
@@ -90,7 +104,7 @@ class Compiler {
       if (i >= 0) {
         final ct = contentTypes[sourceName.substring(i + 1)];
         if (ct != null)
-          _contentType = new ContentType(ct);
+          _contentType = ct.toString();
       }
     }
 
@@ -101,17 +115,18 @@ class Compiler {
     _writeln(") { //$line\n"
       "${pre}HttpRequest request = connect.request;\n"
       "${pre}HttpRequest response = connect.response;\n"
-      "${pre}OutputStream output = response.outputStream;\n");
+      "${pre}OutputStream output = response.outputStream;\n"
+      "${pre}var _ep_;");
 
     if (_contentType != null)
-      _writeln('${pre}response.headers.contentType = new ContentType.fromString("${_contentType}");\n');
+      _writeln('${pre}response.headers.contentType = new ContentType.fromString("${_contentType}");');
   }
 
   /// Sets the page information.
-  void setPage(String name, String args, String description, ContentType contentType) {
+  void setPage(String name, String description, String args, String contentType) {
     _name = name;
-    _args = args;
     _desc = description;
+    _args = args;
     _contentType = contentType;
   }
 
@@ -172,10 +187,12 @@ class Compiler {
     String sep, first = until[0];
     for (; from < _len; ++from) {
       final cc = source[from];
-      if (sep == null) {
-        if (quotmark && (cc == '"' || cc == "'"))
+      if (cc == '\n') {
+        _current.line++;
+      } else if (sep == null) {
+        if (quotmark && (cc == '"' || cc == "'")) {
           sep = cc;
-        else if (cc == first) {
+        } else if (cc == first) {
           if (from + nUtil > _len)
             break;
           for (int n = nUtil;;) {
@@ -189,10 +206,11 @@ class Compiler {
       } else if (cc == sep) {
         sep = null;
       } else if (cc == '\\' && from + 1 < _len) {
-        ++from;
+        if (source[++from] == '\n')
+          _current.line++;
       }
     }
-    _error("Expect '$until'", line);
+    error("Expect '$until'", line);
   }
   int _skipId(int from) {
     for (; from < _len; ++from) {
@@ -202,7 +220,21 @@ class Compiler {
     }
     return from;
   }
-
+  String _tagData() {
+    int k = _skipUntil("]", _pos, quotmark: true);
+    final data = source.substring(_pos, k).trim();
+    _pos = k + 1;
+    return data;
+  }
+  String _dartData() {
+    String data = _tagData();
+    if (!data.isEmpty)
+      warning("The data directive has no attribute");
+    int k = _skipUntil("[/dart]", _pos);
+    data = source.substring(_pos, k).trim();
+    _pos = k + 7;
+    return data;
+  }
   //Utilities//
   void _writeText(String text, [int line]) {
     if (line == null) line = _current.line;
@@ -210,20 +242,30 @@ class Compiler {
     int i = 0, j;
     while ((j = text.indexOf('"""', i)) >= 0) {
       if (line != null) {
-        _writeln("$pre//#$line");
+        _writeln("\n$pre//#$line");
         line = null;
       }
-      _writeln('${pre}output.writeString("""${text.substring(i, j)}""");\n'
+      _writeln('${pre}output.writeString("""\n${text.substring(i, j)}""");\n'
         '${pre}output.writeString(\'"""\');');
       i = j + 3;
     }
     if (i == 0) {
-      _write('${pre}output.writeString("""$text""");');
+      _write('\n${pre}output.writeString("""\n$text""");');
       if (line != null) _writeln(" //#$line");
     } else {
-      _writeln('${pre}output.writeString("""${text.substring(i)}""");');
+      _writeln('${pre}output.writeString("""\n${text.substring(i)}""");');
     }
   }
+  void _writeExpr() {
+    final line = _current.line; //_tagData might have multiple lines
+    final expr = _tagData();
+    if (!expr.isEmpty) {
+      final pre = _current.pre;
+      _writeln('\n${pre}_ep_ = $expr; //#${line}\n'
+        '${pre}if (_ep_ != null) output.writeString(_ep_);');
+    }
+  }
+
   void _write(String str) {
     _current.write(str);
   }
@@ -236,11 +278,23 @@ class Compiler {
     text = text.replaceAll("\n", "\\n");
     return text.length > 30 ? "${text.substring(0, 27)}...": text;
   }
-  void _error(String message, [int line]) {
+  ///Throws an enexception (and stops execution).
+  void error(String message, [int line]) {
     throw new SyntaxException(sourceName, line != null ? line: _current.line, message);
   }
-  void _warning(String message, [int line]) {
+  ///Display an warning.
+  void warning(String message, [int line]) {
     print("$sourceName:${line != null ? line: _current.line}: Warning! $message");
+  }
+
+  void push(Tag tag, {bool pre: true}) {
+    _tags.add(
+      _current = new _TagContext.child(_current, tag, pre ? "  ":"", _current.line));
+  }
+  void pop() {
+    final prev = _tags.removeLast();
+    _current = _tags.last;
+    _current.line = prev.line;
   }
 }
 
@@ -266,6 +320,8 @@ class _TagContext extends TagContext {
   _TagContext(Tag this.tag, int this.line, Tag parent, OutputStream output, String pre,
     Compiler compiler)
     : super(parent, output, pre, compiler);
+  _TagContext.child(_TagContext prev, Tag this.tag, String pre, int this.line)
+    : super(prev.tag, prev.output, "$pre${prev.pre}", prev.compiler);
 }
 class _Expr {
 }

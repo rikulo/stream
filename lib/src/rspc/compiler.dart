@@ -58,12 +58,12 @@ class Compiler {
           error("The page tag must be in front of any non-empty content");
         pgFound = true;
 
-        push(token, pre: false);
+        push(token);
         token.begin(_current, _tagData());
         token.end(_current);
         pop();
       } else if (token is DartTag) {
-        push(token, pre: false);
+        push(token);
         token.begin(_current, _dartData());
         token.end(_current);
         pop();
@@ -124,14 +124,13 @@ class Compiler {
       }
     }
 
-    final pre = _current.pre = "  ";
+    final pre = _current.indent();
     _write("\n/** $_desc */\nvoid $_name(HttpConnect connect");
     if (_args != null)
       _write(", {$_args}");
     _writeln(") { //$line\n"
-      "${pre}HttpRequest request = connect.request;\n"
-      "${pre}HttpRequest response = connect.response;\n"
-      "${pre}OutputStream output = response.outputStream;\n"
+      "${pre}final request = connect.request, response = connect.response,\n"
+      "${pre}  output = response.outputStream;\n"
       "${pre}var _ep_;");
 
     if (_contentType != null)
@@ -153,11 +152,14 @@ class Compiler {
 
     final sb = new StringBuffer();
     final token = _specialToken(sb);
+    if (token is _Ending)
+      _skipFollowingSpaces();
     if (sb.isEmpty)
       return token;
+
     if (token != null)
       _lookAhead.add(token);
-    return sb.toString();
+    return _rmSpacesBeforeTag(sb.toString(), token);
   }
   _specialToken(StringBuffer sb) {
     while (_pos < _len) {
@@ -180,10 +182,10 @@ class Compiler {
                 int m = _skipId(k);
                 final tagnm = source.substring(k, m);
                 final tag = tags[tagnm];
-                if (tag != null) { //tag found
+                if (tag != null && m < _len && source[m] == ']') { //tag found
                   if (!tag.hasClosing)
                     error("[/$tagnm] not allowed. It doesn't need the ending tag.");
-                  _pos = m;
+                  _pos = m + 1;
                   return new _Ending(tagnm);
                 }
               }
@@ -212,6 +214,33 @@ class Compiler {
       ++_pos;
     } //for each cc
     return null;
+  }
+  ///(Optional but for better output) Skips the following whitespaces untile linefeed
+  void _skipFollowingSpaces() {
+    for (int i = _pos; i < _len; ++i) {
+      final cc = source[i];
+      if (cc == '\n') {
+        ++_current.line;
+        _pos = i + 1; //skip white spaces until and including linefeed
+        return;
+      }
+      if (cc != ' ' && cc != '\t')
+        break; //don't skip anything
+    }
+  }
+  ///(Optional but for better output) Removes the whitspaces before the given token,
+  ///if it is a tag. Notice: [text] is in front of [token]
+  String _rmSpacesBeforeTag(String text, token) {
+    if (token is Tag || token is _Ending) {
+      for (int i = text.length; --i >= 0;) {
+        final cc = text[i];
+        if (cc == '\n')
+          return text.substring(0, i + 1); //remove tailing spaces (excluding \n)
+        if (cc != ' ' && cc != '\t')
+          break; //don't skip anything
+      }
+    }
+    return text;
   }
   int _skipUntil(String until, int from, {bool quotmark: false}) {
     final line = _current.line;
@@ -252,10 +281,12 @@ class Compiler {
     }
     return from;
   }
-  String _tagData() {
+  String _tagData({skipFollowingSpaces: true}) {
     int k = _skipUntil("]", _pos, quotmark: true);
     final data = source.substring(_pos, k).trim();
     _pos = k + 1;
+    if (skipFollowingSpaces)
+      _skipFollowingSpaces();
     return data;
   }
   String _dartData() {
@@ -278,20 +309,26 @@ class Compiler {
         _writeln("\n$pre//#$line");
         line = null;
       }
-      _writeln('${pre}output.writeString("""\n${text.substring(i, j)}""");\n'
+      _writeln('$pre${_outTripleQuot(text.substring(i, j))}\n'
         '${pre}output.writeString(\'"""\');');
       i = j + 3;
     }
     if (i == 0) {
-      _write('\n${pre}output.writeString("""\n$text""");');
+      _write('\n$pre${_outTripleQuot(text)}');
       if (line != null) _writeln(" //#$line");
     } else {
-      _writeln('${pre}output.writeString("""\n${text.substring(i)}""");');
+      _writeln('$pre${_outTripleQuot(text.substring(i))}');
     }
   }
+  String _outTripleQuot(String text) {
+    final cc = text.indexOf('\n') >= 0 ? '\n': '';
+      //Optional but for more compact output
+    return 'output.writeString("""$cc$text""");';
+  }
+
   void _writeExpr() {
     final line = _current.line; //_tagData might have multiple lines
-    final expr = _tagData();
+    final expr = _tagData(skipFollowingSpaces: false); //no skip space for expression
     if (!expr.isEmpty) {
       final pre = _current.pre;
       _writeln('\n${pre}_ep_ = $expr; //#${line}\n'
@@ -320,9 +357,9 @@ class Compiler {
     print("$sourceName:${line != null ? line: _current.line}: Warning! $message");
   }
 
-  void push(Tag tag, {bool pre: true}) {
+  void push(Tag tag) {
     _tags.add(
-      _current = new _TagContext.child(_current, tag, pre, _current.line));
+      _current = new _TagContext.child(_current, tag, _current.line));
   }
   void pop() {
     final prev = _tags.removeLast();
@@ -353,8 +390,8 @@ class _TagContext extends TagContext {
   _TagContext(Tag this.tag, int this.line, Tag parent, OutputStream output, String pre,
     Compiler compiler)
     : super(parent, output, pre, compiler);
-  _TagContext.child(_TagContext prev, Tag this.tag, bool pre, int this.line)
-    : super(prev.tag, prev.output, pre ? "  ${prev.pre}": prev.pre, prev.compiler);
+  _TagContext.child(_TagContext prev, Tag this.tag, int this.line)
+    : super(prev.tag, prev.output, prev.pre, prev.compiler);
 }
 class _Expr {
 }

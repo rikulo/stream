@@ -13,16 +13,25 @@ class TagContext {
    * to, say, a buffer.
    */
   OutputStream output;
-  ///The whitespace that shall be generated in front of each line
-  String pre;
   final Compiler compiler;
+  String _pre;
 
   TagContext(Tag this.parent, OutputStream this.output,
-    String this.pre, Compiler this.compiler);
+    String pre, Compiler this.compiler): _pre = pre;
 
+  ///The whitespace that shall be generated in front of each line
+  String get pre => _pre;
+
+  ///Indent for a new block of code. It adds two spaces to [pre].
+  String indent() => _pre = "$_pre  ";
+  ///Un-indent to end a block of code. It removes two spaces from [pre].
+  String unindent() => _pre = _pre.isEmpty ? _pre: _pre.substring(2);
+
+  ///Writes a string to [output] in the compiler's encoding.
   void write(String str) {
     output.writeString(str, compiler.encoding);
   }
+  ///Write a string plus a linefeed to [output] in the compiler's encoding.
   void writeln([String str]) {
     if (?str)
       write(str);
@@ -56,8 +65,9 @@ abstract class Tag {
 Map<String, Tag> get tags {
   if (_tags == null) {
     _tags = new Map();
-    for (Tag tag in [new PageTag(), new DartTag(), new IncludeTag(),
-      new ForTag(), new IfTag(), new ElseTag()])
+    for (Tag tag in [new PageTag(), new DartTag(), new HeaderTag(),
+      new IncludeTag(),
+      new ForTag(), new WhileTag(), new IfTag(), new ElseTag()])
       _tags[tag.name] = tag;
   }
   return _tags;
@@ -111,7 +121,16 @@ class DartTag implements Tag {
   final String name = "dart";
 }
 
-///The include tag.
+///The header tag to generate HTTP response headers.
+class HeaderTag implements Tag {
+  void begin(TagContext context, String data) {
+  }
+  void end(TagContext context) {
+  }
+  bool get hasClosing => false;
+  final String name = "header";
+}
+
 class IncludeTag implements Tag {
   void begin(TagContext context, String data) {
 //TODO
@@ -132,6 +151,18 @@ class ForTag implements Tag {
   }
   bool get hasClosing => true;
   final String name = "for";
+}
+
+///The while tag.
+class WhileTag implements Tag {
+  void begin(TagContext context, String data) {
+
+  }
+  void end(TagContext context) {
+
+  }
+  bool get hasClosing => true;
+  final String name = "while";
 }
 
 ///The if tag.

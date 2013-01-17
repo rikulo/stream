@@ -2,27 +2,26 @@
 //Source: test/syntax.rsp.html
 library syntax;
 
-import "packages:stream/stream.dart";
+import "dart:io";
+import "package:stream/stream.dart";
 
 /** Template, syntax, for rendering the view. */
-void syntax(HttpConnect connect, {foo, bool detailed:false}) { //7
-  HttpRequest request = connect.request;
-  HttpRequest response = connect.response;
-  OutputStream output = response.outputStream;
+void syntax(HttpConnect connect, {foo, bool detailed:false}) { //9
+  final request = connect.request, response = connect.response,
+    output = response.outputStream;
   var _ep_;
   response.headers.contentType = new ContentType.fromString("text/html; charset=utf-8");
 
   output.writeString("""
-
 <!DOCTYPE html>
 <html>
   <head>
-    <title>"""); //#7
+    <title>"""); //#9
 
-  _ep_ = "$foo.name [${foo.title}]"; //#11
+  _ep_ = "$foo.name [${foo.title}]"; //#12
   if (_ep_ != null) output.writeString(_ep_);
 
-  //#11
+  //#12
   output.writeString("""
 </title>
   </head>
@@ -33,46 +32,41 @@ void syntax(HttpConnect connect, {foo, bool detailed:false}) { //7
 .
     <p>Another expresion: """);
 
-  _ep_ = foo.description; //#15
+  _ep_ = foo.description; //#16
   if (_ep_ != null) output.writeString(_ep_);
 
   output.writeString("""
 
-    <p>An empty expression: """); //#15
+    <p>An empty expression: """); //#16
 
   output.writeString("""
 
     <p>This is not a tag: [foo ], [another and [/none].
     <ul>
-    """); //#17
+"""); //#18
 
-    output.writeString("""
+  output.writeString("""      <li>"""); //#22
 
-      <li>"""); //#20
-
-    _ep_ = user.name; //#21
-    if (_ep_ != null) output.writeString(_ep_);
-
-    output.writeString("""
-
-      """); //#21
-
-      output.writeString("""
-
-      <i>!important!</i>
-      """); //#22
-
-    output.writeString("""
-]
-      </li>
-    """); //#24
+  _ep_ = user.name; //#22
+  if (_ep_ != null) output.writeString(_ep_);
 
   output.writeString("""
-]
+
+"""); //#22
+
+  output.writeString("""
+      <i>!important!</i>
+"""); //#24
+
+  output.writeString("""
+      </li>
+"""); //#26
+
+  output.writeString("""
     </ul>
   </body>
 </html>
 
 
-"""); //#26
+"""); //#28
 }

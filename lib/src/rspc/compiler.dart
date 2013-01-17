@@ -53,18 +53,20 @@ class Compiler {
         _writeExpr();
       } else if (token is PageTag) {
         if (pgFound)
-          error("Only one page tag is allowed");
+          _error("Only one page tag is allowed");
         if (started)
-          error("The page tag must be in front of any non-empty content");
+          _error("The page tag must be in front of any non-empty content");
         pgFound = true;
 
         push(token);
-        token.begin(_current, _tagData());
+        final line = _current.line;
+        token.begin(_current, _tagData(), line);
         token.end(_current);
         pop();
       } else if (token is DartTag) {
         push(token);
-        token.begin(_current, _dartData());
+        final line = _current.line;
+        token.begin(_current, _dartData(), line);
         token.end(_current);
         pop();
       } else if (token is Tag) {
@@ -72,20 +74,22 @@ class Compiler {
           started = true;
           _start();
         }
+
         push(token);
-        token.begin(_current, _tagData());
+        final line = _current.line;
+        token.begin(_current, _tagData(), line);
         if (!token.hasClosing) {
           token.end(_current);
           pop();
         }
       } else if (token is _Ending) {
         final _Ending ending = token;
-        if (_current.tag.name != ending.name)
-          error("Unexpected [/${ending.name}] (no beginning tag found)");
+        if (_current.tag == null || _current.tag.name != ending.name)
+          _error("Unexpected [/${ending.name}] (no beginning tag found)");
         _current.tag.end(_current);
         pop();
       } else {
-        error("Unknown token, $token");
+        _error("Unknown token, $token");
       }
     }
 
@@ -95,7 +99,7 @@ class Compiler {
   void _init() {
     _lookAhead.clear();
     _tags.clear();
-    _tags.add(_current = new _TagContext(null, 1, null, destination, "", this));
+    _tags.add(_current = new _TagContext.root(this, destination));
     _name = _args = _desc = _contentType = null;
     _pos = 0;
     _len = source.length;
@@ -104,7 +108,7 @@ class Compiler {
     if (line == null) line = _current.line;
     if (_name == null) {
       if (sourceName == null || sourceName.isEmpty)
-        error("The page tag with the name attribute is required", line);
+        _error("The page tag with the name attribute is required", line);
 
       final i = sourceName.lastIndexOf('/') + 1,
         j = sourceName.indexOf('.', i);
@@ -154,12 +158,14 @@ class Compiler {
     final token = _specialToken(sb);
     if (token is _Ending)
       _skipFollowingSpaces();
-    if (sb.isEmpty)
+
+    final text = _rmSpacesBeforeTag(sb.toString(), token);
+    if (text.isEmpty)
       return token;
 
     if (token != null)
       _lookAhead.add(token);
-    return _rmSpacesBeforeTag(sb.toString(), token);
+    return text;
   }
   _specialToken(StringBuffer sb) {
     while (_pos < _len) {
@@ -184,7 +190,7 @@ class Compiler {
                 final tag = tags[tagnm];
                 if (tag != null && m < _len && source[m] == ']') { //tag found
                   if (!tag.hasClosing)
-                    error("[/$tagnm] not allowed. It doesn't need the ending tag.");
+                    _error("[/$tagnm] not allowed. It doesn't need the ending tag.");
                   _pos = m + 1;
                   return new _Ending(tagnm);
                 }
@@ -231,16 +237,17 @@ class Compiler {
   ///(Optional but for better output) Removes the whitspaces before the given token,
   ///if it is a tag. Notice: [text] is in front of [token]
   String _rmSpacesBeforeTag(String text, token) {
-    if (token is Tag || token is _Ending) {
-      for (int i = text.length; --i >= 0;) {
-        final cc = text[i];
-        if (cc == '\n')
-          return text.substring(0, i + 1); //remove tailing spaces (excluding \n)
-        if (cc != ' ' && cc != '\t')
-          break; //don't skip anything
-      }
+    if (token is! Tag && token is! _Ending)
+      return text;
+
+    for (int i = text.length; --i >= 0;) {
+      final cc = text[i];
+      if (cc == '\n')
+        return text.substring(0, i + 1); //remove tailing spaces (excluding \n)
+      if (cc != ' ' && cc != '\t')
+        return text; //don't skip anything
     }
-    return text;
+    return "";
   }
   int _skipUntil(String until, int from, {bool quotmark: false}) {
     final line = _current.line;
@@ -271,7 +278,7 @@ class Compiler {
           _current.line++;
       }
     }
-    error("Expect '$until'", line);
+    _error("Expect '$until'", line);
   }
   int _skipId(int from) {
     for (; from < _len; ++from) {
@@ -292,7 +299,7 @@ class Compiler {
   String _dartData() {
     String data = _tagData();
     if (!data.isEmpty)
-      warning("The dart tag has no attribute");
+      _warning("The dart tag has no attribute");
     int k = _skipUntil("[/dart]", _pos);
     data = source.substring(_pos, k).trim();
     _pos = k + 7;
@@ -349,11 +356,11 @@ class Compiler {
     return text.length > 30 ? "${text.substring(0, 27)}...": text;
   }
   ///Throws an enexception (and stops execution).
-  void error(String message, [int line]) {
+  void _error(String message, [int line]) {
     throw new SyntaxException(sourceName, line != null ? line: _current.line, message);
   }
   ///Display an warning.
-  void warning(String message, [int line]) {
+  void _warning(String message, [int line]) {
     print("$sourceName:${line != null ? line: _current.line}: Warning! $message");
   }
 
@@ -382,16 +389,28 @@ class SyntaxException implements Exception {
 }
 
 class _TagContext extends TagContext {
+  String _pre;
+
   ///The tag
   Tag tag;
   ///The line number
   int line;
 
-  _TagContext(Tag this.tag, int this.line, Tag parent, OutputStream output, String pre,
-    Compiler compiler)
-    : super(parent, output, pre, compiler);
+  _TagContext.root(Compiler compiler, OutputStream output)
+    : super(null, compiler, output), _pre = "", line = 1;
   _TagContext.child(_TagContext prev, Tag this.tag, int this.line)
-    : super(prev.tag, prev.output, prev.pre, prev.compiler);
+    : super(prev.tag, prev.compiler, prev.output), _pre = prev.pre;
+
+  String get pre => _pre;
+  String indent() => _pre = "$_pre  ";
+  String unindent() => _pre = _pre.isEmpty ? _pre: _pre.substring(2);
+
+  void error(String message, [int line]) {
+    compiler._error(message, line);
+  }
+  void warning(String message, [int line]) {
+    compiler._warning(message, line);
+  }
 }
 class _Expr {
 }

@@ -5,7 +5,7 @@ part of stream_rspc;
 
 /** The tag execution context.
  */
-class TagContext {
+abstract class TagContext {
   /// The parent tag, or null if not available.
   final Tag parent;
   /** The output stream to generate the Dart code.
@@ -14,18 +14,15 @@ class TagContext {
    */
   OutputStream output;
   final Compiler compiler;
-  String _pre;
 
-  TagContext(Tag this.parent, OutputStream this.output,
-    String pre, Compiler this.compiler): _pre = pre;
+  TagContext(Tag this.parent, Compiler this.compiler, OutputStream this.output);
 
   ///The whitespace that shall be generated in front of each line
-  String get pre => _pre;
-
+  String get pre;
   ///Indent for a new block of code. It adds two spaces to [pre].
-  String indent() => _pre = "$_pre  ";
+  String indent();
   ///Un-indent to end a block of code. It removes two spaces from [pre].
-  String unindent() => _pre = _pre.isEmpty ? _pre: _pre.substring(2);
+  String unindent();
 
   ///Writes a string to [output] in the compiler's encoding.
   void write(String str) {
@@ -37,6 +34,10 @@ class TagContext {
       write(str);
     write("\n");
   }
+  ///Throws an exception (and stops execution).
+  void error(String message, [int line]);
+  ///Display an warning.
+  void warning(String message, [int line]);
 }
 
 /**
@@ -45,7 +46,7 @@ class TagContext {
 abstract class Tag {
   /** Called when the beginning of a tag is encountered.
    */
-  void begin(TagContext context, String data);
+  void begin(TagContext context, String data, int line);
   /** Called when the ending of a tag is encountered.
    */
   void end(TagContext context);
@@ -76,7 +77,7 @@ Map<String, Tag> _tags;
 
 ///The page tag.
 class PageTag implements Tag {
-  void begin(TagContext context, String data) {
+  void begin(TagContext tc, String data, int line) {
     String name, desc, args, ctype;
     final attrs = MapUtil.parse(data, backslash:false, defaultValue:"");
     for (final nm in attrs.keys) {
@@ -98,83 +99,92 @@ class PageTag implements Tag {
           desc = attrs[nm];
           break;
         default:
-          context.compiler.warning("Unknow attribute, $nm");
+          tc.warning("Unknow attribute, $nm");
           break;
       }
     }
-    context.compiler.setPage(name, desc, args, ctype);
+    tc.compiler.setPage(name, desc, args, ctype);
   }
-  void end(TagContext context) {
+  void end(TagContext tc) {
   }
   bool get hasClosing => false;
-  final String name = "page";
+  String get name => "page";
 }
 
 ///The dart tag.
 class DartTag implements Tag {
-  void begin(TagContext context, String data) {
-    context.writeln(data);
+  void begin(TagContext tc, String data, int line) {
+    tc.writeln(data);
   }
-  void end(TagContext context) {
+  void end(TagContext tc) {
   }
   bool get hasClosing => true;
-  final String name = "dart";
+  String get name => "dart";
 }
 
 ///The header tag to generate HTTP response headers.
 class HeaderTag implements Tag {
-  void begin(TagContext context, String data) {
+  void begin(TagContext tc, String data, int line) {
+//TODO
   }
-  void end(TagContext context) {
+  void end(TagContext tc) {
   }
   bool get hasClosing => false;
-  final String name = "header";
+  String get name => "header";
 }
 
 class IncludeTag implements Tag {
-  void begin(TagContext context, String data) {
+  void begin(TagContext tc, String data, int line) {
 //TODO
   }
-  void end(TagContext context) {
+  void end(TagContext tc) {
   }
   bool get hasClosing => false;
-  final String name = "include";
+  String get name => "include";
+}
+
+///A skeletal class for implementing control tags, such as [IfTag] and [WhileTag].
+abstract class ControlTag implements Tag {
+  void begin(TagContext tc, String data, int line) {
+    if (data.isEmpty)
+      tc.error("The $name tag requires a condition");
+
+    String beg, end;
+    if (data.startsWith('(') && data.endsWith(')')) {
+      beg = end = "";
+    } else {
+      beg = needsVar ? "(var ": "(";
+      end = ")";
+    }
+    tc.writeln("\n${tc.pre}$control $beg$data$end { //#$line");
+
+    tc.indent();
+  }
+  void end(TagContext tc) {
+    tc.unindent();
+    tc.writeln("${tc.pre}} //$control");
+  }
+  bool get hasClosing => true;
+  ///The name of the control, such as `if` and `while`. Default: [name].
+  String get control => name;
+  ///Whether `var` is required in front of the condition
+  bool get needsVar => false;
 }
 
 ///The for tag.
-class ForTag implements Tag {
-  void begin(TagContext context, String data) {
-
-  }
-  void end(TagContext context) {
-
-  }
-  bool get hasClosing => true;
-  final String name = "for";
+class ForTag extends ControlTag {
+  String get name => "for";
+  bool get needsVar => true;
 }
 
 ///The while tag.
-class WhileTag implements Tag {
-  void begin(TagContext context, String data) {
-
-  }
-  void end(TagContext context) {
-
-  }
-  bool get hasClosing => true;
-  final String name = "while";
+class WhileTag extends ControlTag {
+  String get name => "while";
 }
 
 ///The if tag.
-class IfTag implements Tag {
-  void begin(TagContext context, String data) {
-
-  }
-  void end(TagContext context) {
-
-  }
-  bool get hasClosing => true;
-  final String name = "if";
+class IfTag extends  ControlTag {
+  String get name => "if";
 }
 
 /** The else tag.
@@ -182,11 +192,35 @@ class IfTag implements Tag {
  * The implementation is a bit tricky: it pretends to be an tag without the closing.
  */
 class ElseTag implements Tag {
-  void begin(TagContext context, String data) {
+  void begin(TagContext tc, String data, int line) {
+    if (!(tc.parent is IfTag))
+      tc.error("Unexpected else tag");
 
+    tc.unindent();
+
+    if (data.isEmpty) {
+      tc.writeln("\n${tc.pre}} else { //#$line");
+    } else {
+      String cond;
+      if (data.length < 4 || !data.startsWith("if")
+      || !StringUtil.isChar(data[2], whitespace:true)
+      || (cond = data.substring(3).trim()).isEmpty)
+        tc.error("Unexpected $data");
+
+      String beg, end;
+      if (cond.startsWith('(') && cond.endsWith(')')) {
+        beg = end = "";
+      } else {
+        beg = "(";
+        end = ")";
+      }
+      tc.writeln("\n${tc.pre}} else if $beg$cond$end { //#$line");
+    }
+
+    tc.indent();
   }
-  void end(TagContext context) {
+  void end(TagContext tc) {
   }
   bool get hasClosing => false;
-  final String name = "unless";
+  String get name => "else";
 }

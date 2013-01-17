@@ -6,7 +6,7 @@ import "dart:io";
 import "package:stream/stream.dart";
 
 /** Template, syntax, for rendering the view. */
-void syntax(HttpConnect connect, {foo, bool detailed:false}) { //9
+void syntax(HttpConnect connect, {foo, bool c:false}) { //9
   final request = connect.request, response = connect.response,
     output = response.outputStream;
   var _ep_;
@@ -45,28 +45,71 @@ void syntax(HttpConnect connect, {foo, bool detailed:false}) { //9
     <ul>
 """); //#18
 
-  output.writeString("""      <li>"""); //#22
+  for (var user in foo.friends) { //#21
 
-  _ep_ = user.name; //#22
-  if (_ep_ != null) output.writeString(_ep_);
+    output.writeString("""      <li>"""); //#22
 
-  output.writeString("""
+    _ep_ = user.name; //#22
+    if (_ep_ != null) output.writeString(_ep_);
+
+    output.writeString("""
 
 """); //#22
 
-  output.writeString("""
+    if (user.isCustomer) { //#23
+
+      output.writeString("""
       <i>!important!</i>
 """); //#24
+    } //if
 
-  output.writeString("""
+    while (user.hasMore()) { //#26
+
+      output.writeString("""        """); //#27
+
+      _ep_ = user.showMore(); //#27
+      if (_ep_ != null) output.writeString(_ep_);
+
+      output.writeString("""
+
+"""); //#27
+    } //while
+
+    output.writeString("""
       </li>
-"""); //#26
+"""); //#29
+  } //for
 
   output.writeString("""
     </ul>
+
+"""); //#31
+
+  if (foo.isCustomer) { //#33
+
+    output.writeString("""
+      *Custmer*
+"""); //#34
+
+  } else if (c) { //#35
+
+  } else if (foo.isEmployee) { //#36
+
+    output.writeString("""
+      *Employee*
+"""); //#37
+
+  } else { //#38
+
+    output.writeString("""
+      *Unknown*
+"""); //#39
+  } //if
+
+  output.writeString("""
   </body>
 </html>
 
 
-"""); //#28
+"""); //#41
 }

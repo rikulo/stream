@@ -208,7 +208,7 @@ class _StreamServer implements StreamServer {
    */
   void forward(HttpConnect connect, String uri,
   {HttpRequest request, HttpResponse response}) {
-    _handle(new _ForwardedConnex(connect, request, response, _toAbsUri(uri), _cxerrh));
+    _handle(new _ForwardedConnex(connect, request, response, _toAbsUri(connect, uri), _cxerrh));
   }
   /** Includes the given [uri].
    *
@@ -216,7 +216,7 @@ class _StreamServer implements StreamServer {
    */
   void include(HttpConnect connect, String uri,
   {HttpRequest request, HttpResponse response}) {
-    _handle(new _IncludedConnex(connect, request, response, _toAbsUri(uri), _cxerrh));
+    _handle(new _IncludedConnex(connect, request, response, _toAbsUri(connect, uri), _cxerrh));
   }
   String _toAbsUri(HttpConnect connect, String uri) {
     if (!uri.startsWith('/')) {

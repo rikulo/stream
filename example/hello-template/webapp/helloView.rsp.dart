@@ -34,7 +34,7 @@ void helloView(HttpConnect connect) { //4
   output.writeString("""
 .</p>
     <p>Please refer to
-  <a href="https://github.com/rikulo/stream/tree/master/example/hello-template">README</a> for how it is implemented.</a>
+  <a href="https://github.com/rikulo/stream/tree/master/example/hello-template">Github</a> for how it is implemented.</a>
   </body>
 </html>
 """); //#14

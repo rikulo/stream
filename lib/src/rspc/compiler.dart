@@ -140,14 +140,18 @@ class Compiler {
       "${pre}var _v_;");
 
     if (_contentType != null)
-      _writeln('${pre}response.headers.contentType = new ContentType.fromString("${_contentType}");');
+      _writeln('${pre}response.headers.contentType = new ContentType.fromString('
+        '${_toEL(_contentType,quotmark:true)}});');
   }
 
   /// Sets the page information.
-  void setPage(String name, String description, String args, String contentType) {
+  void setPage(String name, String description, String args, String contentType, [int line]) {
     _name = name;
+    _noEL(name, "the name attribute", line);
     _desc = description;
+    _noEL(description, "the description attribute", line);
     _args = args;
+    _noEL(args, "the args attribute", line);
     _contentType = contentType;
   }
 
@@ -341,7 +345,7 @@ class Compiler {
     if (!expr.isEmpty) {
       final pre = _current.pre;
       _writeln('\n${pre}_v_ = $expr; //#${line}\n'
-        '${pre}if (_v_ != null) output.writeString("\${_v_}");');
+        '${pre}if (_v_ != null) output.writeString("\$_v_");');
     }
   }
 
@@ -357,7 +361,12 @@ class Compiler {
     text = text.replaceAll("\n", "\\n");
     return text.length > 30 ? "${text.substring(0, 27)}...": text;
   }
-  ///Throws an enexception (and stops execution).
+  ///Throws an exception if the value is EL
+  void _noEL(String val, String what, [int line]) {
+    if (val != null && _isEL(val))
+      _error("Expression not allowed in $what", line);
+  }
+  ///Throws an exception (and stops execution).
   void _error(String message, [int line]) {
     throw new SyntaxException(sourceName, line != null ? line: _current.line, message);
   }
@@ -419,4 +428,13 @@ class _Expr {
 class _Ending {
   final String name;
   _Ending(this.name);
+}
+
+///Test if the given value is enclosed with `[= ]`.
+bool _isEL(String val) => val.startsWith("[=") && val.endsWith("]");
+///Converts the value to a valid Dart statement
+///[quotmark] specifies whether to enclose the expression with `"""` if found
+String _toEL(String val, {quotmark: false}) {
+  var el = _isEL(val) ? val.substring(2, val.length - 1).trim(): null;
+  return el == null ? '"""$val"""': el.isEmpty ? '""': quotmark ? '"""\${$el}"""': el;
 }

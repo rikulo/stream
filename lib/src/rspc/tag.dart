@@ -103,7 +103,7 @@ class PageTag implements Tag {
           break;
       }
     }
-    tc.compiler.setPage(name, desc, args, ctype);
+    tc.compiler.setPage(name, desc, args, ctype, line);
   }
   void end(TagContext tc) {
   }
@@ -125,7 +125,13 @@ class DartTag implements Tag {
 ///The header tag to generate HTTP response headers.
 class HeaderTag implements Tag {
   void begin(TagContext tc, String data, int line) {
-//TODO
+    final attrs = MapUtil.parse(data, backslash:false, defaultValue:"");
+    for (final nm in attrs.keys) {
+      final val = attrs[nm];
+      if (val == null)
+        tc.error("The $nm attribute requires a value.");
+      tc.writeln('${tc.pre}response.headers.add("$nm", ${_toEL(val)}); //#$line');
+    }
   }
   void end(TagContext tc) {
   }

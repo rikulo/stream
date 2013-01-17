@@ -16,6 +16,14 @@ abstract class HttpConnect {
   HttpConnect get forwarder;
   ///The source connection that includes this connection, or null if not included.
   HttpConnect get includer;
+  /** Whether this connection is caused by inclusion.
+   * Note: it is true if [includer] is not null or [forwarder] is included.
+   */
+  bool get isIncluded;
+  /** Whether this connection is caused by forwarding.
+   * Note: it is true if [forwarder] is not null or [includer] is forwarded.
+   */
+  bool get isForwarded;
 
   /** A safe invocation for `Future.then(onValue)`. It will invoke
    * `connect.error(err, stackTrace)` automatically if there is an exception.
@@ -89,6 +97,10 @@ class _HttpConnex implements HttpConnect {
   HttpConnect get forwarder => null;
   @override
   HttpConnect get includer => null;
+  @override
+  bool get isIncluded => false;
+  @override
+  bool get isForwarded => false;
 
   //@override
   void then(Future future, onValue(value)) {
@@ -117,30 +129,42 @@ class _UriRequest extends HttpRequestWrapper {
 }
 
 class _ForwardedConnex extends _HttpConnex {
+  final bool _inc;
+
   _ForwardedConnex(HttpConnect connect, HttpRequest request,
     HttpResponse response, String uri, ConnexErrorHandler errorHandler):
     super(connect.server,
       new _UriRequest(request != null ? request: connect.request, uri),
       response != null ? response: connect.response, errorHandler),
-    forwarder = connect;
+    forwarder = connect, _inc = connect.isIncluded;
 
   @override
   final HttpConnect forwarder;
   @override
   bool get isError => super.isError || forwarder.isError;
+  @override
+  bool get isIncluded => _inc;
+  @override
+  bool get isForwarded => true;
 }
 class _IncludedConnex extends _HttpConnex {
+  final bool _fwd;
+
   _IncludedConnex(HttpConnect connect, HttpRequest request,
     HttpResponse response, String uri, ConnexErrorHandler errorHandler):
     super(connect.server,
       new _UriRequest(request != null ? request: connect.request, uri),
       response != null ? response: connect.response, errorHandler),
-    includer = connect;
+    includer = connect, _fwd = connect.isForwarded;
 
   @override
   final HttpConnect includer;
   @override
   bool get isError => super.isError || includer.isError;
+  @override
+  bool get isIncluded => true;
+  @override
+  bool get isForwarded => _fwd;
 }
 
 /** A HTTP exception.

@@ -1,0 +1,20 @@
+[dart]
+part of library_features;
+[/dart]
+<html>
+  <head>
+    <title>Test of Include</title>
+    <link href="/theme.css" rel="stylesheet" type="text/css" />
+  </head>
+  <body>
+    <ul>
+      <li>You shall see something inside the following two boxes.</li>
+    </ul>
+    <div style="border: 1px solid blue">
+      [include uri="/frag.html"]
+    </div>
+    <div style="border: 1px solid red">
+      [include uri="/frag"]
+    </div>
+  </body>
+</html>

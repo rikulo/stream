@@ -7,7 +7,8 @@ void helloView(HttpConnect connect) { //4
   final request = connect.request, response = connect.response,
     output = response.outputStream;
   var _v_;
-  response.headers.contentType = new ContentType.fromString("text/html; charset=utf-8");
+  if (!connect.isIncluded)
+    response.headers.contentType = new ContentType.fromString("""text/html; charset=utf-8""");
 
   output.writeString("""
 
@@ -22,14 +23,14 @@ void helloView(HttpConnect connect) { //4
     <p>Now is """); //#4
 
   _v_ = new Date.now(); //#13
-  if (_v_ != null) output.writeString("${_v_}");
+  if (_v_ != null) output.writeString("$_v_");
 
   output.writeString("""
 .</p>
     <p>This page is served by Rikulo Stream """); //#13
 
   _v_ = connect.server.version; //#14
-  if (_v_ != null) output.writeString("${_v_}");
+  if (_v_ != null) output.writeString("$_v_");
 
   output.writeString("""
 .</p>
@@ -38,6 +39,6 @@ void helloView(HttpConnect connect) { //4
   </body>
 </html>
 """); //#14
-  if (connect.includer == null)
+  if (!connect.isIncluded)
     output.close();
 }

@@ -1,0 +1,19 @@
+[dart]
+final infos = {
+  "fruits": ["apple", "orange", "lemon"],
+  "cars": ["bmw", "audi", "honda"]
+};
+[/dart]
+
+<ul>
+  <li>This is a fragment and generated dynamically</li>
+  [for type in infos.keys]
+    <li>[=type]
+      <ol>
+      [for name in infos[type]]
+        <li>[=name]</li>
+      [/for]
+      </ol>
+    </li>
+  [/for]
+</ul>

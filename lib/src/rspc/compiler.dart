@@ -94,7 +94,7 @@ class Compiler {
     }
 
     if (started)
-      _writeln("  if (connect.includer == null)\n"
+      _writeln("  if (!connect.isIncluded)\n"
         "    output.close();\n"
         "}");
   }
@@ -121,7 +121,8 @@ class Compiler {
     if (_desc == null)
       _desc = "Template, $_name, for rendering the view.";
 
-    if (_contentType == null && sourceName != null) {
+    final ctypeSpecified = _contentType != null;
+    if (!ctypeSpecified && sourceName != null) {
       final i = sourceName.lastIndexOf('.');
       if (i >= 0) {
         final ct = contentTypes[sourceName.substring(i + 1)];
@@ -130,28 +131,31 @@ class Compiler {
       }
     }
 
-    final pre = _current.indent();
+    _current.indent();
     _write("\n/** $_desc */\nvoid $_name(HttpConnect connect");
     if (_args != null)
       _write(", {$_args}");
     _writeln(") { //$line\n"
-      "${pre}final request = connect.request, response = connect.response,\n"
-      "${pre}  output = response.outputStream;\n"
-      "${pre}var _v_;");
+      "  final request = connect.request, response = connect.response,\n"
+      "    output = response.outputStream;\n"
+      "  var _v_;");
 
-    if (_contentType != null)
-      _writeln('${pre}response.headers.contentType = new ContentType.fromString('
-        '${_toEL(_contentType,quotmark:true)}});');
+    if (_contentType != null) {
+      if (!ctypeSpecified) //if not specified, it is set only if not included
+        _write('  if (!connect.isIncluded)\n  ');
+      _writeln('  response.headers.contentType = new ContentType.fromString('
+        '${_toEl(_contentType, quotmark:true)});');
+    }
   }
 
   /// Sets the page information.
   void setPage(String name, String description, String args, String contentType, [int line]) {
     _name = name;
-    _noEL(name, "the name attribute", line);
+    _noEl(name, "the name attribute", line);
     _desc = description;
-    _noEL(description, "the description attribute", line);
+    _noEl(description, "the description attribute", line);
     _args = args;
-    _noEL(args, "the args attribute", line);
+    _noEl(args, "the args attribute", line);
     _contentType = contentType;
   }
 
@@ -255,10 +259,12 @@ class Compiler {
     }
     return "";
   }
-  int _skipUntil(String until, int from, {bool quotmark: false}) {
+  ///[bracket]: whether to count '[' and ']'
+  int _skipUntil(String until, int from, {bool quotmark: false, bool bracket: false}) {
     final line = _current.line;
     final nUtil = until.length;
     String sep, first = until[0];
+    int nbkt = 0;
     for (; from < _len; ++from) {
       final cc = source[from];
       if (cc == '\n') {
@@ -266,7 +272,7 @@ class Compiler {
       } else if (sep == null) {
         if (quotmark && (cc == '"' || cc == "'")) {
           sep = cc;
-        } else if (cc == first) {
+        } else if (nbkt == 0 && cc == first) {
           if (from + nUtil > _len)
             break;
           for (int n = nUtil;;) {
@@ -276,6 +282,10 @@ class Compiler {
             if (source[from + n] != until[n])
               break;
           }
+        } else if (bracket && cc == '[') {
+          ++nbkt;
+        } else if (bracket && cc == ']') {
+          --nbkt;
         }
       } else if (cc == sep) {
         sep = null;
@@ -295,7 +305,7 @@ class Compiler {
     return from;
   }
   String _tagData({skipFollowingSpaces: true}) {
-    int k = _skipUntil("]", _pos, quotmark: true);
+    int k = _skipUntil("]", _pos, quotmark: true, bracket: true);
     final data = source.substring(_pos, k).trim();
     _pos = k + 1;
     if (skipFollowingSpaces)
@@ -362,8 +372,8 @@ class Compiler {
     return text.length > 30 ? "${text.substring(0, 27)}...": text;
   }
   ///Throws an exception if the value is EL
-  void _noEL(String val, String what, [int line]) {
-    if (val != null && _isEL(val))
+  void _noEl(String val, String what, [int line]) {
+    if (val != null && _isEl(val))
       _error("Expression not allowed in $what", line);
   }
   ///Throws an exception (and stops execution).
@@ -431,10 +441,10 @@ class _Ending {
 }
 
 ///Test if the given value is enclosed with `[= ]`.
-bool _isEL(String val) => val.startsWith("[=") && val.endsWith("]");
+bool _isEl(String val) => val.startsWith("[=") && val.endsWith("]");
 ///Converts the value to a valid Dart statement
 ///[quotmark] specifies whether to enclose the expression with `"""` if found
-String _toEL(String val, {quotmark: false}) {
-  var el = _isEL(val) ? val.substring(2, val.length - 1).trim(): null;
+String _toEl(String val, {quotmark: false}) {
+  var el = _isEl(val) ? val.substring(2, val.length - 1).trim(): null;
   return el == null ? '"""$val"""': el.isEmpty ? '""': quotmark ? '"""\${$el}"""': el;
 }

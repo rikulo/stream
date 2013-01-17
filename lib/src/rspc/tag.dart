@@ -130,7 +130,7 @@ class HeaderTag implements Tag {
       final val = attrs[nm];
       if (val == null)
         tc.error("The $nm attribute requires a value.");
-      tc.writeln('${tc.pre}response.headers.add("$nm", ${_toEL(val)}); //#$line');
+      tc.writeln('\n${tc.pre}response.headers.add("$nm", ${_toEl(val)}); //#$line');
     }
   }
   void end(TagContext tc) {
@@ -141,7 +141,21 @@ class HeaderTag implements Tag {
 
 class IncludeTag implements Tag {
   void begin(TagContext tc, String data, int line) {
-//TODO
+    final attrs = MapUtil.parse(data, backslash:false, defaultValue:"");
+    final src = attrs.remove("uri");
+    if (src != null) {
+      if (!attrs.isEmpty)
+        throw new UnsupportedError("Include with attributes"); //TODO: handle other attributes
+      tc.writeln('\n${tc.pre}connect.server.include(connect, ${_toEl(src, quotmark:true)}); //#$line');
+      return;
+    }
+    final render = attrs.remove("render");
+    if (render != null) {
+      if (_isEL(render))
+        tc.error("Expression not allowed in the render attribute", line);
+      //TODO
+    }
+    tc.error("The uri attribute is required");
   }
   void end(TagContext tc) {
   }

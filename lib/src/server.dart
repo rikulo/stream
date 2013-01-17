@@ -208,6 +208,8 @@ class _StreamServer implements StreamServer {
    */
   void forward(HttpConnect connect, String uri,
   {HttpRequest request, HttpResponse response}) {
+    if (uri.indexOf('?') >= 0)
+      throw new UnsupportedError("Forward with query string"); //TODO
     _handle(new _ForwardedConnex(connect, request, response, _toAbsUri(connect, uri), _cxerrh));
   }
   /** Includes the given [uri].
@@ -216,6 +218,8 @@ class _StreamServer implements StreamServer {
    */
   void include(HttpConnect connect, String uri,
   {HttpRequest request, HttpResponse response}) {
+    if (uri.indexOf('?') >= 0)
+      throw new UnsupportedError("Include with query string"); //TODO
     _handle(new _IncludedConnex(connect, request, response, _toAbsUri(connect, uri), _cxerrh));
   }
   String _toAbsUri(HttpConnect connect, String uri) {
@@ -243,7 +247,7 @@ class _StreamServer implements StreamServer {
       }
 
       //protect from access
-      if (connect.forwarder == null &&
+      if (!connect.isForwarded && !connect.isIncluded &&
       (uri.startsWith("/webapp/") || uri == "/webapp"))
         throw new Http403(uri);
 

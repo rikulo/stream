@@ -10,8 +10,10 @@ void syntax(HttpConnect connect, {foo, bool c:false}) { //9
   final request = connect.request, response = connect.response,
     output = response.outputStream;
   var _v_;
-  response.headers.contentType = new ContentType.fromString("""${foo.contentType}"""});
+  response.headers.contentType = new ContentType.fromString("""${foo.contentType}""");
+
   response.headers.add("age", """129"""); //#9
+
   response.headers.add("accept-ranges", foo.acceptRanges); //#9
 
   output.writeString("""
@@ -87,25 +89,32 @@ void syntax(HttpConnect connect, {foo, bool c:false}) { //9
 
 """); //#32
 
-  if (foo.isCustomer) { //#34
+  for (var fruit in ["apple", "orange"]) { //#34
+  } //for
+
+  output.writeString("""
+
+"""); //#36
+
+  if (foo.isCustomer) { //#37
 
     output.writeString("""
       *Custmer*
-"""); //#35
+"""); //#38
 
-  } else if (c) { //#36
+  } else if (c) { //#39
 
-  } else if (foo.isEmployee) { //#37
+  } else if (foo.isEmployee) { //#40
 
     output.writeString("""
       *Employee*
-"""); //#38
+"""); //#41
 
-  } else { //#39
+  } else { //#42
 
     output.writeString("""
       *Unknown* [/if] 
-"""); //#40
+"""); //#43
   } //if
 
   output.writeString("""
@@ -113,7 +122,7 @@ void syntax(HttpConnect connect, {foo, bool c:false}) { //9
 </html>
 
 
-"""); //#42
-  if (connect.includer == null)
+"""); //#45
+  if (!connect.isIncluded)
     output.close();
 }

@@ -205,6 +205,9 @@ class _StreamServer implements StreamServer {
   /** Forward the given [connect] to the given [uri].
    *
    * If [request] or [response] is ignored, [connect] is assumed.
+   *
+   * Notice: the caller shall not generate anything to the response after calling this method.
+   * Rather, it is suggested to return immediately.
    */
   void forward(HttpConnect connect, String uri,
   {HttpRequest request, HttpResponse response}) {
@@ -215,12 +218,16 @@ class _StreamServer implements StreamServer {
   /** Includes the given [uri].
    *
    * If [request] or [response] is ignored, [connect] is assumed.
+   *
+   * Notice the inclusion might be done asynchronously. To continue the output, you shall
+   * do it in the [success] callback.
    */
   void include(HttpConnect connect, String uri,
-  {HttpRequest request, HttpResponse response}) {
+  {HttpRequest request, HttpResponse response, success()}) {
     if (uri.indexOf('?') >= 0)
       throw new UnsupportedError("Include with query string"); //TODO
-    _handle(new _IncludedConnex(connect, request, response, _toAbsUri(connect, uri), _cxerrh));
+    _handle(new _IncludedConnex(connect, request, response, _toAbsUri(connect, uri), _cxerrh),
+      success: success);
   }
   String _toAbsUri(HttpConnect connect, String uri) {
     if (!uri.startsWith('/')) {
@@ -233,7 +240,7 @@ class _StreamServer implements StreamServer {
     }
     return uri;
   }
-  void _handle(HttpConnect connect) {
+  void _handle(HttpConnect connect, {success()}) {
     try {
       String uri = connect.request.uri;
       if (!uri.startsWith('/')) uri = "/$uri"; //not possible; just in case
@@ -243,6 +250,8 @@ class _StreamServer implements StreamServer {
         final ret = hdl(connect);
         if (ret is String)
           forward(connect, ret);
+        if (success != null)
+          success(); //TODO: forward async?
         return;
       }
 
@@ -251,7 +260,7 @@ class _StreamServer implements StreamServer {
       (uri.startsWith("/webapp/") || uri == "/webapp"))
         throw new Http403(uri);
 
-      resourceLoader.load(connect, uri);
+      resourceLoader.load(connect, uri, success: success);
     } catch (e, st) {
       _handleErr(connect, e, st);
     }

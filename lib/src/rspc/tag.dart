@@ -142,18 +142,17 @@ class HeaderTag implements Tag {
 class IncludeTag implements Tag {
   void begin(TagContext tc, String data, int line) {
     final attrs = MapUtil.parse(data, backslash:false, defaultValue:"");
-    final src = attrs.remove("uri");
-    if (src != null) {
-      if (!attrs.isEmpty)
-        throw new UnsupportedError("Include with attributes"); //TODO: handle other attributes
-      tc.writeln('\n${tc.pre}connect.server.include(connect, ${_toEl(src, quotmark:true)}); //#$line');
+    final uri = attrs.remove("uri");
+    if (uri != null) {
+      tc.compiler.include(uri, attrs, line);
       return;
     }
-    final render = attrs.remove("render");
-    if (render != null) {
-      if (_isEL(render))
-        tc.error("Expression not allowed in the render attribute", line);
-      //TODO
+
+    final call = attrs.remove("call");
+    if (call != null) {
+      if (_isEl(call))
+        tc.error("Expression not allowed in the call attribute", line);
+      throw new UnsupportedError("Include with call"); //TODO
     }
     tc.error("The uri attribute is required");
   }
@@ -177,7 +176,6 @@ abstract class ControlTag implements Tag {
       end = ")";
     }
     tc.writeln("\n${tc.pre}$control $beg$data$end { //#$line");
-
     tc.indent();
   }
   void end(TagContext tc) {

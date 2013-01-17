@@ -123,6 +123,8 @@ void syntax(HttpConnect connect, {foo, bool c:false}) { //9
 
 
 """); //#45
+
   if (!connect.isIncluded)
     output.close();
+
 }

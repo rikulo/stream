@@ -39,6 +39,8 @@ void helloView(HttpConnect connect) { //4
   </body>
 </html>
 """); //#14
+
   if (!connect.isIncluded)
     output.close();
+
 }

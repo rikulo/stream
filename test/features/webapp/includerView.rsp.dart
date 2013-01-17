@@ -24,20 +24,24 @@ void includerView(HttpConnect connect) { //3
     <div style="border: 1px solid blue">
 """); //#3
 
-  connect.server.include(connect, """/frag.html"""); //#14
+  connect.server.include(connect, """/frag.html""", success: () { //#14
 
-  output.writeString("""
+    output.writeString("""
     </div>
     <div style="border: 1px solid red">
 """); //#15
 
-  connect.server.include(connect, """/frag"""); //#17
+    connect.server.include(connect, """/frag""", success: () { //#17
 
-  output.writeString("""
+      output.writeString("""
     </div>
   </body>
 </html>
 """); //#18
-  if (!connect.isIncluded)
-    output.close();
+
+      if (!connect.isIncluded)
+        output.close();
+
+    }); //end-of-include
+  }); //end-of-include
 }

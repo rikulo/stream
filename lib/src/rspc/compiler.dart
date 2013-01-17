@@ -16,8 +16,9 @@ class Compiler {
   String _name, _args, _desc, _contentType;
   final List<_TagContext> _tags = [];
   _TagContext _current;
-  //The position of the source
-  int _pos, _len;
+  //The position and length of the source
+  int _pos, _len, _nInc; //number of inclusion
+  String _extra; //extra whitespaces
   //Look-ahead tokens
   final List _lookAhead = [];
 
@@ -93,17 +94,23 @@ class Compiler {
       }
     }
 
-    if (started)
-      _writeln("  if (!connect.isIncluded)\n"
-        "    output.close();\n"
-        "}");
+    if (started) {
+      _writeln("\n$_extra  if (!connect.isIncluded)\n"
+        "$_extra    output.close();\n");
+      while (--_nInc >= 0) {
+        _extra = _extra.substring(2);
+        _writeln("$_extra  }); //end-of-include");
+      }
+      _writeln("}");
+    }
   }
   void _init() {
     _lookAhead.clear();
     _tags.clear();
     _tags.add(_current = new _TagContext.root(this, destination));
     _name = _args = _desc = _contentType = null;
-    _pos = 0;
+    _extra = "";
+    _nInc = _pos = 0;
     _len = source.length;
   }
   void _start([int line]) {
@@ -148,7 +155,7 @@ class Compiler {
     }
   }
 
-  /// Sets the page information.
+  ///Sets the page information.
   void setPage(String name, String description, String args, String contentType, [int line]) {
     _name = name;
     _noEl(name, "the name attribute", line);
@@ -157,6 +164,17 @@ class Compiler {
     _args = args;
     _noEl(args, "the args attribute", line);
     _contentType = contentType;
+  }
+
+  ///Include the given URI.
+  void include(String uri, [Map attributes, int line]) {
+    if (attributes != null && !attributes.isEmpty)
+      throw new UnsupportedError("Include with attributes"); //TODO: handle other attributes
+
+    _writeln('\n${_current.pre}connect.server.include('
+      'connect, ${_toEl(uri, quotmark:true)}, success: () { //#$line');
+    ++_nInc;
+    _extra = "  $_extra";
   }
 
   //Tokenizer//
@@ -420,9 +438,9 @@ class _TagContext extends TagContext {
   _TagContext.root(Compiler compiler, OutputStream output)
     : super(null, compiler, output), _pre = "", line = 1;
   _TagContext.child(_TagContext prev, Tag this.tag, int this.line)
-    : super(prev.tag, prev.compiler, prev.output), _pre = prev.pre;
+    : super(prev.tag, prev.compiler, prev.output), _pre = prev._pre;
 
-  String get pre => _pre;
+  String get pre => compiler._extra.isEmpty ? _pre: "${compiler._extra}$_pre";
   String indent() => _pre = "$_pre  ";
   String unindent() => _pre = _pre.isEmpty ? _pre: _pre.substring(2);
 

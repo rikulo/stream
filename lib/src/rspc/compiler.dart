@@ -94,7 +94,9 @@ class Compiler {
     }
 
     if (started)
-      _writeln("}");
+      _writeln("  if (connect.includer == null)\n"
+        "    output.close();\n"
+        "}");
   }
   void _init() {
     _lookAhead.clear();
@@ -135,7 +137,7 @@ class Compiler {
     _writeln(") { //$line\n"
       "${pre}final request = connect.request, response = connect.response,\n"
       "${pre}  output = response.outputStream;\n"
-      "${pre}var _ep_;");
+      "${pre}var _v_;");
 
     if (_contentType != null)
       _writeln('${pre}response.headers.contentType = new ContentType.fromString("${_contentType}");');
@@ -338,8 +340,8 @@ class Compiler {
     final expr = _tagData(skipFollowingSpaces: false); //no skip space for expression
     if (!expr.isEmpty) {
       final pre = _current.pre;
-      _writeln('\n${pre}_ep_ = $expr; //#${line}\n'
-        '${pre}if (_ep_ != null) output.writeString(_ep_);');
+      _writeln('\n${pre}_v_ = $expr; //#${line}\n'
+        '${pre}if (_v_ != null) output.writeString("\${_v_}");');
     }
   }
 

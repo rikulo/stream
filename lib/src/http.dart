@@ -12,9 +12,10 @@ abstract class HttpConnect {
   HttpRequest get request;
   ///The HTTP response.
   HttpResponse get response;
-  ///The source connection that forwards to this connection, or null if not
-  ///forwarded.
+  ///The source connection that forwards to this connection, or null if not forwarded.
   HttpConnect get forwarder;
+  ///The source connection that includes this connection, or null if not included.
+  HttpConnect get includer;
 
   /** A safe invocation for `Future.then(onValue)`. It will invoke
    * `connect.error(err, stackTrace)` automatically if there is an exception.
@@ -86,6 +87,8 @@ class _HttpConnex implements HttpConnect {
   final HttpResponse response;
   @override
   HttpConnect get forwarder => null;
+  @override
+  HttpConnect get includer => null;
 
   //@override
   void then(Future future, onValue(value)) {
@@ -104,10 +107,20 @@ class _HttpConnex implements HttpConnect {
   bool isError;
 }
 
+///A HTTP request that overrides the uri
+class _UriRequest extends HttpRequestWrapper {
+  final String _uri;
+  _UriRequest(HttpRequest request, String this._uri): super(request);
+
+  @override
+  String get uri => _uri;
+}
+
 class _ForwardedConnex extends _HttpConnex {
   _ForwardedConnex(HttpConnect connect, HttpRequest request,
-    HttpResponse response, ConnexErrorHandler errorHandler):
-    super(connect.server, request != null ? request: connect.request,
+    HttpResponse response, String uri, ConnexErrorHandler errorHandler):
+    super(connect.server,
+      new _UriRequest(request != null ? request: connect.request, uri),
       response != null ? response: connect.response, errorHandler),
     forwarder = connect;
 
@@ -115,6 +128,19 @@ class _ForwardedConnex extends _HttpConnex {
   final HttpConnect forwarder;
   @override
   bool get isError => super.isError || forwarder.isError;
+}
+class _IncludedConnex extends _HttpConnex {
+  _IncludedConnex(HttpConnect connect, HttpRequest request,
+    HttpResponse response, String uri, ConnexErrorHandler errorHandler):
+    super(connect.server,
+      new _UriRequest(request != null ? request: connect.request, uri),
+      response != null ? response: connect.response, errorHandler),
+    includer = connect;
+
+  @override
+  final HttpConnect includer;
+  @override
+  bool get isError => super.isError || includer.isError;
 }
 
 /** A HTTP exception.

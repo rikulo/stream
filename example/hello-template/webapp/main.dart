@@ -1,6 +1,7 @@
 //Sample of Stream: Hello Templates
 library hello_template;
 
+import "dart:io";
 import "package:stream/stream.dart";
 
 part "config.dart";

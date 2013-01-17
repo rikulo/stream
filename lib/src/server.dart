@@ -146,7 +146,7 @@ class _StreamServer implements StreamServer {
         res.headers
           ..add(HttpHeaders.SERVER, server)
           ..date = new Date.now();
-        _handle(new _HttpConnex(this, req, res, _cxerrh), req.uri);
+        _handle(new _HttpConnex(this, req, res, _cxerrh));
       };
     _server.onError = (err) {
       _handleErr(null, err);
@@ -207,17 +207,31 @@ class _StreamServer implements StreamServer {
    * If [request] or [response] is ignored, [connect] is assumed.
    */
   void forward(HttpConnect connect, String uri,
-    {HttpRequest request, HttpResponse response}) {
+  {HttpRequest request, HttpResponse response}) {
+    _handle(new _ForwardedConnex(connect, request, response, _toAbsUri(uri), _cxerrh));
+  }
+  /** Includes the given [uri].
+   *
+   * If [request] or [response] is ignored, [connect] is assumed.
+   */
+  void include(HttpConnect connect, String uri,
+  {HttpRequest request, HttpResponse response}) {
+    _handle(new _IncludedConnex(connect, request, response, _toAbsUri(uri), _cxerrh));
+  }
+  String _toAbsUri(HttpConnect connect, String uri) {
     if (!uri.startsWith('/')) {
       final pre = connect.request.uri;
       final i = pre.lastIndexOf('/');
       if (i >= 0)
         uri = "${pre.substring(0, i + 1)}$uri";
+      else
+        uri = "/$uri";
     }
-    _handle(new _ForwardedConnex(connect, request, response, _cxerrh), uri);
+    return uri;
   }
-  void _handle(HttpConnect connect, String uri) {
+  void _handle(HttpConnect connect) {
     try {
+      String uri = connect.request.uri;
       if (!uri.startsWith('/')) uri = "/$uri"; //not possible; just in case
 
       final hdl = _getHandler(uri);
@@ -263,6 +277,7 @@ class _StreamServer implements StreamServer {
       if (error is HttpException) {
         _forwardErr(connect, error, error, stackTrace);
       } else {
+        _shout(error, stackTrace);
         _forwardErr(connect, new Http500(error) , error, stackTrace);
         _shout(error, stackTrace);
       }

@@ -42,6 +42,29 @@ For more information, please refer to [Pub: Dependencies](http://pub.dartlang.or
 * [Hello Templates](https://github.com/rikulo/stream/tree/master/example/hello-template)
 * [Hello MVC](https://github.com/rikulo/stream/tree/master/example/hello-mvc)
 
+###Compile RSP (Rikulo Stream Page) to dart files
+
+There are two ways to compile RSP files into dart files: automatic building with Dart Editor or manual compiling.
+
+###Build with Dart Editor
+
+To compile your RSP files automatically, you just need to add a build.dart file in the root directory of your project, with the following content:
+
+  import 'package:stream/rspc.dart';
+  void main() {
+    build(new Options().arguments);
+  }
+
+With this build.dart script, whenever your RSP is modified, it will be re-compiled.
+
+###Compile Manually
+
+To compile a RSP file manually, run `rspc` (RSP compiler) to compile it into the dart file with [command line interface](http://en.wikipedia.org/wiki/Command-line_interface) as follows:
+
+    dart bin/rspc.dart your-rsp-file(s)
+
+A dart file is generated for each RSP file you gave.
+
 ##Notes to Contributors
 
 ###Fork Stream

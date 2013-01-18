@@ -1,0 +1,32 @@
+[* View of Hello MVC *]
+[dart]
+part of hello_mvc;
+[/dart]
+[page args="String path, List<FileInfo> infos"]
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Stream: Hello MVC</title>
+    <link href="theme.css" rel="stylesheet" type="text/css" />
+  </head>
+  <body>
+    <h1>Directory: [= path]</h2>
+
+    <table border="1px" cellspacing="0">
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+      </tr>
+    [for info in infos]
+      <tr>
+        <td><img src="[=info.isDirectory ? 'file.png': 'directory.png']"/></td>
+        <td>[=info.name]</td>
+      </tr>
+    [/for]
+    </table>
+
+    <ul>
+      <li>Please refer to
+  <a href="https://github.com/rikulo/stream/tree/master/example/hello-mvc">Github</a> for how it is implemented.</a></li></ul>
+  </body>
+</html>

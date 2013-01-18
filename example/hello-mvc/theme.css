@@ -1,0 +1,14 @@
+h1 {
+	font-size: 28px;
+	margin: 20px 0 10px;
+}
+* {
+	line-height: 1.6;
+	font: 13px Helvetica, arial, freesans, clean, sans-serif;
+}
+th {
+  font-size: 14px;
+}
+th, td {
+   padding: 3px 5px;
+}

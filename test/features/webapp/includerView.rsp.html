@@ -1,5 +1,5 @@
 [dart]
-part of library_features;
+part of features;
 
 final infos = {
   "fruits": ["apple", "orange", "lemon"],
@@ -16,7 +16,7 @@ final infos = {
       <li>You shall see something inside the following two boxes.</li>
     </ul>
     <div style="border: 1px solid blue">
-      [include uri="/frag.html"]
+      [include src="/frag.html"]
     </div>
     <div style="border: 1px solid red">
       [include method="fragView" infos="[=infos]"]

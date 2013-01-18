@@ -1,6 +1,6 @@
 #Hello Static Resources
 
-This sample demostrates how to use static resources in your web application.
+This sample demonstrates how to use static resources in your web application.
 
 ##File Structure
 

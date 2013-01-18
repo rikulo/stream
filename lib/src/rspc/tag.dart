@@ -14,6 +14,8 @@ abstract class TagContext {
    */
   OutputStream output;
   final Compiler compiler;
+  ///The line number of the starting of this context
+  int get line;
 
   TagContext(Tag this.parent, Compiler this.compiler, OutputStream this.output);
 
@@ -46,7 +48,7 @@ abstract class TagContext {
 abstract class Tag {
   /** Called when the beginning of a tag is encountered.
    */
-  void begin(TagContext context, String data, int line);
+  void begin(TagContext context, String data);
   /** Called when the ending of a tag is encountered.
    */
   void end(TagContext context);
@@ -56,6 +58,8 @@ abstract class Tag {
   /** The tag name.
    */
   String get name;
+
+  String toString() => "[$name]";
 }
 
 /** A map of tags that RSP compiler uses to handle the tags.
@@ -76,8 +80,8 @@ Map<String, Tag> get tags {
 Map<String, Tag> _tags;
 
 ///The page tag.
-class PageTag implements Tag {
-  void begin(TagContext tc, String data, int line) {
+class PageTag extends Tag {
+  void begin(TagContext tc, String data) {
     String name, desc, args, ctype;
     final attrs = MapUtil.parse(data, backslash:false, defaultValue:"");
     for (final nm in attrs.keys) {
@@ -103,7 +107,7 @@ class PageTag implements Tag {
           break;
       }
     }
-    tc.compiler.setPage(name, desc, args, ctype, line);
+    tc.compiler.setPage(name, desc, args, ctype);
   }
   void end(TagContext tc) {
   }
@@ -112,8 +116,8 @@ class PageTag implements Tag {
 }
 
 ///The dart tag.
-class DartTag implements Tag {
-  void begin(TagContext tc, String data, int line) {
+class DartTag extends Tag {
+  void begin(TagContext tc, String data) {
     tc.writeln(data);
   }
   void end(TagContext tc) {
@@ -123,14 +127,14 @@ class DartTag implements Tag {
 }
 
 ///The header tag to generate HTTP response headers.
-class HeaderTag implements Tag {
-  void begin(TagContext tc, String data, int line) {
+class HeaderTag extends Tag {
+  void begin(TagContext tc, String data) {
     final attrs = MapUtil.parse(data, backslash:false, defaultValue:"");
     for (final nm in attrs.keys) {
       final val = attrs[nm];
       if (val == null)
         tc.error("The $nm attribute requires a value.");
-      tc.writeln('\n${tc.pre}response.headers.add("$nm", ${_toEl(val)}); //#$line');
+      tc.writeln('\n${tc.pre}response.headers.add("$nm", ${_toEl(val)}); //#${tc.line}');
     }
   }
   void end(TagContext tc) {
@@ -139,22 +143,24 @@ class HeaderTag implements Tag {
   String get name => "header";
 }
 
-class IncludeTag implements Tag {
-  void begin(TagContext tc, String data, int line) {
+class IncludeTag extends Tag {
+  void begin(TagContext tc, String data) {
     final attrs = MapUtil.parse(data, backslash:false, defaultValue:"");
     final uri = attrs.remove("uri");
     if (uri != null) {
-      tc.compiler.include(uri, attrs, line);
+      tc.compiler.include(uri, attrs, tc.line);
       return;
     }
 
-    final call = attrs.remove("call");
-    if (call != null) {
-      if (_isEl(call))
-        tc.error("Expression not allowed in the call attribute", line);
-      throw new UnsupportedError("Include with call"); //TODO
+    final method = attrs.remove("method");
+    if (method != null) {
+      if (_isEl(method))
+        tc.error("Expression not allowed in the method attribute");
+      tc.compiler.includeHandler(method, attrs, tc.line);
+      return;
     }
-    tc.error("The uri attribute is required");
+
+    tc.error("Either uri or handler attribute must be required");
   }
   void end(TagContext tc) {
   }
@@ -163,8 +169,8 @@ class IncludeTag implements Tag {
 }
 
 ///A skeletal class for implementing control tags, such as [IfTag] and [WhileTag].
-abstract class ControlTag implements Tag {
-  void begin(TagContext tc, String data, int line) {
+abstract class ControlTag extends Tag {
+  void begin(TagContext tc, String data) {
     if (data.isEmpty)
       tc.error("The $name tag requires a condition");
 
@@ -175,7 +181,7 @@ abstract class ControlTag implements Tag {
       beg = needsVar ? "(var ": "(";
       end = ")";
     }
-    tc.writeln("\n${tc.pre}$control $beg$data$end { //#$line");
+    tc.writeln("\n${tc.pre}$control $beg$data$end { //#${tc.line}");
     tc.indent();
   }
   void end(TagContext tc) {
@@ -209,15 +215,15 @@ class IfTag extends  ControlTag {
  *
  * The implementation is a bit tricky: it pretends to be an tag without the closing.
  */
-class ElseTag implements Tag {
-  void begin(TagContext tc, String data, int line) {
+class ElseTag extends Tag {
+  void begin(TagContext tc, String data) {
     if (!(tc.parent is IfTag))
       tc.error("Unexpected else tag");
 
     tc.unindent();
 
     if (data.isEmpty) {
-      tc.writeln("\n${tc.pre}} else { //#$line");
+      tc.writeln("\n${tc.pre}} else { //#${tc.line}");
     } else {
       String cond;
       if (data.length < 4 || !data.startsWith("if")
@@ -232,7 +238,7 @@ class ElseTag implements Tag {
         beg = "(";
         end = ")";
       }
-      tc.writeln("\n${tc.pre}} else if $beg$cond$end { //#$line");
+      tc.writeln("\n${tc.pre}} else if $beg$cond$end { //#${tc.line}");
     }
 
     tc.indent();

@@ -2,8 +2,13 @@
 //Source: test/features/webapp/includerView.rsp.html
 part of library_features;
 
+final infos = {
+  "fruits": ["apple", "orange", "lemon"],
+  "cars": ["bmw", "audi", "honda"]
+};
+
 /** Template, includerView, for rendering the view. */
-void includerView(HttpConnect connect) { //3
+void includerView(HttpConnect connect) { //8
   final request = connect.request, response = connect.response,
     output = response.outputStream;
   var _v_;
@@ -22,24 +27,24 @@ void includerView(HttpConnect connect) { //3
       <li>You shall see something inside the following two boxes.</li>
     </ul>
     <div style="border: 1px solid blue">
-"""); //#3
+"""); //#8
 
-  connect.server.include(connect, """/frag.html""", success: () { //#14
+  connect.server.include(connect, """/frag.html""", success: () { //#19
 
     output.writeString("""
     </div>
     <div style="border: 1px solid red">
-"""); //#15
+"""); //#20
 
-    connect.server.include(connect, """/frag""", success: () { //#17
+    fragView(connect.server.connectForInclusion(connect, success: () { //#22
 
       output.writeString("""
     </div>
   </body>
 </html>
-"""); //#18
+"""); //#23
 
       connect.close();
-    }); //end-of-include
+    }), infos: infos); //end-of-include
   }); //end-of-include
 }

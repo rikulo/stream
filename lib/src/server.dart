@@ -230,6 +230,8 @@ class _StreamServer implements StreamServer {
         }));
   }
   /** Includes the given [uri].
+   * If you'd like to include a request handler (i.e., a function), use [connectForInclusion]
+   * instead.
    *
    * If [request] or [response] is ignored, [connect] is assumed.
    *
@@ -251,11 +253,22 @@ class _StreamServer implements StreamServer {
     HttpRequest request, HttpResponse response}) {
     if (uri.indexOf('?') >= 0)
       throw new UnsupportedError("Include with query string"); //TODO
-
-    final inc = new _IncludedConnect(connect, request, response, _toAbsUri(connect, uri), _cxerrh);
+    _handle(connectForInclusion(
+      connect, uri: uri, success: success, request: request, response: response));
+  }
+  /** Gets the HTTP connect for inclusion.
+   * If you'd like to include from URI, use [include] instead.
+   * This method is used for including a request handler. For example
+   *
+   *     fooHandler(connectForInclusion(connect, success: () {continueToDo();}));
+   */
+  HttpConnect connectForInclusion(HttpConnect connect, {String uri, Handler success,
+    HttpRequest request, HttpResponse response}) {
+    final inc = new _IncludedConnect(connect, request, response,
+        uri != null ? _toAbsUri(connect, uri): null, _cxerrh);
     if (success != null)
       inc.on.close.add(success);
-    _handle(inc);
+    return inc;
   }
   String _toAbsUri(HttpConnect connect, String uri) {
     if (!uri.startsWith('/')) {

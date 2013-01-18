@@ -1,10 +1,4 @@
-[dart]
-final infos = {
-  "fruits": ["apple", "orange", "lemon"],
-  "cars": ["bmw", "audi", "honda"]
-};
-[/dart]
-
+[page args="Map infos: const {}"]
 <ul>
   <li>This is a fragment and generated dynamically</li>
   [for type in infos.keys]

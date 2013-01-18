@@ -1,7 +1,8 @@
 name: stream
 version: 0.5.0
 description: > 
-  Stream is a Dart Web server framework.
+  Stream is a Dart web server supporting URI mapping, templating, file-based static resources
+  and MVC design pattern.
 authors:
 - Tom Yeh <tomyeh@rikulo.org>
 homepage: http://rikulo.org

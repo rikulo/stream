@@ -1,6 +1,6 @@
 #Stream
 
-[Stream](http://rikulo.org) is a Dart web server supporting URI mapping, templating, file-based static resources and MVC design pattern.
+[Stream](http://rikulo.org) is a Dart web server supporting URI mapping, template technology, file-based static resources and MVC design pattern.
 
 * [Home](http://rikulo.org)
 * [Documentation](http://docs.rikulo.org/stream/latest)
@@ -35,7 +35,7 @@ For more information, please refer to [Pub: Dependencies](http://pub.dartlang.or
 
 ##Usage
 
-*(Under Construction)* Please refer to the following examples
+*(Under Construction)* Please refer to the following examples:
 
 * [Hello Static Resources](https://github.com/rikulo/stream/tree/master/example/hello-static)
 * [Hello Dynamic Contents](https://github.com/rikulo/stream/tree/master/example/hello-dynamic)
@@ -46,14 +46,16 @@ For more information, please refer to [Pub: Dependencies](http://pub.dartlang.or
 
 There are two ways to compile RSP files into dart files: automatic building with Dart Editor or manual compiling.
 
+> RSP is a template technology allowing developers to create dynamically generated web pages based on HTML, XML or other document types. Please refer [here](https://github.com/rikulo/stream/blob/master/example/hello-mvc/webapp/listView.rsp.html) and [here](https://github.com/rikulo/stream/blob/master/test/features/webapp/includerView.rsp.html).
+
 ###Build with Dart Editor
 
 To compile your RSP files automatically, you just need to add a build.dart file in the root directory of your project, with the following content:
 
-  import 'package:stream/rspc.dart';
-  void main() {
-    build(new Options().arguments);
-  }
+    import 'package:stream/rspc.dart';
+    void main() {
+      build(new Options().arguments);
+    }
 
 With this build.dart script, whenever your RSP is modified, it will be re-compiled.
 

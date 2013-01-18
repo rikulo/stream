@@ -13,5 +13,6 @@ import "package:rikulo_commons/io.dart";
 
 import "plugin.dart";
 
-part "src/http.dart";
+part "src/connect.dart";
+part "src/connect_impl.dart";
 part "src/server.dart";

@@ -8,9 +8,10 @@ part "config.dart";
 
 void serverInfo(HttpConnect connect) {
   final info = {"name": "Rikulo Stream", "version": connect.server.version};
-  connect.response.headers.contentType = contentTypes["json"];
-  connect.response.outputStream
-    ..writeString(JSON.stringify(info))..close();
+  connect.response
+    ..headers.contentType = contentTypes["json"]
+    ..outputStream.writeString(JSON.stringify(info));
+  connect.close();
 }
 
 void main() {

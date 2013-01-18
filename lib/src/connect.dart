@@ -3,6 +3,13 @@
 // Author: tomyeh
 part of stream;
 
+/** The general handler. */
+typedef void Handler();
+/** The error handler. */
+typedef void ErrorHandler(err, [stackTrace]);
+/** The error handler for HTTP connection. */
+typedef void ConnectErrorHandler(HttpConnect connect, err, [stackTrace]);
+
 /** A HTTP request connection.
  */
 abstract class HttpConnect {
@@ -10,7 +17,12 @@ abstract class HttpConnect {
   StreamServer get server;
   ///The HTTP request.
   HttpRequest get request;
-  ///The HTTP response.
+  /** The HTTP response.
+   *
+   * Notice that it is suggested to invoke [close] instead of `response.close()` when finishing
+   * a serving, because the request handler might be included or forwarded by another, which
+   * might have further task to do (and will register the task by use `on.close.add()`).
+   */
   HttpResponse get response;
   ///The source connection that forwards to this connection, or null if not forwarded.
   HttpConnect get forwarder;
@@ -38,6 +50,22 @@ abstract class HttpConnect {
    */
   void then(Future future, onValue(value));
 
+  /** The map of error and close handlers.
+   * It is used to register the handler that will be called when an error occurs, or when [close]
+   * is called, depending which list it is registered.
+   *
+   * Notice the sequence of invocation is reversed, i.e., the first added is the last called.
+   */
+  HandlerMap on;
+  /** The close handler.
+   * After finishing the handling of a request, the request handler shall invoke this method
+   * to start the awaiting task, or to
+   * close the connection (depending on if the request handler is included / forwarded).
+   *
+   * To register an awaiting task that shall be run after the request handling, you can invoke
+   * `on.close.add()` (refer to [on]). To register an error handler, you can invoke `on.error.add()`.
+   */
+  Handler get close;
   /** The error handler.
    *
    * Notice that it is important to invoke this method if an error occurs.
@@ -73,98 +101,45 @@ abstract class HttpConnect {
   bool isError;
 }
 
-class _HttpConnex implements HttpConnect {
-  final ConnexErrorHandler _cxerrh;
-  ErrorHandler _errh;
+/** A list of handlers.
+ * Notice the sequence of invocation is reversed, i.e., the first added is the last called.
+ */
+class HandlerList<T extends Function> {
+  Queue<T> _handlers;
 
-  _HttpConnex(StreamServer this.server, HttpRequest this.request,
-    HttpResponse this.response, ConnexErrorHandler this._cxerrh) {
-    _init();
+  /** Adds a handler.
+   * Notice the sequence of invocation is reversed, i.e., the first added is the last called.
+   */
+  void add(T handler) {
+    if (_handlers == null)
+      _handlers = new Queue();
+    _handlers.addFirst(handler);
   }
-  void _init() {
-    _errh = (e, [st]) {
-      _cxerrh(this, e, st);
-    };
+  void _invoke0() {
+    if (_handlers != null)
+      for (final h in _handlers)
+        h();
   }
-
-  @override
-  final StreamServer server;
-  @override
-  final HttpRequest request;
-  @override
-  final HttpResponse response;
-  @override
-  HttpConnect get forwarder => null;
-  @override
-  HttpConnect get includer => null;
-  @override
-  bool get isIncluded => false;
-  @override
-  bool get isForwarded => false;
-
-  //@override
-  void then(Future future, onValue(value)) {
-    future.then((value) {
-      try {
-        onValue(value);
-      } catch (e, st) {
-        error(e, st);
-      }
-    }/*, onError: error*/); //TODO: wait for next SDK
+  void _invoke2(arg0, arg1) {
+    if (_handlers != null)
+      for (final h in _handlers)
+        h(arg0, arg1);
   }
-
-  @override
-  ErrorHandler get error => _errh;
-  @override
-  bool isError;
 }
+/** A map of handlers.
+ */
+class HandlerMap {
+  HandlerList<Handler> _close;
+  HandlerList<ErrorHandler> _error;
 
-///A HTTP request that overrides the uri
-class _UriRequest extends HttpRequestWrapper {
-  final String _uri;
-  _UriRequest(HttpRequest request, String this._uri): super(request);
-
-  @override
-  String get uri => _uri;
-}
-
-class _ForwardedConnex extends _HttpConnex {
-  final bool _inc;
-
-  _ForwardedConnex(HttpConnect connect, HttpRequest request,
-    HttpResponse response, String uri, ConnexErrorHandler errorHandler):
-    super(connect.server,
-      new _UriRequest(request != null ? request: connect.request, uri),
-      response != null ? response: connect.response, errorHandler),
-    forwarder = connect, _inc = connect.isIncluded;
-
-  @override
-  final HttpConnect forwarder;
-  @override
-  bool get isError => super.isError || forwarder.isError;
-  @override
-  bool get isIncluded => _inc;
-  @override
-  bool get isForwarded => true;
-}
-class _IncludedConnex extends _HttpConnex {
-  final bool _fwd;
-
-  _IncludedConnex(HttpConnect connect, HttpRequest request,
-    HttpResponse response, String uri, ConnexErrorHandler errorHandler):
-    super(connect.server,
-      new _UriRequest(request != null ? request: connect.request, uri),
-      response != null ? response: connect.response, errorHandler),
-    includer = connect, _fwd = connect.isForwarded;
-
-  @override
-  final HttpConnect includer;
-  @override
-  bool get isError => super.isError || includer.isError;
-  @override
-  bool get isIncluded => true;
-  @override
-  bool get isForwarded => _fwd;
+  /** The list of close handlers.
+   * Notice the sequence of invocation is reversed, i.e., the first added is the last called.
+   */
+  final HandlerList<Handler> close = new HandlerList();
+  /** The list of error handlers.
+   * Notice the sequence of invocation is reversed, i.e., the first added is the last called.
+   */
+  final HandlerList<Handler> error = new HandlerList();
 }
 
 /** A HTTP exception.

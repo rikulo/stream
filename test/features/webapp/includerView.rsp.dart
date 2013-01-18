@@ -39,9 +39,7 @@ void includerView(HttpConnect connect) { //3
 </html>
 """); //#18
 
-      if (!connect.isIncluded)
-        output.close();
-
+      connect.close();
     }); //end-of-include
   }); //end-of-include
 }

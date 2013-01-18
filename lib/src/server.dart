@@ -3,11 +3,6 @@
 // Author: tomyeh
 part of stream;
 
-/** The error handler. */
-typedef void ErrorHandler(err, [stackTrace]);
-/** The error handler for HTTP connection. */
-typedef void ConnexErrorHandler(HttpConnect connect, err, [stackTrace]);
-
 /**
  * Stream server.
  *
@@ -97,7 +92,7 @@ abstract class StreamServer {
   Map<int, String> get errorMapping;
   /** The error handler. Default: null.
    */
-  ConnexErrorHandler onError;
+  ConnectErrorHandler onError;
   /** The logger for logging information.
    * The default level is `INFO`.
    */
@@ -123,7 +118,7 @@ class _StreamServer implements StreamServer {
   Path _homeDir;
   final List<_Mapping> _uriMapping = [];
   ResourceLoader _resLoader;
-  ConnexErrorHandler _cxerrh;
+  ConnectErrorHandler _cxerrh;
   bool _running = false;
 
   _StreamServer(Map<String, Function> uriMapping,
@@ -146,7 +141,9 @@ class _StreamServer implements StreamServer {
         res.headers
           ..add(HttpHeaders.SERVER, server)
           ..date = new Date.now();
-        _handle(new _HttpConnex(this, req, res, _cxerrh));
+        _handle(
+          new _HttpConnect(this, req, res, _cxerrh)
+            ..on.close.add((){res.outputStream.close();}));
       };
     _server.onError = (err) {
       _handleErr(null, err);
@@ -206,28 +203,59 @@ class _StreamServer implements StreamServer {
    *
    * If [request] or [response] is ignored, [connect] is assumed.
    *
-   * Notice: the caller shall not generate anything to the response after calling this method.
-   * Rather, it is suggested to return immediately.
+   * After calling this method, the caller shall not write the output stream, since the
+   * request handler for the given URI might handle it asynchronously. Rather, it
+   * shall make it a closure and pass it to the [success] argument. Then,
+   * it will be resumed once the forwarded handler has completed.
+   *
+   * ##Difference between [forward] and [include]
+   *
+   * [forward] and [include] are almost the same, except
+   *
+   * * The included request handler shall not generate any HTTP headers (it is the job of the caller).
+   *
+   * * The request handler that invokes [forward] shall not call `connect.close` (it is the job
+   * of the callee -- the forwarded request handler).
    */
-  void forward(HttpConnect connect, String uri,
-  {HttpRequest request, HttpResponse response}) {
+  void forward(HttpConnect connect, String uri, {Handler success,
+    HttpRequest request, HttpResponse response}) {
     if (uri.indexOf('?') >= 0)
       throw new UnsupportedError("Forward with query string"); //TODO
-    _handle(new _ForwardedConnex(connect, request, response, _toAbsUri(connect, uri), _cxerrh));
+
+    _handle(new _ForwardedConnect(connect, request, response, _toAbsUri(connect, uri), _cxerrh)
+      ..on.close.add((){
+          if (success != null)
+            success();
+          connect.close(); //spec: it is the forwarded handler's job to close
+        }));
   }
   /** Includes the given [uri].
    *
    * If [request] or [response] is ignored, [connect] is assumed.
    *
-   * Notice the inclusion might be done asynchronously. To continue the output, you shall
-   * do it in the [success] callback.
+   * After calling this method, the caller shall not write the output stream, since the
+   * request handler for the given URI might handle it asynchronously. Rather, it
+   * shall make it a closure and pass it to the [success] argument. Then,
+   * it will be resumed once the included handler has completed.
+   *
+   * ##Difference between [forward] and [include]
+   *
+   * [forward] and [include] are almost the same, except
+   *
+   * * The included request handler shall not generate any HTTP headers (it is the job of the caller).
+   *
+   * * The request handler that invokes [forward] shall not call `connect.close` (it is the job
+   * of the callee -- the included request handler).
    */
-  void include(HttpConnect connect, String uri,
-  {HttpRequest request, HttpResponse response, success()}) {
+  void include(HttpConnect connect, String uri, {Handler success,
+    HttpRequest request, HttpResponse response}) {
     if (uri.indexOf('?') >= 0)
       throw new UnsupportedError("Include with query string"); //TODO
-    _handle(new _IncludedConnex(connect, request, response, _toAbsUri(connect, uri), _cxerrh),
-      success: success);
+
+    final inc = new _IncludedConnect(connect, request, response, _toAbsUri(connect, uri), _cxerrh);
+    if (success != null)
+      inc.on.close.add(success);
+    _handle(inc);
   }
   String _toAbsUri(HttpConnect connect, String uri) {
     if (!uri.startsWith('/')) {
@@ -240,7 +268,7 @@ class _StreamServer implements StreamServer {
     }
     return uri;
   }
-  void _handle(HttpConnect connect, {success()}) {
+  void _handle(HttpConnect connect) {
     try {
       String uri = connect.request.uri;
       if (!uri.startsWith('/')) uri = "/$uri"; //not possible; just in case
@@ -250,8 +278,6 @@ class _StreamServer implements StreamServer {
         final ret = hdl(connect);
         if (ret is String)
           forward(connect, ret);
-        if (success != null)
-          success(); //TODO: forward async?
         return;
       }
 
@@ -260,7 +286,7 @@ class _StreamServer implements StreamServer {
       (uri.startsWith("/webapp/") || uri == "/webapp"))
         throw new Http403(uri);
 
-      resourceLoader.load(connect, uri, success: success);
+      resourceLoader.load(connect, uri);
     } catch (e, st) {
       _handleErr(connect, e, st);
     }
@@ -360,7 +386,7 @@ class _StreamServer implements StreamServer {
   @override
   final Map<int, String> errorMapping = new Map();
   @override
-  ConnexErrorHandler onError;
+  ConnectErrorHandler onError;
 
   @override
   bool get isRunning => _running;

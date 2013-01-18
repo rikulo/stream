@@ -95,8 +95,7 @@ class Compiler {
     }
 
     if (started) {
-      _writeln("\n$_extra  if (!connect.isIncluded)\n"
-        "$_extra    output.close();\n");
+      _writeln("\n$_extra  connect.close();");
       while (--_nInc >= 0) {
         _extra = _extra.substring(2);
         _writeln("$_extra  }); //end-of-include");

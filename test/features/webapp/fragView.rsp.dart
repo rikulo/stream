@@ -50,9 +50,9 @@ void fragView(HttpConnect connect) { //6
 """); //#16
   } //for
 
-  output.writeString("""</ul>"""); //#19
+  output.writeString("""
+</ul>
+"""); //#19
 
-  if (!connect.isIncluded)
-    output.close();
-
+  connect.close();
 }

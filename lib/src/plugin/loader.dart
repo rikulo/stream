@@ -15,11 +15,8 @@ abstract class ResourceLoader {
   final Path rootDir;
 
   /** Loads the resource of the given URI to the given response.
-   *
-   * Notice that, if [success] is specified, it the connection won't be closed,
-   * and no HTTP header will be generated.
    */
-  void load(HttpConnect connect, String uri, {success()});
+  void load(HttpConnect connect, String uri);
 }
 
 /** A file-system-based resource loader.
@@ -31,14 +28,14 @@ class FileLoader implements ResourceLoader {
   final Path rootDir;
 
   //@override
-  void load(HttpConnect connect, String uri, {success()}) {
+  void load(HttpConnect connect, String uri) {
     var path = uri.substring(1); //must start with '/'
     path = rootDir.append(path);
 
     var file = new File.fromPath(path);
     connect.then(file.exists(), (exists) {
       if (exists) {
-        loadFile(connect, file, success: success);
+        loadFile(connect, file);
         return;
       }
 
@@ -46,7 +43,7 @@ class FileLoader implements ResourceLoader {
       final dir = new Directory.fromPath(path);
       connect.then(dir.exists(), (exists) {
         if (exists)
-          _loadFileAt(connect, uri, path, connect.server.indexNames, 0, success);
+          _loadFileAt(connect, uri, path, connect.server.indexNames, 0);
         else
           throw new Http404(uri);
       });
@@ -54,31 +51,25 @@ class FileLoader implements ResourceLoader {
   }
 }
 
-bool _loadFileAt(HttpConnect connect, String uri, Path dir, List<String> names, int j,
-  success()) {
+bool _loadFileAt(HttpConnect connect, String uri, Path dir, List<String> names, int j) {
   if (j >= names.length)
     throw new Http404(uri);
 
   final file = new File.fromPath(dir.append(names[j]));
   connect.then(file.exists(), (exists) {
     if (exists)
-      loadFile(connect, file, success: success);
+      loadFile(connect, file);
     else
-      _loadFileAt(connect, uri, dir, names, j + 1, success);
+      _loadFileAt(connect, uri, dir, names, j + 1);
   });
 }
 
 /** Loads a file into the given response.
  * Notice that this method assumes the file exists.
- *
- * Also notice that if [success] is specified, it won't generate any HTTP headers.
  */
-void loadFile(HttpConnect connect, File file, {success()}) {
-  if (success != null) {
-    file.openInputStream()
-      ..onError = connect.error
-      ..onClosed = success
-      ..pipe(connect.response.outputStream, close: false);
+void loadFile(HttpConnect connect, File file) {
+  if (connect.isIncluded) {
+    _loadFile(connect, file);
     return;
   }
 
@@ -92,12 +83,14 @@ void loadFile(HttpConnect connect, File file, {success()}) {
 
     connect.then(file.lastModified(), (date) {
       headers.add(HttpHeaders.LAST_MODIFIED, date);
-
-      //write content
-      file.openInputStream()
-        ..onError = connect.error
-        ..pipe(connect.response.outputStream, close: true);
+      _loadFile(connect, file);
     });
   });
+}
 
+void _loadFile(HttpConnect connect, File file) {
+  file.openInputStream()
+    ..onError = connect.error
+    ..onClosed = connect.close
+    ..pipe(connect.response.outputStream, close: false);
 }

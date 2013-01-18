@@ -146,9 +146,9 @@ class HeaderTag extends Tag {
 class IncludeTag extends Tag {
   void begin(TagContext tc, String data) {
     final attrs = MapUtil.parse(data, backslash:false, defaultValue:"");
-    final uri = attrs.remove("uri");
-    if (uri != null) {
-      tc.compiler.include(uri, attrs, tc.line);
+    final src = attrs.remove("src");
+    if (src != null) {
+      tc.compiler.include(src, attrs, tc.line);
       return;
     }
 
@@ -160,7 +160,7 @@ class IncludeTag extends Tag {
       return;
     }
 
-    tc.error("Either uri or handler attribute must be required");
+    tc.error("Either src or handler attribute must be required");
   }
   void end(TagContext tc) {
   }

@@ -80,6 +80,57 @@ abstract class StreamServer {
    */
   void stop();
 
+  /** Forward the given [connect] to the given [uri].
+   *
+   * If [request] or [response] is ignored, [connect] is assumed.
+   *
+   * After calling this method, the caller shall not write the output stream, since the
+   * request handler for the given URI might handle it asynchronously. Rather, it
+   * shall make it a closure and pass it to the [success] argument. Then,
+   * it will be resumed once the forwarded handler has completed.
+   *
+   * ##Difference between [forward] and [include]
+   *
+   * [forward] and [include] are almost the same, except
+   *
+   * * The included request handler shall not generate any HTTP headers (it is the job of the caller).
+   *
+   * * The request handler that invokes [forward] shall not call `connect.close` (it is the job
+   * of the callee -- the forwarded request handler).
+   */
+  void forward(HttpConnect connect, String uri, {Handler success,
+    HttpRequest request, HttpResponse response});
+  /** Includes the given [uri].
+   * If you'd like to include a request handler (i.e., a function), use [connectForInclusion]
+   * instead.
+   *
+   * If [request] or [response] is ignored, [connect] is assumed.
+   *
+   * After calling this method, the caller shall not write the output stream, since the
+   * request handler for the given URI might handle it asynchronously. Rather, it
+   * shall make it a closure and pass it to the [success] argument. Then,
+   * it will be resumed once the included handler has completed.
+   *
+   * ##Difference between [forward] and [include]
+   *
+   * [forward] and [include] are almost the same, except
+   *
+   * * The included request handler shall not generate any HTTP headers (it is the job of the caller).
+   *
+   * * The request handler that invokes [forward] shall not call `connect.close` (it is the job
+   * of the callee -- the included request handler).
+   */
+  void include(HttpConnect connect, String uri, {Handler success,
+    HttpRequest request, HttpResponse response});
+  /** Gets the HTTP connect for inclusion.
+   * If you'd like to include from URI, use [include] instead.
+   * This method is used for including a request handler. For example
+   *
+   *     fooHandler(connectForInclusion(connect, success: () {continueToDo();}));
+   */
+  HttpConnect connectForInclusion(HttpConnect connect, {String uri, Handler success,
+    HttpRequest request, HttpResponse response});
+
   /** The resource loader used to load the static resources.
    * It is called if the path of a request doesn't match any of the URL
    * mapping given in the constructor.
@@ -199,24 +250,7 @@ class _StreamServer implements StreamServer {
       }
   }
 
-  /** Forward the given [connect] to the given [uri].
-   *
-   * If [request] or [response] is ignored, [connect] is assumed.
-   *
-   * After calling this method, the caller shall not write the output stream, since the
-   * request handler for the given URI might handle it asynchronously. Rather, it
-   * shall make it a closure and pass it to the [success] argument. Then,
-   * it will be resumed once the forwarded handler has completed.
-   *
-   * ##Difference between [forward] and [include]
-   *
-   * [forward] and [include] are almost the same, except
-   *
-   * * The included request handler shall not generate any HTTP headers (it is the job of the caller).
-   *
-   * * The request handler that invokes [forward] shall not call `connect.close` (it is the job
-   * of the callee -- the forwarded request handler).
-   */
+  //@override
   void forward(HttpConnect connect, String uri, {Handler success,
     HttpRequest request, HttpResponse response}) {
     if (uri.indexOf('?') >= 0)
@@ -229,26 +263,7 @@ class _StreamServer implements StreamServer {
           connect.close(); //spec: it is the forwarded handler's job to close
         }));
   }
-  /** Includes the given [uri].
-   * If you'd like to include a request handler (i.e., a function), use [connectForInclusion]
-   * instead.
-   *
-   * If [request] or [response] is ignored, [connect] is assumed.
-   *
-   * After calling this method, the caller shall not write the output stream, since the
-   * request handler for the given URI might handle it asynchronously. Rather, it
-   * shall make it a closure and pass it to the [success] argument. Then,
-   * it will be resumed once the included handler has completed.
-   *
-   * ##Difference between [forward] and [include]
-   *
-   * [forward] and [include] are almost the same, except
-   *
-   * * The included request handler shall not generate any HTTP headers (it is the job of the caller).
-   *
-   * * The request handler that invokes [forward] shall not call `connect.close` (it is the job
-   * of the callee -- the included request handler).
-   */
+  //@override
   void include(HttpConnect connect, String uri, {Handler success,
     HttpRequest request, HttpResponse response}) {
     if (uri.indexOf('?') >= 0)
@@ -256,12 +271,7 @@ class _StreamServer implements StreamServer {
     _handle(connectForInclusion(
       connect, uri: uri, success: success, request: request, response: response));
   }
-  /** Gets the HTTP connect for inclusion.
-   * If you'd like to include from URI, use [include] instead.
-   * This method is used for including a request handler. For example
-   *
-   *     fooHandler(connectForInclusion(connect, success: () {continueToDo();}));
-   */
+  //@override
   HttpConnect connectForInclusion(HttpConnect connect, {String uri, Handler success,
     HttpRequest request, HttpResponse response}) {
     final inc = new _IncludedConnect(connect, request, response,

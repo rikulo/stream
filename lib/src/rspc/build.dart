@@ -94,7 +94,7 @@ void build(List<String> arguments) {
 }
 int _rspSource(String name) {
   if (!name.endsWith(".rsp.dart")) {
-    final i = name.indexOf(".rsp.");
+    var i = name.indexOf(".rsp.");
     if (i >= 0 && name.indexOf('/', i += 5) < 0 && name.indexOf('.', i) < 0)
       return i;
   }

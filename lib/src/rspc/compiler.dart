@@ -379,9 +379,13 @@ class Compiler {
     }
   }
   String _outTripleQuot(String text) {
-    final cc = text.indexOf('\n') >= 0 ? '\n': '';
-      //Optional but for more compact output
-    return 'output.writeString("""$cc$text""");';
+    //Note: Dart can't handle """" (four quotation marks)
+    var cb = text.startsWith('"') || text.indexOf('\n') >= 0 ? '\n': '', ce = "";
+    if (text.endsWith('"')) {
+      ce = '\\"';
+      text = text.substring(0, text.length - 1);
+    }
+    return 'output.writeString("""$cb$text$ce""");';
   }
 
   void _writeExpr() {

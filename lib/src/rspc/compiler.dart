@@ -94,6 +94,14 @@ class Compiler {
     }
 
     if (started) {
+      if (_tagCtxs.length > 1) {
+        final sb = new StringBuffer();
+        for (int i = _tagCtxs.length; --i >= 1;) {
+          if (!sb.isEmpty) sb.add(', ');
+          sb..add(_tagCtxs[i].tag)..add(' at line ')..add(_tagCtxs[i].line);
+        }
+        _error("Unclosed tag(s): $sb");
+      }
       _writeln("\n$_extra  connect.close();");
       while (!_incs.isEmpty) {
         _extra = _extra.substring(2);
@@ -177,7 +185,7 @@ class Compiler {
     _writeln("\n${_current.pre}$method(connect.server.connectForInclusion(connect, success: () { //#$line");
     _extra = "  $_extra";
 
-    final StringBuffer sb = new StringBuffer("})");
+    final sb = new StringBuffer("})");
     if (args != null)
       for (final arg in args.keys)
         sb..add(", ")..add(arg)..add(": ")..add(_toEl(args[arg]));

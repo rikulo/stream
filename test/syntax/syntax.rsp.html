@@ -36,9 +36,11 @@ import "package:stream/stream.dart";
 
     [if foo.isCustomer]
       *Custmer*
-    [else if c] 
+    [else if c]
+      [forward uri="/x/y/z"]
     [else if foo.isEmployee]
       *Employee*
+      [forward method="syntax" c="[=true]" foo="abc"]
     [else]
       *Unknown* \[/if] [* escape a [/if] *]
     [/if]

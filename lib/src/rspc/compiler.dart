@@ -169,7 +169,7 @@ class Compiler {
   void include(String uri, [Map attributes, int line]) {
     _checkInclude(line);
     if (attributes != null && !attributes.isEmpty)
-      throw new UnsupportedError("Include with attributes"); //TODO: handle other attributes
+      throw new UnsupportedError("Include from URI with attributes"); //TODO: handle other attributes
     if (verbose) _info("Include $uri", line);
 
     _writeln('\n${_current.pre}connect.server.include('

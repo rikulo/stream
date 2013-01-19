@@ -104,17 +104,23 @@ void syntax(HttpConnect connect, {foo, bool c:false}) { //9
 
   } else if (c) { //#39
 
-  } else if (foo.isEmployee) { //#40
+    connect.server.forward(connect, """/x/y/z"""); //#40
+    return;
+
+  } else if (foo.isEmployee) { //#41
 
     output.writeString("""
       *Employee*
-"""); //#41
+"""); //#42
 
-  } else { //#42
+    syntax(connect, c: true, foo: """abc"""); //#43
+    return;
+
+  } else { //#44
 
     output.writeString("""
       *Unknown* [/if] 
-"""); //#43
+"""); //#45
   } //if
 
   output.writeString("""
@@ -122,7 +128,7 @@ void syntax(HttpConnect connect, {foo, bool c:false}) { //9
 </html>
 
 
-"""); //#45
+"""); //#47
 
   connect.close();
 }

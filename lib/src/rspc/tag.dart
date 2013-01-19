@@ -51,7 +51,8 @@ abstract class Tag {
   void begin(TagContext context, String data);
   /** Called when the ending of a tag is encountered.
    */
-  void end(TagContext context);
+  void end(TagContext context) {
+  }
   /** Whether this tag requires a closing tag, such as  `[/if]`.
    */
   bool get hasClosing;
@@ -71,7 +72,7 @@ Map<String, Tag> get tags {
   if (_tags == null) {
     _tags = new Map();
     for (Tag tag in [new PageTag(), new DartTag(), new HeaderTag(),
-      new IncludeTag(),
+      new IncludeTag(), new ForwardTag(),
       new ForTag(), new WhileTag(), new IfTag(), new ElseTag()])
       _tags[tag.name] = tag;
   }
@@ -109,8 +110,6 @@ class PageTag extends Tag {
     }
     tc.compiler.setPage(name, desc, args, ctype);
   }
-  void end(TagContext tc) {
-  }
   bool get hasClosing => false;
   String get name => "page";
 }
@@ -119,8 +118,6 @@ class PageTag extends Tag {
 class DartTag extends Tag {
   void begin(TagContext tc, String data) {
     tc.writeln(data);
-  }
-  void end(TagContext tc) {
   }
   bool get hasClosing => true;
   String get name => "dart";
@@ -137,18 +134,27 @@ class HeaderTag extends Tag {
       tc.writeln('\n${tc.pre}response.headers.add("$nm", ${_toEl(val)}); //#${tc.line}');
     }
   }
-  void end(TagContext tc) {
-  }
   bool get hasClosing => false;
   String get name => "header";
 }
 
+/** The include tag. There are two formats:
+ *
+ *     [include uri="uri"]
+ *
+ *     [include method="name" arg0="value0" arg1="value1"]
+ *
+ * where `uri`, `value0` and `value1` can be an expression.
+ *
+ * Notice that the include tag must be top-level. In other words, it can be
+ * placed inside others.
+ */
 class IncludeTag extends Tag {
   void begin(TagContext tc, String data) {
     final attrs = MapUtil.parse(data, backslash:false, defaultValue:"");
-    final src = attrs.remove("src");
-    if (src != null) {
-      tc.compiler.include(src, attrs, tc.line);
+    final uri = attrs.remove("uri");
+    if (uri != null) {
+      tc.compiler.include(uri, attrs, tc.line);
       return;
     }
 
@@ -160,12 +166,55 @@ class IncludeTag extends Tag {
       return;
     }
 
-    tc.error("Either src or handler attribute must be required");
-  }
-  void end(TagContext tc) {
+    tc.error("Either uri or method attribute must be required");
   }
   bool get hasClosing => false;
   String get name => "include";
+}
+
+/** The forward tag. There are two formats:
+ *
+ *     [forward uri="uri"]
+ *
+ *     [forward method="name" arg0="value0" arg1="value1"]
+ *
+ * where `uri`, `value0` and `value1` can be an expression.
+ *
+ * Notice that the cotent following the forward tag won't be rendered.
+ *
+ * Unlike the include tag, it can be placed inside another tags.
+ */
+class ForwardTag extends Tag {
+  void begin(TagContext tc, String data) {
+    final attrs = MapUtil.parse(data, backslash:false, defaultValue:"");
+    final uri = attrs.remove("uri");
+    if (uri != null) {
+      if (attrs != null && !attrs.isEmpty)
+        throw new UnsupportedError("Forward to URI with attributes"); //TODO: handle other attributes
+
+      tc.writeln("\n${tc.pre}connect.server.forward("
+        "connect, ${_toEl(uri, quotmark:true)}); //#${tc.line}\n"
+        "${tc.pre}return;");
+      return;
+    }
+
+    final method = attrs.remove("method");
+    if (method != null) {
+      if (_isEl(method))
+        tc.error("Expression not allowed in the method attribute");
+
+      tc.write("\n${tc.pre}$method(connect");
+      if (attrs != null)
+        for (final arg in attrs.keys)
+          tc.write(", $arg: ${_toEl(attrs[arg])}");
+      tc.writeln("); //#${tc.line}\n${tc.pre}return;");
+      return;
+    }
+
+    tc.error("Either uri or method attribute must be required");
+  }
+  bool get hasClosing => false;
+  String get name => "forward";
 }
 
 ///A skeletal class for implementing control tags, such as [IfTag] and [WhileTag].
@@ -195,27 +244,46 @@ abstract class ControlTag extends Tag {
   bool get needsVar => false;
 }
 
-///The for tag.
+/** The for tag. There are two formats:
+ *
+ *     [for name in collection]
+ *     [/for]
+ *
+ *     [for statement1; condition; statement2 ]
+ *     [/for]
+ */
 class ForTag extends ControlTag {
   String get name => "for";
   bool get needsVar => true;
 }
 
-///The while tag.
+/** The while tag.
+ *
+ *     [while condition]
+ *     [/while]
+ */
 class WhileTag extends ControlTag {
   String get name => "while";
 }
 
-///The if tag.
+/** The if tag.
+ *
+ *      [if condition]
+ *      [/if]
+ */
 class IfTag extends  ControlTag {
   String get name => "if";
 }
 
 /** The else tag.
  *
- * The implementation is a bit tricky: it pretends to be an tag without the closing.
+ *      [if condition1]
+ *      [else if condition2]
+ *      [else]
+ *      [/if]
  */
 class ElseTag extends Tag {
+  //The implementation is a bit tricky: it pretends to be an tag without the closing.
   void begin(TagContext tc, String data) {
     if (!(tc.parent is IfTag))
       tc.error("Unexpected else tag");
@@ -242,8 +310,6 @@ class ElseTag extends Tag {
     }
 
     tc.indent();
-  }
-  void end(TagContext tc) {
   }
   bool get hasClosing => false;
   String get name => "else";

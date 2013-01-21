@@ -25,7 +25,7 @@ void listView(HttpConnect connect, {String path, List<FileInfo> infos}) { //5
   if (_v_ != null) output.writeString("$_v_");
 
   output.writeString("""
-</h2>
+</h1>
 
     <table border="1px" cellspacing="0">
       <tr>

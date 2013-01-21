@@ -17,7 +17,7 @@ Here is an example:
         <link href="theme.css" rel="stylesheet" type="text/css" />
       </head>
       <body>
-        <h1>Stream: Hello Templates</h2>
+        <h1>Stream: Hello Templates</h1>
         <p>Now is [=new Date.now()].</p>
         <p>This page is served by Rikulo Stream [=connect.server.version].</p>
         <p>Please refer to

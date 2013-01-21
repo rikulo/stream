@@ -19,7 +19,7 @@ void helloView(HttpConnect connect) { //4
     <link href="theme.css" rel="stylesheet" type="text/css" />
   </head>
   <body>
-    <h1>Stream: Hello Templates</h2>
+    <h1>Stream: Hello Templates</h1>
     <p>Now is """); //#4
 
   _v_ = new Date.now(); //#13

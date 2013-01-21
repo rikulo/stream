@@ -56,7 +56,7 @@ abstract class HttpConnect {
    *
    * Notice the sequence of invocation is reversed, i.e., the first added is the last called.
    */
-  HandlerMap on;
+  HandlerMap get on;
   /** The close handler.
    * After finishing the handling of a request, the request handler shall invoke this method
    * to start the awaiting task, or to
@@ -178,7 +178,7 @@ String _status2msg(int code, String cause)
 => cause != null ? "${statusMessages[code]}: $cause": null;
 
 ///A map of content types. For example, `contentTypes['js']` is `new ContentType.fromString("text/javascript;charset=utf-8")`.
-Map<String, ContentType> contentTypes = {
+final Map<String, ContentType> contentTypes = {
   'aac': new ContentType.fromString('audio/aac'),
   'aiff': new ContentType.fromString('audio/aiff'),
   'css': new ContentType.fromString('text/css;charset=utf-8'),

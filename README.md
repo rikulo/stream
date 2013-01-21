@@ -1,6 +1,6 @@
 #Stream
 
-[Stream](http://rikulo.org) is a Dart web server supporting URI mapping, template technology, file-based static resources and MVC design pattern.
+[Stream](http://rikulo.org) is a Dart web server supporting request routing, template technology, file-based static resources and MVC design pattern.
 
 * [Home](http://rikulo.org)
 * [Documentation](http://docs.rikulo.org/stream/latest)

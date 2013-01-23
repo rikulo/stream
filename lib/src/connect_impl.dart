@@ -58,19 +58,11 @@ class _HttpConnect implements HttpConnect {
   bool isError;
 }
 
-///A HTTP request that overrides the uri
-class _UriRequest extends HttpRequestWrapper {
-  _UriRequest._(HttpRequest request, String this._uri): super(request);
-
-  ///[uri]: if null, it means no need to change
-  static HttpRequest get(HttpRequest request, String uri)
-  => uri == null || request.uri == uri ? request: new _UriRequest._(request, uri);
-
-  final String _uri;
-
-  @override
-  String get uri => _uri;
-}
+///[uri]: if null, it means no need to change
+HttpRequest _wrapRequest(HttpRequest request, String uri)
+=> uri == null || request.uri == uri ? request: new _ReUriRequest(request, uri);
+HttpResponse _wrapResponse(HttpResponse response, bool included)
+=> !included || response is _IncludedResponse ? response: new _IncludedResponse(response);
 
 class _ForwardedConnect extends _HttpConnect {
   final bool _inc;
@@ -79,8 +71,9 @@ class _ForwardedConnect extends _HttpConnect {
   _ForwardedConnect(HttpConnect connect, HttpRequest request,
     HttpResponse response, String uri, ConnectErrorHandler errorHandler):
     super(connect.server,
-      _UriRequest.get(request != null ? request: connect.request, uri),
-      response != null ? response: connect.response, errorHandler),
+      _wrapRequest(request != null ? request: connect.request, uri),
+      _wrapResponse(response != null ? response: connect.response, connect.isIncluded),
+      errorHandler),
     forwarder = connect, _inc = connect.isIncluded;
 
   @override
@@ -99,8 +92,9 @@ class _IncludedConnect extends _HttpConnect {
   _IncludedConnect(HttpConnect connect, HttpRequest request,
     HttpResponse response, String uri, ConnectErrorHandler errorHandler):
     super(connect.server,
-      _UriRequest.get(request != null ? request: connect.request, uri),
-      response != null ? response: connect.response, errorHandler),
+      _wrapRequest(request != null ? request: connect.request, uri),
+      _wrapResponse(response != null ? response: connect.response, true),
+      errorHandler),
     includer = connect, _fwd = connect.isForwarded;
 
   @override
@@ -113,3 +107,75 @@ class _IncludedConnect extends _HttpConnect {
   bool get isForwarded => _fwd;
 }
 
+class _ReUriRequest extends HttpRequestWrapper {
+  _ReUriRequest(HttpRequest request, String this._uri): super(request);
+
+  final String _uri;
+
+  @override
+  String get uri => _uri;
+}
+
+///Ignore any invocation alerting the headers
+class _IncludedResponse extends HttpResponseWrapper {
+  _IncludedResponse(HttpResponse response): super(response);
+
+  HttpHeaders _headers;
+
+  @override
+  void set contentLength(int contentLength) {
+  }
+  @override
+  void set statusCode(int statusCode) {
+  }
+  @override
+  void set reasonPhrase(String reasonPhrase) {
+  }
+
+  @override
+  HttpHeaders get headers {
+    if (_headers == null)
+      _headers = new _ReadOnlyHeaders(origin.headers);
+    return _headers;
+  }
+
+  //@override
+  DetachedSocket detachSocket() {
+    throw new HttpException("Not allowed in an included connection");
+  }
+}
+class _ReadOnlyHeaders extends HttpHeadersWrapper {
+  _ReadOnlyHeaders(HttpHeaders headers): super(headers);
+
+  //@override
+  void add(String name, Object value) {
+  }
+  //@override
+  void set(String name, Object value) {
+  }
+  //@override
+  void remove(String name, Object value) {
+  }
+  //@override
+  void removeAll(String name) {
+  }
+  @override
+  void set date(Date date) {
+  }
+  @override
+  void set expires(Date expires) {
+    origin.expires = expires;
+  }
+  @override
+  void set ifModifiedSince(Date ifModifiedSince) {
+  }
+  @override
+  void set host(String host) {
+  }
+  @override
+  void set port(int port) {
+  }
+  @override
+  void set contentType(ContentType contentType) {
+  }
+}

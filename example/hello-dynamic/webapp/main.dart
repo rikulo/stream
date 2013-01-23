@@ -1,7 +1,7 @@
 //Sample of Stream: Hello Dynamic Contents
 library hello_dynamic;
 
-import "dart:json" show JSON;
+import "dart:json" as Json;
 import "package:stream/stream.dart";
 
 part "config.dart";
@@ -10,7 +10,7 @@ void serverInfo(HttpConnect connect) {
   final info = {"name": "Rikulo Stream", "version": connect.server.version};
   connect.response
     ..headers.contentType = contentTypes["json"]
-    ..outputStream.writeString(JSON.stringify(info));
+    ..outputStream.writeString(Json.stringify(info));
   connect.close();
 }
 

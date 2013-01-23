@@ -43,8 +43,10 @@ abstract class HttpConnect {
    * directly when handling an request asynchronously. For example,
    *
    *     connect.then(file.exists, (exists) {
-   *       if (exists)
-   *           doSomething(); //any exception will be caught and handled
+   *       if (exists) {
+   *         doSomething(); //any exception will be caught and handled
+   *         return;
+   *       }
    *       throw new Http404();
    *     }
    */
@@ -142,13 +144,13 @@ class HandlerMap {
   final HandlerList<Handler> error = new HandlerList();
 }
 
-/** A HTTP exception.
+/** A HTTP status exception.
  */
-class HttpException implements Exception {
+class HttpStatusException implements HttpException {
   final int statusCode;
   String _msg;
 
-  HttpException(int this.statusCode, [String message]) {
+  HttpStatusException(int this.statusCode, [String message]) {
     if (message == null) {
       message = statusMessages[statusCode];
       if (message == null)
@@ -160,18 +162,18 @@ class HttpException implements Exception {
   /** The error message. */
   String get message => _msg;
 
-  String toString() => "HttpException($statusCode: $message)";
+  String toString() => "HttpStatusException($statusCode: $message)";
 }
 /// HTTP 403 exception.
-class Http403 extends HttpException {
+class Http403 extends HttpStatusException {
   Http403([String uri]): super(403, _status2msg(403, uri));
 }
 /// HTTP 404 exception.
-class Http404 extends HttpException {
+class Http404 extends HttpStatusException {
   Http404([String uri]): super(404, _status2msg(404, uri));
 }
 /// HTTP 500 exception.
-class Http500 extends HttpException {
+class Http500 extends HttpStatusException {
   Http500([String cause]): super(500, _status2msg(500, cause));
 }
 String _status2msg(int code, String cause)

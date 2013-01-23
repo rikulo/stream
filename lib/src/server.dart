@@ -210,7 +210,7 @@ class _StreamServer implements StreamServer {
     }
 
     if (!path.isAbsolute)
-      path = new Path.fromNative(new Directory.current().path).join(path);
+      path = new Path(new Directory.current().path).join(path);
 
     //look for webapp
     for (final orgpath = path;;) {
@@ -336,7 +336,7 @@ class _StreamServer implements StreamServer {
       }
 
       connect.isError = true;
-      if (error is HttpException) {
+      if (error is HttpStatusException) {
         _forwardErr(connect, error, error, stackTrace);
       } else {
         _shout(error, stackTrace);
@@ -347,7 +347,7 @@ class _StreamServer implements StreamServer {
       _close(connect);
     }
   }
-  void _forwardErr(HttpConnect connect, HttpException err, srcErr, st) {
+  void _forwardErr(HttpConnect connect, HttpStatusException err, srcErr, st) {
     final code = err.statusCode;
     connect.response
       ..statusCode = code

@@ -1,13 +1,13 @@
 //Hello Dynamic Contents: the client side code
 
 import "dart:html";
-import "dart:json" show JSON;
+import "dart:json" as Json;
 
 void main() {
   document.query("#hi").on.click.add((e) {
       new HttpRequest.get("/server-info",
         (request) {
-          Map info = JSON.parse(request.responseText);
+          Map info = Json.parse(request.responseText);
           document.body.appendHtml(
             '<div>Hi there, this is ${info["name"]} ${info["version"]}.</div>');
         });

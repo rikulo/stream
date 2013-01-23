@@ -21,7 +21,6 @@ Then run the [Pub Package Manager](http://pub.dartlang.org/doc) (comes with the 
 
     pub install
 
-For more information, please refer to [Stream: Getting Started](http://docs.rikulo.org/stream/latest/Getting_Started/) and [Pub: Getting Started](http://pub.dartlang.org/doc).
 
 ##Install from Github for Bleeding Edge Stuff
 
@@ -31,16 +30,11 @@ To install stuff that is still in development, add this to your `pubspec.yam`:
       stream:
         git: git://github.com/rikulo/stream.git
 
-For more information, please refer to [Pub: Dependencies](http://pub.dartlang.org/doc/pubspec.html#dependencies).
 
 ##Usage
 
-*(Under Construction)* Please refer to the following examples:
-
-* [Hello Static Resources](https://github.com/rikulo/stream/tree/master/example/hello-static)
-* [Hello Dynamic Contents](https://github.com/rikulo/stream/tree/master/example/hello-dynamic)
-* [Hello Templates](https://github.com/rikulo/stream/tree/master/example/hello-template)
-* [Hello MVC](https://github.com/rikulo/stream/tree/master/example/hello-mvc)
+* [Introduction](http://docs.rikulo.org/stream/latest/Getting_Started/Introduction.md)
+* [Getting Started with Hello World](http://docs.rikulo.org/stream/latest/Getting_Started/Hello_World.md)
 
 ###Compile RSP (Rikulo Stream Page) to dart files
 

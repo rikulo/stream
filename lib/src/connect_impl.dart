@@ -45,7 +45,7 @@ class _HttpConnect implements HttpConnect {
       } catch (e, st) {
         error(e, st);
       }
-    }/*, onError: error*/); //TODO: wait for next SDK
+    }, onError: error);
   }
 
   @override

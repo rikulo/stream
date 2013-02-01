@@ -4,7 +4,7 @@ import "dart:html";
 import "dart:json" as Json;
 
 void main() {
-  document.query("#hi").on.click.add((e) {
+  document.query("#hi").onClick.listen((e) {
       new HttpRequest.get("/server-info",
         (request) {
           Map info = Json.parse(request.responseText);

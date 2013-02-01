@@ -6,7 +6,7 @@ The template technology is called RSP (Rikulo Stream Page). It allows developers
 
 Here is an example:
 
-    [* View of Hello Template *]
+    [/* View of Hello Template */]
     [dart]
     part of hello_template;
     [/dart]

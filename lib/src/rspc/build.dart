@@ -57,8 +57,9 @@ void build(List<String> arguments) {
     ..addOption("changed", allowMultiple: true)
     ..addOption("removed", allowMultiple: true)
     ..addFlag("clean", negatable: false)
-    ..addFlag("machine", negatable: false);
-  
+    ..addFlag("machine", negatable: false)
+    ..addFlag("full", negatable: false);
+
   final ArgResults args = argParser.parse(arguments);
   final List<String> changed = args["changed"];
   final List<String> removed = args["removed"];

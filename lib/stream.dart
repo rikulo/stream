@@ -6,6 +6,7 @@ library stream;
 
 import "dart:io";
 import "dart:async";
+import "dart:collection";
 import 'package:args/args.dart' show Options;
 import "package:logging/logging.dart" show Logger;
 

@@ -160,14 +160,14 @@ class _ReadOnlyHeaders extends HttpHeadersWrapper {
   void removeAll(String name) {
   }
   @override
-  void set date(Date date) {
+  void set date(DateTime date) {
   }
   @override
-  void set expires(Date expires) {
+  void set expires(DateTime expires) {
     origin.expires = expires;
   }
   @override
-  void set ifModifiedSince(Date ifModifiedSince) {
+  void set ifModifiedSince(DateTime ifModifiedSince) {
   }
   @override
   void set host(String host) {

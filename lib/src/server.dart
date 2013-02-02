@@ -160,7 +160,7 @@ class ServerError implements Error {
 
 ///The implementation
 class _StreamServer implements StreamServer {
-  final String version = "0.5.0";
+  final String version = "0.5.1";
   final HttpServer _server;
   String _host = "127.0.0.1";
   int _port = 8080;
@@ -191,7 +191,7 @@ class _StreamServer implements StreamServer {
       (HttpRequest req, HttpResponse res) {
         res.headers
           ..add(HttpHeaders.SERVER, server)
-          ..date = new Date.now();
+          ..date = new DateTime.now();
         _handle(
           new _HttpConnect(this, req, res, _cxerrh)
             ..on.close.add((){res.outputStream.close();}));

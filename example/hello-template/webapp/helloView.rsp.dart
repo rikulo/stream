@@ -22,7 +22,7 @@ void helloView(HttpConnect connect) { //4
     <h1>Stream: Hello Templates</h1>
     <p>Now is """); //#4
 
-  _v_ = new Date.now(); //#13
+  _v_ = new DateTime.now(); //#13
   if (_v_ != null) output.writeString("$_v_");
 
   output.writeString("""

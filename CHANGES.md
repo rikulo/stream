@@ -2,4 +2,4 @@
 
 **0.5.1**
 
-* The comment tag is renamed to a pair of `[/*` and `*/]`
+* The comment tag is renamed to a pair of `[!--` and `--]`

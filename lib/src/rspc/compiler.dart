@@ -227,30 +227,29 @@ class Compiler {
         final j = _pos + 1;
         if (j < _len) {
           final c2 = source[j];
-          if (c2 == '=') { //exprssion
+          if (c2 == '=') { //[=exprssion]
             _pos = j + 1;
             return new _Expr();
-          } else if (c2 == '/') { //ending tag or comment
+          } else if (c2 == '/') { //[/ending-tag]
             int k = j + 1;
-            if (k < _len) {
-              final c3 = source[k];
-              if (c3 == '*') { //comment
-                _pos = _skipUntil("*/]", j + 2) + 3;
-                continue;
-              } else if (StringUtil.isChar(c3, lower:true)) {
-                int m = _skipId(k);
-                final tagnm = source.substring(k, m);
-                final tag = tags[tagnm];
-                if (tag != null && m < _len && source[m] == ']') { //tag found
-                  if (!tag.hasClosing)
-                    _error("[/$tagnm] not allowed. It doesn't need the ending tag.", _line);
-                  _pos = m + 1;
-                  return new _Ending(tagnm);
-                }
+            if (k < _len && StringUtil.isChar(source[k], lower:true)) {
+              int m = _skipId(k);
+              final tagnm = source.substring(k, m);
+              final tag = tags[tagnm];
+              if (tag != null && m < _len && source[m] == ']') { //tag found
+                if (!tag.hasClosing)
+                  _error("[/$tagnm] not allowed. It doesn't need the ending tag.", _line);
+                _pos = m + 1;
+                return new _Ending(tagnm);
               }
             }
             //fall through
-          } else if (StringUtil.isChar(c2, lower:true)) { //beginning tag
+          } else if (c2 == '!') { //[!-- comment --]
+            if (j + 2 < _len && source[j + 1] == '-' && source[j + 2] == '-') {
+              _pos = _skipUntil("--]", j + 3) + 3;
+              continue;
+            }
+          } else if (StringUtil.isChar(c2, lower:true)) { //[beginning-tag]
             int k = _skipId(j);
             final tag = tags[source.substring(j, k)];
             if (tag != null) { //tag found
@@ -260,7 +259,7 @@ class Compiler {
             //fall through
           }
         }
-      } else if (cc == '\\') {
+      } else if (cc == '\\') { //escape
         final j = _pos + 1;
         if (j < _len && source[j] == '[') {
           sb.add('['); //\[ => [

@@ -9,7 +9,7 @@ part "includerView.rsp.dart";
 part "fragView.rsp.dart";
 
 void main() {
-  new StreamServer(uriMapping: _mapping).run();
+  new StreamServer(uriMapping: _uriMapping, errorMapping: _errMapping).run();
 }
 
 //Controllers//

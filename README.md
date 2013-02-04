@@ -40,7 +40,7 @@ To install stuff that is still in development, add this to your `pubspec.yam`:
 
 There are two ways to compile RSP files into dart files: automatic building with Dart Editor or manual compiling.
 
-> RSP is a template technology allowing developers to create dynamically generated web pages based on HTML, XML or other document types. Please refer [here](https://github.com/rikulo/stream/blob/master/example/hello-mvc/webapp/listView.rsp.html) and [here](https://github.com/rikulo/stream/blob/master/test/features/webapp/includerView.rsp.html).
+> RSP is a template technology allowing developers to create dynamically generated web pages based on HTML, XML or other document types (such as [this](https://github.com/rikulo/stream/blob/master/example/hello-mvc/webapp/listView.rsp.html) and [this](https://github.com/rikulo/stream/blob/master/test/features/webapp/includerView.rsp.html)). Please refer to [here](http://docs.rikulo.org/stream/latest/RSP/Fundamentals/RSP_Overview.html) for more information.
 
 ###Build with Dart Editor
 

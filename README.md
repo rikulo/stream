@@ -33,8 +33,8 @@ To install stuff that is still in development, add this to your `pubspec.yam`:
 
 ##Usage
 
-* [Introduction](http://docs.rikulo.org/stream/latest/Getting_Started/Introduction.md)
-* [Getting Started with Hello World](http://docs.rikulo.org/stream/latest/Getting_Started/Hello_World.md)
+* [Introduction](http://docs.rikulo.org/stream/latest/Getting_Started/Introduction.html)
+* [Getting Started with Hello World](http://docs.rikulo.org/stream/latest/Getting_Started/Hello_World.html)
 
 ###Compile RSP (Rikulo Stream Page) to dart files
 

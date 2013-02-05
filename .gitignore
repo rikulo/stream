@@ -5,7 +5,6 @@ codegen
 Thumbs.db
 .project
 .children
-*.dart.js
 *.dart.js_
 *.dart.js.map
 out.js

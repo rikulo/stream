@@ -55,7 +55,7 @@ class _HttpConnect implements HttpConnect {
   @override
   ErrorHandler get error => _errh;
   @override
-  bool isError;
+  ErrorDetail errorDetail;
 }
 
 ///[uri]: if null, it means no need to change
@@ -79,7 +79,7 @@ class _ForwardedConnect extends _HttpConnect {
   @override
   final HttpConnect forwarder;
   @override
-  bool get isError => super.isError || forwarder.isError;
+  ErrorDetail get errorDetail => super.errorDetail != null ? super.errorDetail: forwarder.errorDetail;
   @override
   bool get isIncluded => _inc;
   @override
@@ -100,7 +100,7 @@ class _IncludedConnect extends _HttpConnect {
   @override
   final HttpConnect includer;
   @override
-  bool get isError => super.isError || includer.isError;
+  ErrorDetail get errorDetail => super.errorDetail != null ? super.errorDetail: forwarder.errorDetail;
   @override
   bool get isIncluded => true;
   @override
@@ -139,7 +139,7 @@ class _IncludedResponse extends HttpResponseWrapper {
     return _headers;
   }
 
-  //@override
+  @override
   DetachedSocket detachSocket() {
     throw new HttpException("Not allowed in an included connection");
   }
@@ -147,16 +147,16 @@ class _IncludedResponse extends HttpResponseWrapper {
 class _ReadOnlyHeaders extends HttpHeadersWrapper {
   _ReadOnlyHeaders(HttpHeaders headers): super(headers);
 
-  //@override
+  @override
   void add(String name, Object value) {
   }
-  //@override
+  @override
   void set(String name, Object value) {
   }
-  //@override
+  @override
   void remove(String name, Object value) {
   }
-  //@override
+  @override
   void removeAll(String name) {
   }
   @override

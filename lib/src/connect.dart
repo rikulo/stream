@@ -98,9 +98,17 @@ abstract class HttpConnect {
    *       ..pipe(connect.response.outputStream, close: true);
    */
   ErrorHandler get error;
-  /** Indicates if any error occurs (i.e., [error] has been called).
+  /** The error detailed information (which is the information when [error]
+   * has been called), or null if no error.
    */
-  bool isError;
+  ErrorDetail errorDetail;
+}
+
+///The error detailed information.
+class ErrorDetail {
+  var error;
+  var stackTrace;
+  ErrorDetail(this.error, this.stackTrace);
 }
 
 /** A list of handlers.

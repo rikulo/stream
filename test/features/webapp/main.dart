@@ -14,3 +14,7 @@ void main() {
 
 //Controllers//
 String forward(HttpConnect connect) => "/forwardee.html";
+
+//Utilities//
+class RecoverError {
+}

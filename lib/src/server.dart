@@ -12,10 +12,12 @@ part of stream;
  *
  * ##Start a full-featured server
  *
- *     new StreamServer({ //URI mapping
+ *     new StreamServer(uriMapping: { //URI mapping
  *         "/your-uri-in-regex": yourHandler
- *       },[ //Error mapping
- *         [404, "/webapp/404.html"]
+ *       },errorMapping: { //Error mapping
+ *         "404": "/webapp/404.html",
+ *         "500": your500Handler,
+ *         "yourLib.YourSecurityException": yourSecurityHandler
  *       ]).run();
  *  )
  */
@@ -32,12 +34,17 @@ abstract class StreamServer {
    * (i.e., `void`). If not, it shall return an URI (which is a non-empty string,
    * starting with * `/`) that the request shall be forwarded to.
    *
-   * * [uriMapping] - a map of URI mappings, `<String uri, Function handler>`. 
-   * * [errorMapping] - a list of pairs of error mappings. Each pair is
-   * `[int statusCode, String uri]`.
+   * * [uriMapping] - a map of URI mappings, `<String uri, Function handler>`.  The URI is
+   * a regular exception used to match the request URI.
+   * * [errorMapping] - a map of error mapping. The key can be a number, an instance of
+   * exception, a string representing a number, or a string representing the exception class.
+   * The value can be an URI or a renderer function. The number is used to represent a status code,
+   * such as 404 and 500. The exception is used for matching the caught exception.
+   * Notice that, if you specify the name of the exception to handle,
+   * it must include the library name and the class name, such as `"stream.ServerError"`.
    */
   factory StreamServer({Map<String, Function> uriMapping,
-    List<List> errorMapping, String homeDir,
+    Map errorMapping, String homeDir,
     LoggingConfigurer loggingConfigurer})
   => new _StreamServer(uriMapping, errorMapping, homeDir, loggingConfigurer);
 
@@ -137,10 +144,6 @@ abstract class StreamServer {
    */
   ResourceLoader resourceLoader;
 
-  /** The error mapping to map the status code to URI for displaying
-   * the error.
-   */
-  Map<int, String> get errorMapping;
   /** The error handler. Default: null.
    */
   ConnectErrorHandler onError;
@@ -167,13 +170,15 @@ class _StreamServer implements StreamServer {
   int _sessTimeout = 20 * 60; //20 minutes
   final Logger logger;
   Path _homeDir;
-  final List<_Mapping> _uriMapping = [];
+  final List<_UriMapping> _uriMapping = [];
+  final Map<int, dynamic> _codeMapping = new Map(); //mapping of status code to URI/Function
+  final List<_ErrMapping> _errMapping = []; //exception to URI/Function
   ResourceLoader _resLoader;
   ConnectErrorHandler _cxerrh;
   bool _running = false;
 
   _StreamServer(Map<String, Function> uriMapping,
-    List<List> errorMapping, String homeDir,
+    Map errorMapping, String homeDir,
     LoggingConfigurer loggingConfigurer)
     : _server = new HttpServer(), logger = new Logger("stream") {
     (loggingConfigurer != null ? loggingConfigurer: new LoggingConfigurer())
@@ -229,28 +234,48 @@ class _StreamServer implements StreamServer {
       throw new ServerError("$homeDir doesn't exist.");
     _resLoader = new ResourceLoader(_homeDir);
   }
-  void _initMapping(Map<String, Function> uriMapping, List<List> errorMapping) {
+  void _initMapping(Map<String, Function> uriMapping, Map errMapping) {
     if (uriMapping != null)
       for (final uri in uriMapping.keys) {
         if (!uri.startsWith("/"))
-          throw new ServerError("URI must start with '/': $uri");
+          throw new ServerError("URI mapping: URI must start with '/': $uri");
         final hd = uriMapping[uri];
         if (hd is! Function)
-          throw new ServerError("Function is required for $uri");
-        _uriMapping.add(new _Mapping(new RegExp("^$uri\$"), hd));
+          throw new ServerError("URI mapping: function is required for $uri");
+        _uriMapping.add(new _UriMapping(new RegExp("^$uri\$"), hd));
       }
 
-    if (errorMapping != null)
-      for (final mapping in errorMapping) {
-        final code = mapping[0],
-          uri = mapping[1];
-        if (uri == null || uri.isEmpty)
-          throw new ServerError("Invalid error mapping: URI required for $code");
-        this.errorMapping[code] = uri;
+    if (errMapping != null)
+      for (var code in errMapping.keys) {
+        final result = errMapping[code];
+        if (result is String) {
+          if (!result.startsWith("/"))
+            throw new ServerError("Error mapping: URI must start with '/': $result");
+        } else if (result is! Function) {
+          throw new ServerError("Error mapping: URI or function is required for $code");
+        }
+
+        if (code is String) {
+          try {
+            if (StringUtil.isChar(code[0], digit:true))
+              code = int.parse(code);
+            else
+              code = ClassUtil.forName(code);
+          } catch (e) { //silent; handle it  later
+          }
+        } else if (code != null && code is! int) {
+          code = reflect(code).type;
+        }
+        if (code is int)
+          _codeMapping[code] = result;
+        else if (code is ClassMirror)
+          _errMapping.add(new _ErrMapping(code, result));
+        else
+          throw new ServerError("Error mapping: status code or exception is required, not $code");
       }
   }
 
-  //@override
+  @override
   void forward(HttpConnect connect, String uri, {Handler success,
     HttpRequest request, HttpResponse response}) {
     if (uri.indexOf('?') >= 0)
@@ -263,7 +288,7 @@ class _StreamServer implements StreamServer {
           connect.close(); //spec: it is the forwarded handler's job to close
         }));
   }
-  //@override
+  @override
   void include(HttpConnect connect, String uri, {Handler success,
     HttpRequest request, HttpResponse response}) {
     if (uri.indexOf('?') >= 0)
@@ -271,7 +296,7 @@ class _StreamServer implements StreamServer {
     _handle(connectForInclusion(
       connect, uri: uri, success: success, request: request, response: response));
   }
-  //@override
+  @override
   HttpConnect connectForInclusion(HttpConnect connect, {String uri, Handler success,
     HttpRequest request, HttpResponse response}) {
     final inc = new _IncludedConnect(connect, request, response,
@@ -329,38 +354,49 @@ class _StreamServer implements StreamServer {
     try {
       if (onError != null)
         onError(connect, error, stackTrace);
-      if (connect.isError) {
+      if (connect.errorDetail != null) {
         _shout(error, stackTrace);
         _close(connect);
         return; //done
       }
 
-      connect.isError = true;
-      if (error is HttpStatusException) {
-        _forwardErr(connect, error, error, stackTrace);
+      connect.errorDetail = new ErrorDetail(error, stackTrace);
+      if (!_errMapping.isEmpty) {
+        final caughtClass = reflect(error).type;
+        for (final mapping in _errMapping) {
+          if (ClassUtil.isAssignableFrom(mapping.error, caughtClass)) { //found
+            _forwardDyna(connect, mapping.result);
+            return;
+          }
+        }
+      }
+
+      if (error is! HttpStatusException) {
+        _shout(error, stackTrace);
+        error = new Http500(error);
+      }
+
+      final code = error.statusCode;
+      connect.response
+        ..statusCode = code
+        ..reasonPhrase = error.message;
+      final result = _codeMapping[code];
+      if (result != null) {
+        _forwardDyna(connect, result);
       } else {
-        _shout(error, stackTrace);
-        _forwardErr(connect, new Http500(error) , error, stackTrace);
-        _shout(error, stackTrace);
+        //TODO: render a page
+        _close(connect);
       }
     } catch (e) {
       _close(connect);
     }
   }
-  void _forwardErr(HttpConnect connect, HttpStatusException err, srcErr, st) {
-    final code = err.statusCode;
-    connect.response
-      ..statusCode = code
-      ..reasonPhrase = err.message;
-
-    final uri = errorMapping[code];
-    if (uri != null) {
-      //TODO: store srcErr and st to HttpRequest.data (when SDK supports it)
-      forward(connect, uri);
-    } else {
-      //TODO: render a page
-      _close(connect);
-    }
+  ///forward to URI or a render function
+  void _forwardDyna(HttpConnect connect, result) {
+    if (result is Function)
+      ClassUtil.apply(result, [connect]);
+    else
+      forward(connect, result);
   }
   void _shout(err, st) {
     logger.shout(st != null ? "$err:\n$st": err);
@@ -407,13 +443,11 @@ class _StreamServer implements StreamServer {
   }
 
   @override
-  final Map<int, String> errorMapping = new Map();
-  @override
   ConnectErrorHandler onError;
 
   @override
   bool get isRunning => _running;
-  //@override
+  @override
   void run([ServerSocket socket]) {
     _assertIdle();
     if (socket != null)
@@ -425,7 +459,7 @@ class _StreamServer implements StreamServer {
       "${socket != null ? '$socket': '$host:$port'}\n"
       "Home: ${homeDir}");
   }
-  //@override
+  @override
   void stop() {
     _server.close();
   }
@@ -436,8 +470,13 @@ class _StreamServer implements StreamServer {
   }
 }
 
-class _Mapping {
+class _UriMapping {
   final RegExp regexp;
   final Function handler;
-  _Mapping(this.regexp, this.handler);
+  _UriMapping(this.regexp, this.handler);
+}
+class _ErrMapping {
+  final ClassMirror error;
+  final result;
+  _ErrMapping(this.error, this.result);
 }

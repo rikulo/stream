@@ -104,10 +104,10 @@ class _IncludedConnect extends _HttpConnect {
   @override
   final HttpConnect includer;
   @override
-  ErrorDetail get errorDetail => forwarder.errorDetail;
+  ErrorDetail get errorDetail => includer.errorDetail;
   @override
   void set errorDetail(ErrorDetail errorDetail) {
-    forwarder.errorDetail = errorDetail;
+    includer.errorDetail = errorDetail;
   }
   @override
   bool get isIncluded => true;

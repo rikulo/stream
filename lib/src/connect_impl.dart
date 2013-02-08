@@ -79,7 +79,11 @@ class _ForwardedConnect extends _HttpConnect {
   @override
   final HttpConnect forwarder;
   @override
-  ErrorDetail get errorDetail => super.errorDetail != null ? super.errorDetail: forwarder.errorDetail;
+  ErrorDetail get errorDetail => forwarder.errorDetail;
+  @override
+  void set errorDetail(ErrorDetail errorDetail) {
+    forwarder.errorDetail = errorDetail;
+  }
   @override
   bool get isIncluded => _inc;
   @override
@@ -100,7 +104,11 @@ class _IncludedConnect extends _HttpConnect {
   @override
   final HttpConnect includer;
   @override
-  ErrorDetail get errorDetail => super.errorDetail != null ? super.errorDetail: forwarder.errorDetail;
+  ErrorDetail get errorDetail => forwarder.errorDetail;
+  @override
+  void set errorDetail(ErrorDetail errorDetail) {
+    forwarder.errorDetail = errorDetail;
+  }
   @override
   bool get isIncluded => true;
   @override

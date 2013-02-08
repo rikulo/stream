@@ -247,11 +247,11 @@ class _StreamServer implements StreamServer {
 
     if (errMapping != null)
       for (var code in errMapping.keys) {
-        final result = errMapping[code];
-        if (result is String) {
-          if (!result.startsWith("/"))
-            throw new ServerError("Error mapping: URI must start with '/': $result");
-        } else if (result is! Function) {
+        final handler = errMapping[code];
+        if (handler is String) {
+          if (!handler.startsWith("/"))
+            throw new ServerError("Error mapping: URI must start with '/': $handler");
+        } else if (handler is! Function) {
           throw new ServerError("Error mapping: URI or function is required for $code");
         }
 
@@ -267,9 +267,9 @@ class _StreamServer implements StreamServer {
           code = reflect(code).type;
         }
         if (code is int)
-          _codeMapping[code] = result;
+          _codeMapping[code] = handler;
         else if (code is ClassMirror)
-          _errMapping.add(new _ErrMapping(code, result));
+          _errMapping.add(new _ErrMapping(code, handler));
         else
           throw new ServerError("Error mapping: status code or exception is required, not $code");
       }
@@ -365,7 +365,7 @@ class _StreamServer implements StreamServer {
         final caughtClass = reflect(error).type;
         for (final mapping in _errMapping) {
           if (ClassUtil.isAssignableFrom(mapping.error, caughtClass)) { //found
-            _forwardDyna(connect, mapping.result);
+            _forwardDyna(connect, mapping.handler);
             return;
           }
         }
@@ -380,9 +380,9 @@ class _StreamServer implements StreamServer {
       connect.response
         ..statusCode = code
         ..reasonPhrase = error.message;
-      final result = _codeMapping[code];
-      if (result != null) {
-        _forwardDyna(connect, result);
+      final handler = _codeMapping[code];
+      if (handler != null) {
+        _forwardDyna(connect, handler);
       } else {
         //TODO: render a page
         _close(connect);
@@ -392,11 +392,11 @@ class _StreamServer implements StreamServer {
     }
   }
   ///forward to URI or a render function
-  void _forwardDyna(HttpConnect connect, result) {
-    if (result is Function)
-      ClassUtil.apply(result, [connect]);
+  void _forwardDyna(HttpConnect connect, handler) {
+    if (handler is Function)
+      handler(connect);
     else
-      forward(connect, result);
+      forward(connect, handler);
   }
   void _shout(err, st) {
     logger.shout(st != null ? "$err:\n$st": err);
@@ -477,6 +477,6 @@ class _UriMapping {
 }
 class _ErrMapping {
   final ClassMirror error;
-  final result;
-  _ErrMapping(this.error, this.result);
+  final handler;
+  _ErrMapping(this.error, this.handler);
 }

@@ -104,7 +104,7 @@ abstract class StreamServer {
 
   /** Forward the given [connect] to the given [uri].
    *
-   * If [request] or [response] is ignored, [connect] is assumed.
+   * If [request] and/or [response] is ignored, [connect]'s request and/or response is assumed.
    *
    * After calling this method, the caller shall not write the output stream, since the
    * request handler for the given URI might handle it asynchronously. Rather, it
@@ -126,7 +126,7 @@ abstract class StreamServer {
    * If you'd like to include a request handler (i.e., a function), use [connectForInclusion]
    * instead.
    *
-   * If [request] or [response] is ignored, [connect] is assumed.
+   * If [request] and/or [response] is ignored, [connect]'s request and/or response is assumed.
    *
    * After calling this method, the caller shall not write the output stream, since the
    * request handler for the given URI might handle it asynchronously. Rather, it

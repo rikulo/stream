@@ -37,6 +37,51 @@ abstract class HttpConnect {
    */
   bool get isForwarded;
 
+  /** Forward this connection to the given [uri].
+   *
+   * If [request] or [response] is ignored, this connect's request or response is assumed.
+   *
+   * After calling this method, the caller shall not write the output stream, since the
+   * request handler for the given URI might handle it asynchronously. Rather, it
+   * shall make it a closure and pass it to the [success] argument. Then,
+   * it will be resumed once the forwarded handler has completed.
+   *
+   * ##Difference between [forward] and [include]
+   *
+   * [forward] and [include] are almost the same, except
+   *
+   * * The included request handler shall not generate any HTTP headers (it is the job of the caller).
+   *
+   * * The request handler that invokes [forward] shall not call [close] (it is the job
+   * of the callee -- the forwarded request handler).
+   *
+   * Notice the default implementation is `connect.forward(connect, uri...)`.
+   */
+  void forward(String uri, {Handler success, HttpRequest request, HttpResponse response});
+  /** Includes the given [uri].
+   * If you'd like to include a request handler (i.e., a function), use [StreamServer]'s
+   * `connectForInclusion` instead.
+   *
+   * If [request] or [response] is ignored, this connect's request or response is assumed.
+   *
+   * After calling this method, the caller shall not write the output stream, since the
+   * request handler for the given URI might handle it asynchronously. Rather, it
+   * shall make it a closure and pass it to the [success] argument. Then,
+   * it will be resumed once the included handler has completed.
+   *
+   * ##Difference between [forward] and [include]
+   *
+   * [forward] and [include] are almost the same, except
+   *
+   * * The included request handler shall not generate any HTTP headers (it is the job of the caller).
+   *
+   * * The request handler that invokes [forward] shall not call [close] (it is the job
+   * of the callee -- the included request handler).
+   *
+   * Notice the default implementation is `connect.include(connect, uri...)`.
+   */
+  void include(String uri, {Handler success, HttpRequest request, HttpResponse response});
+
   /** A safe invocation for `Future.then(onValue)`. It will invoke
    * `connect.error(err, stackTrace)` automatically if there is an exception.
    * It is strongly suggested to use this method instead of calling `Future.then`

@@ -104,7 +104,7 @@ void syntax(HttpConnect connect, {foo, bool c:false}) { //9
 
   } else if (c) { //#39
 
-    connect.server.forward(connect, """/x/y/z"""); //#40
+    connect.forward("""/x/y/z"""); //#40
     return;
 
   } else if (foo.isEmployee) { //#41

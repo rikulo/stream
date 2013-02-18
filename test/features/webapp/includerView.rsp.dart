@@ -29,7 +29,7 @@ void includerView(HttpConnect connect) { //8
     <div style="border: 1px solid blue">
 """); //#8
 
-  connect.server.include(connect, """/frag.html""", success: () { //#19
+  connect.include("""/frag.html""", success: () { //#19
 
     output.writeString("""
     </div>

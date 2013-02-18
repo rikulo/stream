@@ -172,8 +172,8 @@ class Compiler {
       throw new UnsupportedError("Include from URI with attributes"); //TODO: handle other attributes
     if (verbose) _info("Include $uri", line);
 
-    _writeln('\n${_current.pre}connect.server.include('
-      'connect, ${_toEl(uri, quotmark:true)}, success: () { //#$line');
+    _writeln('\n${_current.pre}connect.include('
+      '${_toEl(uri, quotmark:true)}, success: () { //#$line');
     _extra = "  $_extra";
     _incs.add(new _IncInfo("});"));
   }

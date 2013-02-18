@@ -192,8 +192,8 @@ class ForwardTag extends Tag {
       if (attrs != null && !attrs.isEmpty)
         throw new UnsupportedError("Forward to URI with attributes"); //TODO: handle other attributes
 
-      tc.writeln("\n${tc.pre}connect.server.forward("
-        "connect, ${_toEl(uri, quotmark:true)}); //#${tc.line}\n"
+      tc.writeln("\n${tc.pre}connect.forward("
+        "${_toEl(uri, quotmark:true)}); //#${tc.line}\n"
         "${tc.pre}return;");
       return;
     }

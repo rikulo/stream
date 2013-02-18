@@ -37,7 +37,16 @@ class _HttpConnect implements HttpConnect {
   @override
   bool get isForwarded => false;
 
-  //@override
+  @override
+  void forward(String uri, {Handler success, HttpRequest request, HttpResponse response}) {
+    server.forward(this, uri, success: success, request: request, response: response);
+  }
+  @override
+  void include(String uri, {Handler success, HttpRequest request, HttpResponse response}) {
+    server.include(this, uri, success: success, request: request, response: response);
+  }
+
+  @override
   void then(Future future, onValue(value)) {
     future.then((value) {
       try {

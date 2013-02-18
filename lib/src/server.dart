@@ -3,6 +3,17 @@
 // Author: tomyeh
 part of stream;
 
+/** The filter. It is used with the `filterMapping` paramter of [StreamServer].
+ *
+ * * [chain] - the callback to *resume* the request handling. If there is another filter,
+ * it will be invoked when you call back [chain]. If you'd like to skip the hanlding (e.g., redirect to another page),
+ * you don't have to call back [chain].
+ *
+ * Before calling back [chain], you can proxy the request and/or response, such as writing the
+ * the response to a string buffer.
+ */
+typedef void Filter(HttpConnect connect, void chain(HttpConnect conn));
+
 /**
  * Stream server.
  *
@@ -14,11 +25,13 @@ part of stream;
  *
  *     new StreamServer(uriMapping: { //URI mapping
  *         "/your-uri-in-regex": yourHandler
- *       },errorMapping: { //Error mapping
+ *       }, errorMapping: { //Error mapping
  *         "404": "/webapp/404.html",
  *         "500": your500Handler,
  *         "yourLib.YourSecurityException": yourSecurityHandler
- *       ]).run();
+ *       }, filterMapping: {
+ *         "/your-uri-in-regex": yourFilter
+ *       }).run();
  *  )
  */
 abstract class StreamServer {
@@ -36,6 +49,8 @@ abstract class StreamServer {
    *
    * * [uriMapping] - a map of URI mappings, `<String uri, Function handler>`.  The URI is
    * a regular exception used to match the request URI.
+   * * [filterMapping] - a map of filter mapping, `<String uri, Function filter>`. The signature
+   * of a filter is `void foo(HttpConnect connect, void chain(HttpConnect conn))`.
    * * [errorMapping] - a map of error mapping. The key can be a number, an instance of
    * exception, a string representing a number, or a string representing the exception class.
    * The value can be an URI or a renderer function. The number is used to represent a status code,
@@ -44,9 +59,9 @@ abstract class StreamServer {
    * it must include the library name and the class name, such as `"stream.ServerError"`.
    */
   factory StreamServer({Map<String, Function> uriMapping,
-    Map errorMapping, String homeDir,
-    LoggingConfigurer loggingConfigurer})
-  => new _StreamServer(uriMapping, errorMapping, homeDir, loggingConfigurer);
+    Map errorMapping, Map<String, Filter> filterMapping,
+    String homeDir, LoggingConfigurer loggingConfigurer})
+  => new _StreamServer(uriMapping, errorMapping, filterMapping, homeDir, loggingConfigurer);
 
   /** The version.
    */
@@ -170,7 +185,7 @@ class _StreamServer implements StreamServer {
   int _sessTimeout = 20 * 60; //20 minutes
   final Logger logger;
   Path _homeDir;
-  final List<_UriMapping> _uriMapping = [];
+  final List<_UriMapping> _uriMapping = [], _filterMapping = [];
   final Map<int, dynamic> _codeMapping = new Map(); //mapping of status code to URI/Function
   final List<_ErrMapping> _errMapping = []; //exception to URI/Function
   ResourceLoader _resLoader;
@@ -178,14 +193,14 @@ class _StreamServer implements StreamServer {
   bool _running = false;
 
   _StreamServer(Map<String, Function> uriMapping,
-    Map errorMapping, String homeDir,
-    LoggingConfigurer loggingConfigurer)
+    Map errorMapping, Map<String, Filter> filterMapping,
+    String homeDir, LoggingConfigurer loggingConfigurer)
     : _server = new HttpServer(), logger = new Logger("stream") {
     (loggingConfigurer != null ? loggingConfigurer: new LoggingConfigurer())
       .configure(logger);
     _init();
     _initDir(homeDir);
-    _initMapping(uriMapping, errorMapping);
+    _initMapping(uriMapping, errorMapping, filterMapping);
   }
   void _init() {
     _cxerrh = (HttpConnect cnn, err, [st]) {
@@ -234,15 +249,25 @@ class _StreamServer implements StreamServer {
       throw new ServerError("$homeDir doesn't exist.");
     _resLoader = new ResourceLoader(_homeDir);
   }
-  void _initMapping(Map<String, Function> uriMapping, Map errMapping) {
+  void _initMapping(Map<String, Function> uriMapping, Map errMapping, Map<String, Filter> filterMapping) {
     if (uriMapping != null)
       for (final uri in uriMapping.keys) {
         if (!uri.startsWith("/"))
           throw new ServerError("URI mapping: URI must start with '/': $uri");
-        final hd = uriMapping[uri];
-        if (hd is! Function)
+        final hdl = uriMapping[uri];
+        if (hdl is! Function)
           throw new ServerError("URI mapping: function is required for $uri");
-        _uriMapping.add(new _UriMapping(new RegExp("^$uri\$"), hd));
+        _uriMapping.add(new _UriMapping(new RegExp("^$uri\$"), hdl));
+      }
+
+    if (filterMapping != null)
+      for (final uri in filterMapping.keys) {
+        if (!uri.startsWith("/"))
+          throw new ServerError("Filter mapping: URI must start with '/': $uri");
+        final hdl = filterMapping[uri];
+        if (hdl is! Function)
+          throw new ServerError("Filter mapping: function is required for $uri");
+        _filterMapping.add(new _UriMapping(new RegExp("^$uri\$"), hdl));
       }
 
     if (errMapping != null)
@@ -273,7 +298,7 @@ class _StreamServer implements StreamServer {
         else
           throw new ServerError("Error mapping: status code or exception is required, not $code");
       }
-  }
+   }
 
   @override
   void forward(HttpConnect connect, String uri, {Handler success,
@@ -286,7 +311,7 @@ class _StreamServer implements StreamServer {
           if (success != null)
             success();
           connect.close(); //spec: it is the forwarded handler's job to close
-        }));
+        }), -1); //no filter invocation
   }
   @override
   void include(HttpConnect connect, String uri, {Handler success,
@@ -294,7 +319,8 @@ class _StreamServer implements StreamServer {
     if (uri.indexOf('?') >= 0)
       throw new UnsupportedError("Include with query string"); //TODO
     _handle(connectForInclusion(
-      connect, uri: uri, success: success, request: request, response: response));
+      connect, uri: uri, success: success, request: request, response: response),
+      -1); //no filter invocation
   }
   @override
   HttpConnect connectForInclusion(HttpConnect connect, {String uri, Handler success,
@@ -316,10 +342,20 @@ class _StreamServer implements StreamServer {
     }
     return uri;
   }
-  void _handle(HttpConnect connect) {
+  void _handle(HttpConnect connect, [int iFilter=0]) {
     try {
       String uri = connect.request.uri;
-      if (!uri.startsWith('/')) uri = "/$uri"; //not possible; just in case
+      if (!uri.startsWith('/'))
+        uri = "/$uri"; //not possible; just in case
+
+      if (iFilter >= 0) //-1 means ignore filters
+        for (; iFilter < _filterMapping.length; ++iFilter)
+          if (_filterMapping[iFilter].regexp.hasMatch(uri)) {
+            _filterMapping[iFilter].handler(connect, (HttpConnect conn) {
+                _handle(conn, iFilter + 1);
+              });
+            return;
+          }
 
       final hdl = _getHandler(uri);
       if (hdl != null) {

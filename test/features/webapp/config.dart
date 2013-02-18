@@ -10,6 +10,12 @@ var _uriMapping = {
   },
   "/recoverable-error": (HttpConnect connect) {
     throw new RecoverError();
+  },
+  "/log5": (HttpConnect connect) {
+    connect.response
+      ..headers.contentType = contentTypes["text/plain"]
+      ..outputStream.writeString("You see two logs shown on the console");
+    connect.close();
   }
 };
 
@@ -36,5 +42,17 @@ var _errMapping = {
       ..headers.contentType = contentTypes["text/plain"]
       ..outputStream.writeString("Recovered from an error");
     connect.close();
+  }
+};
+
+//Filtering
+var _filterMapping = {
+  "/log.*": (HttpConnect connect, void chain(HttpConnect conn)) {
+    connect.server.logger.info("Filter 1: ${connect.request.uri}");
+    chain(connect);
+  },
+  "/log[0-9]*": (HttpConnect connect, void chain(HttpConnect conn)) {
+    connect.server.logger.info("Filter 2: ${connect.request.uri}");
+    chain(connect);
   }
 };

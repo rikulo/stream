@@ -27,7 +27,7 @@ class FileLoader implements ResourceLoader {
   @override
   final Path rootDir;
 
-  //@override
+  @override
   void load(HttpConnect connect, String uri) {
     var path = uri.substring(1); //must start with '/'
     path = rootDir.append(path);

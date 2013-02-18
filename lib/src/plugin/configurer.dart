@@ -15,7 +15,7 @@ abstract class LoggingConfigurer {
 }
 
 class _LoggingConfigurer implements LoggingConfigurer {
-  //@override
+  @override
   void configure(Logger logger) {
     Logger.root..level = Level.INFO
       ..on.record.clear();

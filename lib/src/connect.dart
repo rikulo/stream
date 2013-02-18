@@ -149,6 +149,56 @@ abstract class HttpConnect {
   ErrorDetail errorDetail;
 }
 
+///The HTTP connection wrapper. It simplifies the overriding of a connection.
+class HttpConnectWrapper implements HttpConnect {
+  ///The original HTTP request
+  final HttpConnect origin;
+ 
+  HttpConnectWrapper(HttpConnect this.origin);
+
+  @override
+  StreamServer get server => origin.server;
+  @override
+  HttpRequest get request => origin.request;
+  @override
+  HttpResponse get response => origin.response;
+  @override
+  HttpConnect get forwarder => origin.forwarder;
+  @override
+  HttpConnect get includer => origin.includer;
+  @override
+  bool get isIncluded => origin.isIncluded;
+  @override
+  bool get isForwarded => origin.isForwarded;
+
+  @override
+  void forward(String uri, {Handler success, HttpRequest request, HttpResponse response}) {
+    origin.forward(uri, success: success, request: request, response: response);
+  }
+  @override
+  void include(String uri, {Handler success, HttpRequest request, HttpResponse response}) {
+    origin.include(uri, success: success, request: request, response: response);
+  }
+
+  @override
+  void then(Future future, onValue(value)) {
+    origin.then(future, onValue);
+  }
+
+  @override
+  HandlerMap get on => origin.on;
+  @override
+  Handler get close => origin.close;
+  @override
+  ErrorHandler get error => origin.error;
+  @override
+  ErrorDetail get errorDetail => origin.errorDetail;
+  @override
+  void set errorDetail(ErrorDetail errorDetail) {
+    origin.errorDetail = errorDetail;
+  }
+}
+
 ///The error detailed information.
 class ErrorDetail {
   var error;

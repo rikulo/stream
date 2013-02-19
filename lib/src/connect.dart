@@ -326,7 +326,7 @@ final Map<String, ContentType> contentTypes = {
 ///A map of HTTP status code to messages.
 Map<int, String> get statusMessages {
   if (_stmsgs == null) {
-    _stmsgs = new Map();
+    _stmsgs = new HashMap();
     for (List<dynamic> inf in [
   //http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
   [100, "Continue"],

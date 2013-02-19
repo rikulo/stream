@@ -70,7 +70,7 @@ abstract class Tag {
  */
 Map<String, Tag> get tags {
   if (_tags == null) {
-    _tags = new Map();
+    _tags = new HashMap();
     for (Tag tag in [new PageTag(), new DartTag(), new HeaderTag(),
       new IncludeTag(), new ForwardTag(),
       new ForTag(), new WhileTag(), new IfTag(), new ElseTag()])

@@ -6,10 +6,11 @@
 library stream_rspc;
 
 import "dart:io";
-import 'package:args/args.dart';
-import 'package:rikulo_commons/util.dart';
+import "dart:collection" show HashMap;
+import "package:args/args.dart";
+import "package:rikulo_commons/util.dart";
 
-import 'stream.dart' show contentTypes;
+import "stream.dart" show contentTypes;
 
 part "src/rspc/main.dart";
 part "src/rspc/build.dart";

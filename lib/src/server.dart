@@ -186,7 +186,7 @@ class _StreamServer implements StreamServer {
   final Logger logger;
   Path _homeDir;
   final List<_UriMapping> _uriMapping = [], _filterMapping = [];
-  final Map<int, dynamic> _codeMapping = new Map(); //mapping of status code to URI/Function
+  final Map<int, dynamic> _codeMapping = new HashMap(); //mapping of status code to URI/Function
   final List<_ErrMapping> _errMapping = []; //exception to URI/Function
   ResourceLoader _resLoader;
   ConnectErrorHandler _cxerrh;

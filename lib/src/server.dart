@@ -3,10 +3,10 @@
 // Author: tomyeh
 part of stream;
 
-/** The filter. It is used with the `filterMapping` paramter of [StreamServer].
+/** The filter. It is used with the `filterMapping` parameter of [StreamServer].
  *
  * * [chain] - the callback to *resume* the request handling. If there is another filter,
- * it will be invoked when you call back [chain]. If you'd like to skip the hanlding (e.g., redirect to another page),
+ * it will be invoked when you call back [chain]. If you'd like to skip the handling (e.g., redirect to another page),
  * you don't have to call back [chain].
  *
  * Before calling back [chain], you can proxy the request and/or response, such as writing the
@@ -214,7 +214,8 @@ class _StreamServer implements StreamServer {
           ..date = new DateTime.now();
         _handle(
           new _HttpConnect(this, req, res, _cxerrh)
-            ..on.close.add((){res.outputStream.close();}));
+            ..on.close.add((){res.outputStream.close();}),
+						0); //process filter from beginning
       };
     _server.onError = (err) {
       _handleErr(null, err);
@@ -311,7 +312,7 @@ class _StreamServer implements StreamServer {
           if (success != null)
             success();
           connect.close(); //spec: it is the forwarded handler's job to close
-        }), -1); //no filter invocation
+        })); //no filter invocation
   }
   @override
   void include(HttpConnect connect, String uri, {Handler success,
@@ -319,8 +320,8 @@ class _StreamServer implements StreamServer {
     if (uri.indexOf('?') >= 0)
       throw new UnsupportedError("Include with query string"); //TODO
     _handle(connectForInclusion(
-      connect, uri: uri, success: success, request: request, response: response),
-      -1); //no filter invocation
+      connect, uri: uri, success: success, request: request, response: response));
+      //no filter invocation
   }
   @override
   HttpConnect connectForInclusion(HttpConnect connect, {String uri, Handler success,
@@ -342,13 +343,14 @@ class _StreamServer implements StreamServer {
     }
     return uri;
   }
-  void _handle(HttpConnect connect, [int iFilter=0]) {
+  ///[iFilter] - the index of filter to start. It must be non-negative. Ignored if null.
+  void _handle(HttpConnect connect, [int iFilter]) {
     try {
       String uri = connect.request.uri;
       if (!uri.startsWith('/'))
         uri = "/$uri"; //not possible; just in case
 
-      if (iFilter >= 0) //-1 means ignore filters
+      if (iFilter != null) //null means ignore filters
         for (; iFilter < _filterMapping.length; ++iFilter)
           if (_filterMapping[iFilter].regexp.hasMatch(uri)) {
             _filterMapping[iFilter].handler(connect, (HttpConnect conn) {

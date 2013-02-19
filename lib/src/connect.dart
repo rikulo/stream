@@ -82,21 +82,6 @@ abstract class HttpConnect {
    */
   void include(String uri, {Handler success, HttpRequest request, HttpResponse response});
 
-  /** A safe invocation for `Future.then(onValue)`. It will invoke
-   * `connect.error(err, stackTrace)` automatically if there is an exception.
-   * It is strongly suggested to use this method instead of calling `Future.then`
-   * directly when handling an request asynchronously. For example,
-   *
-   *     connect.then(file.exists, (exists) {
-   *       if (exists) {
-   *         doSomething(); //any exception will be caught and handled
-   *         return;
-   *       }
-   *       throw new Http404();
-   *     }
-   */
-  void then(Future future, onValue(value));
-
   /** The map of error and close handlers.
    * It is used to register the handler that will be called when an error occurs, or when [close]
    * is called, depending which list it is registered.
@@ -116,31 +101,26 @@ abstract class HttpConnect {
   /** The error handler.
    *
    * Notice that it is important to invoke this method if an error occurs.
-   * Otherwise, the HTTP connection won't be closed.
+   * Otherwise, the HTTP connection won't be closed, and, even worse, the server might stop from
+   * execution.
    *
-   * ##Use `HttpConnect.then` instead of `Future.then`
-   *
-   * When using with `Future.then`, you have to implement a catch-all statement
-   * to invoke `connect.error(err, st)` when an error occurs.
-   *
-   * To simplify the job, you can invoke [then] (of `HttpConnect`) instead of
-   * invoking `Future.then` directly.
-   * [then] will invoke `connect.error(err, st)` automatically if necessary.
-   * For example,
-   *
-   *     connect.then(file.exists, (exists) {
-   *       if (exists)
-   *           doSomething(); //any exception will be caught and handled
-   *       throw new Http404();
-   *     }
-   *
-   * ##Assign onError with this method
-   *
-   * For example,
+   * ##Assign onError with the return value of this method
    *
    *     file.openInputStream()
-   *       ..onError = connect.error
+   *       ..onError = connect.error //forward to Stream's error handling
+   *       ..onClosed = connect.close //close on completion
    *       ..pipe(connect.response.outputStream, close: true);
+   *
+   * ##Future.catchError with the return value of this method
+   *
+   *     file.exists().then((exists) {
+   *       if (exists) {
+   *         doSomething(); //any exception will be caught and handled
+   *         connect.close(); //close on completion
+   *         return;
+   *       }
+   *       throw new Http404();
+   *     }).catchError(connect.error); //forward to Stream's error handling
    */
   ErrorHandler get error;
   /** The error detailed information (which is the information when [error]
@@ -178,11 +158,6 @@ class HttpConnectWrapper implements HttpConnect {
   @override
   void include(String uri, {Handler success, HttpRequest request, HttpResponse response}) {
     origin.include(uri, success: success, request: request, response: response);
-  }
-
-  @override
-  void then(Future future, onValue(value)) {
-    origin.then(future, onValue);
   }
 
   @override

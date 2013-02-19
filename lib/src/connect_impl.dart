@@ -47,17 +47,6 @@ class _HttpConnect implements HttpConnect {
   }
 
   @override
-  void then(Future future, onValue(value)) {
-    future.then((value) {
-      try {
-        onValue(value);
-      } catch (e, st) {
-        error(e, st);
-      }
-    }, onError: error);
-  }
-
-  @override
   final HandlerMap on = new HandlerMap();
   @override
   Handler get close => _close;

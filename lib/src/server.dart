@@ -384,6 +384,11 @@ class _StreamServer implements StreamServer {
         return mp.handler;
   }
   void _handleErr(HttpConnect connect, error, [stackTrace]) {
+    while (error is AsyncError) {
+      stackTrace = error.stackTrace;
+      error = error.error;
+    }
+
     if (connect == null) {
       _shout(error, stackTrace);
       return;

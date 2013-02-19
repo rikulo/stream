@@ -3,6 +3,7 @@
 **0.5.3**
 
 * The filter mapping is supported.
+* HttpConnect.then is removed. Use Future.catchError() instead.
 
 **0.5.2**
 

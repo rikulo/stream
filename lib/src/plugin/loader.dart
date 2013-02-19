@@ -33,21 +33,18 @@ class FileLoader implements ResourceLoader {
     path = rootDir.append(path);
 
     var file = new File.fromPath(path);
-    connect.then(file.exists(), (exists) {
-      if (exists) {
-        loadFile(connect, file);
-        return;
-      }
-
-      //try uri / indexNames
-      final dir = new Directory.fromPath(path);
-      connect.then(dir.exists(), (exists) {
+    file.exists().then((exists) {
+      if (!exists)
+        return new Directory.fromPath(path).exists();
+      loadFile(connect, file);
+      //return null;
+    }).then((exists) {
+      if (exists != null) //null means done
         if (exists)
           _loadFileAt(connect, uri, path, connect.server.indexNames, 0);
         else
           throw new Http404(uri);
-      });
-    });
+    }).catchError(connect.error);
   }
 }
 
@@ -56,12 +53,12 @@ bool _loadFileAt(HttpConnect connect, String uri, Path dir, List<String> names, 
     throw new Http404(uri);
 
   final file = new File.fromPath(dir.append(names[j]));
-  connect.then(file.exists(), (exists) {
+  file.exists().then((exists) {
     if (exists)
       loadFile(connect, file);
     else
       _loadFileAt(connect, uri, dir, names, j + 1);
-  });
+  }).catchError(connect.error);
 }
 
 /** Loads a file into the given response.
@@ -78,14 +75,13 @@ void loadFile(HttpConnect connect, File file) {
   if (ctype != null)
     headers.contentType = ctype;
 
-  connect.then(file.length(), (length) {
+  file.length().then((length) {
     connect.response.contentLength = length;
-
-    connect.then(file.lastModified(), (date) {
-      headers.add(HttpHeaders.LAST_MODIFIED, date);
-      _loadFile(connect, file);
-    });
-  });
+    return file.lastModified();
+  }).then((date) {
+    headers.add(HttpHeaders.LAST_MODIFIED, date);
+    _loadFile(connect, file);
+  }).catchError(connect.error);
 }
 
 void _loadFile(HttpConnect connect, File file) {

@@ -1,0 +1,84 @@
+#!/bin/bash
+# d2j
+#
+#	Purpose:
+#		Compile dart to js
+#
+#Copyright (C) 2012 Potix Corporation. All Rights Reserved.
+#
+SDK=/usr/dart/dart-sdk
+if [ ! -d $SDK ] ; then
+	echo $SDK not found
+	echo "Please link /usr/dart to Dart Editor's folder."
+	exit
+fi
+if [ "$TERM" = "cygwin" ] || [ "$OSTYPE" = "cygwin" ] ; then
+	dart2js=$SDK/bin/dart2js.bat
+else
+	dart2js=$SDK/bin/dart2js
+fi
+
+if [ $# = 0 ] ; then
+	echo d2j - Compile Dart to Javascript
+	echo
+	echo Usage:
+	echo "  d2j cleanup"
+	echo "  d2j clean"
+	echo "  d2j file1.dart directory1 file2.dart..."
+	echo
+	echo "If the directory is specified all dart files containing main() will be compiled"
+	exit 1
+fi
+
+if [ "$1" == "cleanup" ] || [ "$1" == "clean" ] ; then
+	find -name '*.dart.js' | xargs rm -f
+	find -name '*.dart.js.map' | xargs rm -f
+	exit
+fi
+
+warning=false
+function d2j {
+	f=$1
+	if [ ${f%.dart} != $f ] ; then
+		grep -w 'main[(] *[)]' $f > /dev/null
+		if [ "$?" = "0" ] ; then #found
+			dart2js $f
+			if [ "$?" = "0" ] ; then
+				mv out.js ${f%.dart}.dart.js
+				mv out.js.map ${f%.dart}.dart.js.map
+			else
+				exit 1
+			fi
+		elif [ $warning = true ] ; then
+			echo "$f are ignored since main() not found"
+		fi
+	fi
+}
+function d2jx {
+	for f in *; do
+		if [ -d $f ] ; then
+			if [ $f != dartdoc ] && [ $f != issues ] ; then
+				(
+				cd $f
+				d2jx
+				)
+			fi
+		else
+			d2j $f
+		fi
+	done
+}
+for f in $* ; do
+	if [ -f "$f" ] ; then
+		warning=true
+		d2j "$f"
+	elif [ -d "$f" ] ; then
+		warning=false
+		(
+			cd "$f"
+			d2jx
+		)
+	else
+		echo "$f not found"
+	fi
+done

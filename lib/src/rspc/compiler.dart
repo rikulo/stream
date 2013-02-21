@@ -97,8 +97,8 @@ class Compiler {
       if (_tagCtxs.length > 1) {
         final sb = new StringBuffer();
         for (int i = _tagCtxs.length; --i >= 1;) {
-          if (!sb.isEmpty) sb.add(', ');
-          sb..add(_tagCtxs[i].tag)..add(' at line ')..add(_tagCtxs[i].line);
+          if (!sb.isEmpty) sb.write(', ');
+          sb..write(_tagCtxs[i].tag)..write(' at line ')..write(_tagCtxs[i].line);
         }
         _error("Unclosed tag(s): $sb");
       }
@@ -188,8 +188,8 @@ class Compiler {
     final sb = new StringBuffer("})");
     if (args != null)
       for (final arg in args.keys)
-        sb..add(", ")..add(arg)..add(": ")..add(_toEl(args[arg]));
-    sb.add(");");
+        sb..write(", ")..write(arg)..write(": ")..write(_toEl(args[arg]));
+    sb.write(");");
     _incs.add(new _IncInfo(sb.toString()));
   }
   void _checkInclude(int line) {
@@ -262,14 +262,14 @@ class Compiler {
       } else if (cc == '\\') { //escape
         final j = _pos + 1;
         if (j < _len && source[j] == '[') {
-          sb.add('['); //\[ => [
+          sb.write('['); //\[ => [
           _pos += 2;
           continue;
         }
       } else if (cc == '\n') {
         _line++;
       }
-      sb.add(cc);
+      sb.write(cc);
       ++_pos;
     } //for each cc
     return null;

@@ -17,7 +17,7 @@ abstract class TagContext {
   ///The line number of the starting of this context
   int get line;
 
-  TagContext(Tag this.parent, Compiler this.compiler, OutputStream this.output);
+  TagContext(this.parent, this.compiler, this.output);
 
   ///The whitespace that shall be generated in front of each line
   String get pre;

@@ -8,8 +8,7 @@ class _HttpConnect implements HttpConnect {
   ErrorHandler _errh;
   Handler _close;
  
-  _HttpConnect(StreamServer this.server, HttpRequest this.request,
-    HttpResponse this.response, ConnectErrorHandler this._cxerrh) {
+  _HttpConnect(this.server, this.request, this.response, this._cxerrh) {
     _init();
   }
   void _init() {
@@ -68,11 +67,11 @@ class _ForwardedConnect extends _HttpConnect {
   ///[uri]: if null, it means no need to change
   _ForwardedConnect(HttpConnect connect, HttpRequest request,
     HttpResponse response, String uri, ConnectErrorHandler errorHandler):
+    forwarder = connect, _inc = connect.isIncluded,
     super(connect.server,
       _wrapRequest(request != null ? request: connect.request, uri),
       _wrapResponse(response != null ? response: connect.response, connect.isIncluded),
-      errorHandler),
-    forwarder = connect, _inc = connect.isIncluded;
+      errorHandler);
 
   @override
   final HttpConnect forwarder;
@@ -93,11 +92,11 @@ class _IncludedConnect extends _HttpConnect {
   ///[uri]: if null, it means no need to change
   _IncludedConnect(HttpConnect connect, HttpRequest request,
     HttpResponse response, String uri, ConnectErrorHandler errorHandler):
+    includer = connect, _fwd = connect.isForwarded,
     super(connect.server,
       _wrapRequest(request != null ? request: connect.request, uri),
       _wrapResponse(response != null ? response: connect.response, true),
-      errorHandler),
-    includer = connect, _fwd = connect.isForwarded;
+      errorHandler);
 
   @override
   final HttpConnect includer;
@@ -114,7 +113,7 @@ class _IncludedConnect extends _HttpConnect {
 }
 
 class _ReUriRequest extends HttpRequestWrapper {
-  _ReUriRequest(HttpRequest request, String this._uri): super(request);
+  _ReUriRequest(request, this._uri): super(request);
 
   final String _uri;
 

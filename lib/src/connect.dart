@@ -134,7 +134,7 @@ class HttpConnectWrapper implements HttpConnect {
   ///The original HTTP request
   final HttpConnect origin;
  
-  HttpConnectWrapper(HttpConnect this.origin);
+  HttpConnectWrapper(this.origin);
 
   @override
   StreamServer get server => origin.server;
@@ -228,7 +228,7 @@ class HttpStatusException implements HttpException {
   final int statusCode;
   String _msg;
 
-  HttpStatusException(int this.statusCode, [String message]) {
+  HttpStatusException(this.statusCode, [String message]) {
     if (message == null) {
       message = statusMessages[statusCode];
       if (message == null)

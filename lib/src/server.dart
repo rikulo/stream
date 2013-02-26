@@ -172,7 +172,7 @@ abstract class StreamServer {
 class ServerError implements Error {
   final String message;
 
-  ServerError(String this.message);
+  ServerError(this.message);
   String toString() => "ServerError($message)";
 }
 

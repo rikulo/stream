@@ -22,7 +22,7 @@ abstract class ResourceLoader {
 /** A file-system-based resource loader.
  */
 class FileLoader implements ResourceLoader {
-  FileLoader(Path this.rootDir);
+  FileLoader(this.rootDir);
 
   @override
   final Path rootDir;

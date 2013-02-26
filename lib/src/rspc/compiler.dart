@@ -23,8 +23,8 @@ class Compiler {
   final List<_IncInfo> _incs = []; //included
   String _extra = ""; //extra whitespaces
 
-  Compiler(String this.source, OutputStream this.destination, {
-    String this.sourceName, Encoding this.encoding:Encoding.UTF_8, bool this.verbose: false}) {
+  Compiler(this.source, this.destination, {
+      this.sourceName, this.encoding:Encoding.UTF_8, this.verbose: false}) {
     _tagCtxs.add(_current = new _TagContext.root(this, destination));
     _len = source.length;
   }
@@ -453,7 +453,7 @@ class SyntaxException implements Exception {
   final String sourceName;
   ///The line number
   final int line;
-  SyntaxException(String this.sourceName, int this.line, String message) {
+  SyntaxException(this.sourceName, this.line, String message) {
     _msg = "$sourceName:$line: $message";
   }
   String get message => _msg;
@@ -468,9 +468,9 @@ class _TagContext extends TagContext {
   final int line;
 
   _TagContext.root(Compiler compiler, OutputStream output)
-    : super(null, compiler, output), _pre = "", line = 1;
-  _TagContext.child(_TagContext prev, Tag this.tag, int this.line)
-    : super(prev.tag, prev.compiler, prev.output), _pre = prev._pre;
+    : _pre = "", line = 1, super(null, compiler, output);
+  _TagContext.child(_TagContext prev, this.tag, this.line)
+    : _pre = prev._pre, super(prev.tag, prev.compiler, prev.output);
 
   String get pre => compiler._extra.isEmpty ? _pre: "${compiler._extra}$_pre";
   String indent() => _pre = "$_pre  ";

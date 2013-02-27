@@ -57,7 +57,7 @@ class _HttpConnect implements HttpConnect {
 
 ///[uri]: if null, it means no need to change
 HttpRequest _wrapRequest(HttpRequest request, String uri)
-=> uri == null || request.uri == uri ? request: new _ReUriRequest(request, uri);
+=> uri == null || request.uri == uri ? request: new _ReUriRequest(request, new Uri(uri));
 HttpResponse _wrapResponse(HttpResponse response, bool included)
 => !included || response is _IncludedResponse ? response: new _IncludedResponse(response);
 
@@ -115,10 +115,10 @@ class _IncludedConnect extends _HttpConnect {
 class _ReUriRequest extends HttpRequestWrapper {
   _ReUriRequest(request, this._uri): super(request);
 
-  final String _uri;
+  final Uri _uri;
 
   @override
-  String get uri => _uri;
+  Uri get uri => _uri;
 }
 
 ///Ignore any invocation alerting the headers
@@ -145,7 +145,7 @@ class _IncludedResponse extends HttpResponseWrapper {
   }
 
   @override
-  DetachedSocket detachSocket() {
+  Future<Socket> detachSocket() {
     throw new HttpException("Not allowed in an included connection");
   }
 }

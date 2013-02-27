@@ -7,6 +7,7 @@ library stream;
 import "dart:io";
 import "dart:async";
 import "dart:collection";
+import "dart:uri";
 import "dart:mirrors";
 import 'package:meta/meta.dart';
 import 'package:args/args.dart' show Options;

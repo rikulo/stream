@@ -10,10 +10,10 @@ void serverInfo(HttpConnect connect) {
   final info = {"name": "Rikulo Stream", "version": connect.server.version};
   connect.response
     ..headers.contentType = contentTypes["json"]
-    ..outputStream.writeString(Json.stringify(info));
+    ..addString(Json.stringify(info));
   connect.close();
 }
 
 void main() {
-  new StreamServer(uriMapping: _mapping).run();
+  new StreamServer(uriMapping: _mapping).start();
 }

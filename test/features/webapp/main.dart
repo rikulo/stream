@@ -11,7 +11,7 @@ part "fragView.rsp.dart";
 void main() {
   new StreamServer(
     uriMapping: _uriMapping, errorMapping: _errMapping, filterMapping: _filterMapping)
-    .run();
+    .start();
 }
 
 //Controllers//

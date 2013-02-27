@@ -8,5 +8,5 @@ part "config.dart";
 part "helloView.rsp.dart"; //generated from helloView.rsp.html
 
 void main() {
-  new StreamServer(uriMapping: _mapping).run();
+  new StreamServer(uriMapping: _mapping).start();
 }

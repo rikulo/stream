@@ -9,13 +9,12 @@ final infos = {
 
 /** Template, includerView, for rendering the view. */
 void includerView(HttpConnect connect) { //8
-  final request = connect.request, response = connect.response,
-    output = response.outputStream;
+  final request = connect.request, response = connect.response;
   var _v_;
   if (!connect.isIncluded)
     response.headers.contentType = new ContentType.fromString("""text/html; charset=utf-8""");
 
-  output.writeString("""
+  response.addString("""
 
 <html>
   <head>
@@ -31,14 +30,14 @@ void includerView(HttpConnect connect) { //8
 
   connect.include("""/frag.html""", success: () { //#19
 
-    output.writeString("""
+    response.addString("""
     </div>
     <div style="border: 1px solid red">
 """); //#20
 
     fragView(connect.server.connectForInclusion(connect, success: () { //#22
 
-      output.writeString("""
+      response.addString("""
     </div>
   </body>
 </html>

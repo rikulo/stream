@@ -4,48 +4,47 @@ part of features;
 
 /** Template, fragView, for rendering the view. */
 void fragView(HttpConnect connect, {Map infos: const {}}) { //5
-  final request = connect.request, response = connect.response,
-    output = response.outputStream;
+  final request = connect.request, response = connect.response;
   var _v_;
   if (!connect.isIncluded)
     response.headers.contentType = new ContentType.fromString("""text/html; charset=utf-8""");
 
-  output.writeString("""
+  response.addString("""
 <ul>
   <li>This is a fragment and generated dynamically</li>
 """); //#5
 
   for (var type in infos.keys) { //#7
 
-    output.writeString("""    <li>"""); //#8
+    response.addString("""    <li>"""); //#8
 
     _v_ = type; //#8
-    if (_v_ != null) output.writeString("$_v_");
+    if (_v_ != null) response.addString("$_v_");
 
-    output.writeString("""
+    response.addString("""
 
       <ol>
 """); //#8
 
     for (var name in infos[type]) { //#10
 
-      output.writeString("""        <li>"""); //#11
+      response.addString("""        <li>"""); //#11
 
       _v_ = name; //#11
-      if (_v_ != null) output.writeString("$_v_");
+      if (_v_ != null) response.addString("$_v_");
 
-      output.writeString("""
+      response.addString("""
 </li>
 """); //#11
     } //for
 
-    output.writeString("""
+    response.addString("""
       </ol>
     </li>
 """); //#13
   } //for
 
-  output.writeString("""
+  response.addString("""
 </ul>
 """); //#16
 

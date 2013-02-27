@@ -6,7 +6,7 @@ part of stream_rspc;
 /** Compiles the given [source] RSP document to the given output stream [out].
  * Notice that the caller has to close the output stream by himself.
  */
-void compile(String source, OutputStream out, {
+void compile(String source, IOSink out, {
 String sourceName, Encoding encoding: Encoding.UTF_8, bool verbose: false}) {
   new Compiler(source, out, sourceName: sourceName, encoding: encoding, verbose: verbose)
     .compile();
@@ -36,7 +36,7 @@ Encoding encoding : Encoding.UTF_8}) {
   }
   
   source.readAsString(encoding).then((text) {
-    final out = dest.openOutputStream();
+    final out = dest.openWrite();
     try {
       compile(text, out, sourceName: sourceName, encoding: encoding, verbose: verbose);
     } on SyntaxException catch (e) {
@@ -66,16 +66,16 @@ void build(List<String> arguments) {
   final bool clean = args["clean"];
   
   if (clean) { // clean only
-    new Directory.current().list(recursive: true).onFile = (String name) {
-      if (name.endsWith(".rsp.dart"))
-        new File(name).delete();
-    };
+    new Directory.current().list(recursive: true).listen((fse) {
+      if (fse is File && fse.name.endsWith(".rsp.dart"))
+        fse.delete();
+    });
 
   } else if (removed.isEmpty && changed.isEmpty) { // full build
-    new Directory.current().list(recursive: true).onFile = (String name) {
-      if (_rspSource(name) >= 0)
-          compileFile(name);
-    };
+    new Directory.current().list(recursive: true).listen((fse) {
+      if (fse is File && _rspSource(fse.name) >= 0)
+          compileFile(fse.name);
+    });
 
   } else {
     for (String name in removed) {

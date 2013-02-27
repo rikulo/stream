@@ -12,7 +12,7 @@ abstract class TagContext {
    * You can change it to have the child tag to generate the Dart code
    * to, say, a buffer.
    */
-  OutputStream output;
+  IOSink output;
   final Compiler compiler;
   ///The line number of the starting of this context
   int get line;
@@ -28,7 +28,7 @@ abstract class TagContext {
 
   ///Writes a string to [output] in the compiler's encoding.
   void write(String str) {
-    output.writeString(str, compiler.encoding);
+    output.addString(str, compiler.encoding);
   }
   ///Write a string plus a linefeed to [output] in the compiler's encoding.
   void writeln([String str]) {

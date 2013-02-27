@@ -1,5 +1,10 @@
 #CHANGES
 
+**0.5.4**
+
+* StreamServer.run() is deprecated. Use start(), startSecure() or startOn() instead.
+* Support the new Dart I/O.
+
 **0.5.3**
 
 * The filter mapping is supported.

@@ -14,7 +14,7 @@ var _uriMapping = {
   "/log5": (HttpConnect connect) {
     connect.response
       ..headers.contentType = contentTypes["text/plain"]
-      ..outputStream.writeString("You see two logs shown on the console");
+      ..addString("You see two logs shown on the console");
     connect.close();
   }
 };
@@ -25,7 +25,7 @@ var _errMapping = {
   "500": (HttpConnect connect) {
     connect.response
       ..headers.contentType = contentTypes["text/html"]
-      ..outputStream.writeString("""
+      ..addString("""
 <html>
 <head><title>500: ${connect.errorDetail.error.runtimeType}</title></head>
 <body>
@@ -40,7 +40,7 @@ var _errMapping = {
     connect.errorDetail = null; //clear error
     connect.response
       ..headers.contentType = contentTypes["text/plain"]
-      ..outputStream.writeString("Recovered from an error");
+      ..addString("Recovered from an error");
     connect.close();
   }
 };

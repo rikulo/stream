@@ -19,7 +19,7 @@ typedef void Filter(HttpConnect connect, void chain(HttpConnect conn));
  *
  * ##Start a server serving static resources only
  *
- *     new StreamServer().run();
+ *     new StreamServer().start();
  *
  * ##Start a full-featured server
  *
@@ -31,7 +31,7 @@ typedef void Filter(HttpConnect connect, void chain(HttpConnect conn));
  *         "yourLib.YourSecurityException": yourSecurityHandler
  *       }, filterMapping: {
  *         "/your-uri-in-regex": yourFilter
- *       }).run();
+ *       }).start();
  *  )
  */
 abstract class StreamServer {
@@ -92,11 +92,20 @@ abstract class StreamServer {
    */
   bool get isRunning;
   /** Starts the server
-   *
-   * If [serverSocket] is given (not null), it will be used ([host] and [port])
-   * will be ignored. In additions, the socket won't be closed when the
-   * server stops.
    */
+  Future<StreamServer> start({int backlog: 0});
+  /** Starts the server listening for HTTPS request.
+   */
+  Future<StreamServer> startSecure({String certificateName, bool requestClientCertificate: false,
+    int backlog: 0});
+  /** Starts the server to an existing the given socket.
+   *
+   * Notice [host] and [port] are ignored.
+   */
+  void startOn(ServerSocket socket);
+  /** Deprecated. Use [start], [startSecure] or [startOn] instead.
+   */
+  @deprecated
   void run([ServerSocket socket]);
   /** Stops the server.
    */
@@ -178,8 +187,8 @@ class ServerError implements Error {
 
 ///The implementation
 class _StreamServer implements StreamServer {
-  final String version = "0.5.3";
-  final HttpServer _server;
+  final String version = "0.5.4";
+  HttpServer _server;
   String _host = "127.0.0.1";
   int _port = 8080;
   int _sessTimeout = 20 * 60; //20 minutes
@@ -190,12 +199,10 @@ class _StreamServer implements StreamServer {
   final List<_ErrMapping> _errMapping = []; //exception to URI/Function
   ResourceLoader _resLoader;
   ConnectErrorHandler _cxerrh;
-  bool _running = false;
 
   _StreamServer(Map<String, Function> uriMapping,
     Map errorMapping, Map<String, Filter> filterMapping,
-    String homeDir, LoggingConfigurer loggingConfigurer)
-    : _server = new HttpServer(), logger = new Logger("stream") {
+    String homeDir, LoggingConfigurer loggingConfigurer): logger = new Logger("stream") {
     (loggingConfigurer != null ? loggingConfigurer: new LoggingConfigurer())
       .configure(logger);
     _init();
@@ -205,20 +212,6 @@ class _StreamServer implements StreamServer {
   void _init() {
     _cxerrh = (HttpConnect cnn, err, [st]) {
       _handleErr(cnn, err, st);
-    };
-    final server = "Rikulo Stream $version";
-    _server.defaultRequestHandler =
-      (HttpRequest req, HttpResponse res) {
-        res.headers
-          ..add(HttpHeaders.SERVER, server)
-          ..date = new DateTime.now();
-        _handle(
-          new _HttpConnect(this, req, res, _cxerrh)
-            ..on.close.add((){res.outputStream.close();}),
-						0); //process filter from beginning
-      };
-    _server.onError = (err) {
-      _handleErr(null, err);
     };
   }
   void _initDir(String homeDir) {
@@ -334,7 +327,7 @@ class _StreamServer implements StreamServer {
   }
   String _toAbsUri(HttpConnect connect, String uri) {
     if (!uri.startsWith('/')) {
-      final pre = connect.request.uri;
+      final pre = connect.request.uri.path;
       final i = pre.lastIndexOf('/');
       if (i >= 0)
         uri = "${pre.substring(0, i + 1)}$uri";
@@ -346,7 +339,7 @@ class _StreamServer implements StreamServer {
   ///[iFilter] - the index of filter to start. It must be non-negative. Ignored if null.
   void _handle(HttpConnect connect, [int iFilter]) {
     try {
-      String uri = connect.request.uri;
+      String uri = connect.request.uri.path;
       if (!uri.startsWith('/'))
         uri = "/$uri"; //not possible; just in case
 
@@ -446,7 +439,7 @@ class _StreamServer implements StreamServer {
   }
   void _close(HttpConnect connect) {
     try {
-      connect.response.outputStream.close();
+      connect.response.close();
     } catch (e) { //silent
     }
   }
@@ -474,7 +467,9 @@ class _StreamServer implements StreamServer {
   int get sessionTimeout => _sessTimeout;
   @override
   void set sessionTimeout(int timeout) {
-    _sessTimeout = _server.sessionTimeout = timeout;
+    _sessTimeout = timeout;
+    if (_server != null)
+      _server.sessionTimeout = _sessTimeout;
   }
 
   @override
@@ -489,27 +484,76 @@ class _StreamServer implements StreamServer {
   ConnectErrorHandler onError;
 
   @override
-  bool get isRunning => _running;
+  bool get isRunning => _server != null;
   @override
-  void run([ServerSocket socket]) {
+  Future<StreamServer> start({int backlog: 0}) {
     _assertIdle();
-    if (socket != null)
-      _server.listenOn(socket);
-    else
-      _server.listen(host, port);
-
-    logger.info("Rikulo Stream Server $version starting on "
-      "${socket != null ? '$socket': '$host:$port'}\n"
+    return HttpServer.bind(host, port, backlog)
+    .catchError((err) {
+      _handleErr(null, err);
+    })
+    .then((server) {
+      _server = server;
+      _startServer();
+      logger.info("Rikulo Stream Server $version starting on $host:$port\n"
+        "Home: ${homeDir}");
+      return this;
+    });
+  }
+  @override
+  Future<StreamServer> startSecure({String certificateName, bool requestClientCertificate: false,
+    int backlog: 0}) {
+    _assertIdle();
+    return HttpServer.bindSecure(host, port, certificateName: certificateName,
+        requestClientCertificate: requestClientCertificate, backlog: backlog)
+    .catchError((err) {
+      _handleErr(null, err);
+    })
+    .then((server) {
+      _server = server;
+      _startServer();
+      logger.info("Rikulo Stream Server $version starting on $host:$port for HTTPS\n"
+        "Home: ${homeDir}");
+      return this;
+    });
+  }
+  @override
+  void startOn(ServerSocket socket) {
+    _assertIdle();
+    _server = new HttpServer.listenOn(socket);
+    _startServer();
+    logger.info("Rikulo Stream Server $version starting on $socket\n"
       "Home: ${homeDir}");
   }
   @override
+  void run([ServerSocket socket]) {
+    if (socket != null) startOn(socket);
+    else start();
+  }
+  void _startServer() {
+    final serverInfo = "Rikulo Stream $version";
+    _server.sessionTimeout = sessionTimeout;
+    _server.listen((HttpRequest req) {
+      req.response.headers
+        ..add(HttpHeaders.SERVER, serverInfo)
+        ..date = new DateTime.now();
+      _handle(
+        new _HttpConnect(this, req, req.response, _cxerrh)
+          ..on.close.add((){req.response.close();}), 0); //process filter from beginning
+    }, onError: (err) {
+      _handleErr(null, err);
+    });
+  }
+  @override
   void stop() {
+    if (_server == null)
+      throw new StateError("Not running");
     _server.close();
+    _server = null;
   }
   void _assertIdle() {
-    if (isRunning)
+    if (_server != null)
       throw new StateError("Already running");
-    _server.close();
   }
 }
 

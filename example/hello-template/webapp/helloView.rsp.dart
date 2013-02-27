@@ -4,13 +4,12 @@ part of hello_template;
 
 /** Template, helloView, for rendering the view. */
 void helloView(HttpConnect connect) { //4
-  final request = connect.request, response = connect.response,
-    output = response.outputStream;
+  final request = connect.request, response = connect.response;
   var _v_;
   if (!connect.isIncluded)
     response.headers.contentType = new ContentType.fromString("""text/html; charset=utf-8""");
 
-  output.writeString("""
+  response.addString("""
 
 <!DOCTYPE html>
 <html>
@@ -23,16 +22,16 @@ void helloView(HttpConnect connect) { //4
     <p>Now is """); //#4
 
   _v_ = new DateTime.now(); //#13
-  if (_v_ != null) output.writeString("$_v_");
+  if (_v_ != null) response.addString("$_v_");
 
-  output.writeString("""
+  response.addString("""
 .</p>
     <p>This page is served by Rikulo Stream """); //#13
 
   _v_ = connect.server.version; //#14
-  if (_v_ != null) output.writeString("$_v_");
+  if (_v_ != null) response.addString("$_v_");
 
-  output.writeString("""
+  response.addString("""
 .</p>
     <p>Please refer to
   <a href="https://github.com/rikulo/stream/tree/master/example/hello-template">Github</a> for how it is implemented.</a>

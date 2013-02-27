@@ -13,7 +13,7 @@ Under `webapp`, you need to put at least one Dart file containing the `main` fun
     import "package:stream/stream.dart";
 
     void main() {
-      new StreamServer().run();
+      new StreamServer().start();
     }
 
 ###Other Directories

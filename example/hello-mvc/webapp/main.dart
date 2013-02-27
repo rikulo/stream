@@ -21,20 +21,18 @@ void helloMVC(HttpConnect connect) {
   final curdir = new Directory.current();
   List<FileInfo> list = [];
 
-  curdir.list()
-    ..onDir = (String dir) {
-        list.add(new FileInfo(dir, true));
-      }
-    ..onFile = (String file) {
-        list.add(new FileInfo(file, false));
-      }
-    ..onError = connect.error
-    ..onDone = (completed) {
-        //2. forward to the view
-        listView(connect, path: curdir.path, infos: list);
-      };
+  curdir.list().listen((fse) {
+    if (fse is File)
+      list.add(new FileInfo(fse.name, false));
+    else if (fse is Directory)
+      list.add(new FileInfo(fse.path, true));
+  })
+  ..onError(connect.error)
+  ..onDone(() {
+    listView(connect, path: curdir.path, infos: list); //forward to the view
+  });
 }
 
 void main() {
-  new StreamServer(uriMapping: _mapping).run();
+  new StreamServer(uriMapping: _mapping).start();
 }

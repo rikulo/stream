@@ -85,8 +85,9 @@ void loadFile(HttpConnect connect, File file) {
 }
 
 void _loadFile(HttpConnect connect, File file) {
-  file.openInputStream()
-    ..onError = connect.error
-    ..onClosed = connect.close
-    ..pipe(connect.response.outputStream, close: false);
+  connect.response.consume(file.openRead())
+    ..then((_) {
+      connect.close();
+    })
+    ..catchError(connect.error);
 }

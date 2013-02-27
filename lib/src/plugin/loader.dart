@@ -85,7 +85,7 @@ void loadFile(HttpConnect connect, File file) {
 }
 
 void _loadFile(HttpConnect connect, File file) {
-  connect.response.consume(file.openRead())
+  connect.response.addStream(file.openRead())
     ..then((_) {
       connect.close();
     })

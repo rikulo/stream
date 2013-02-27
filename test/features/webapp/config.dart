@@ -5,6 +5,7 @@ part of features;
 var _uriMapping = {
   "/forward": forward,
   "/include": includerView,  //generated from includerView.rsp.html
+  "/search": search,
   "/500": (HttpConnect connect) {
     throw new Exception("something wrong");
   },

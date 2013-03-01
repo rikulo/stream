@@ -127,6 +127,12 @@ abstract class HttpConnect {
    * has been called), or null if no error.
    */
   ErrorDetail errorDetail;
+  /** A map of application-specific data.
+   *
+   * Note: the name of the keys can't start with "stream.", which is reserved
+   * for internal use.
+   */
+  Map<String, dynamic> get dataset;
 }
 
 ///The HTTP connection wrapper. It simplifies the overriding of a connection.
@@ -172,6 +178,7 @@ class HttpConnectWrapper implements HttpConnect {
   void set errorDetail(ErrorDetail errorDetail) {
     origin.errorDetail = errorDetail;
   }
+  Map<String, dynamic> get dataset => origin.dataset;
 }
 
 ///The error detailed information.

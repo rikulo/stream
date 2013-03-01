@@ -7,6 +7,7 @@ class _HttpConnect implements HttpConnect {
   final ConnectErrorHandler _cxerrh;
   ErrorHandler _errh;
   Handler _close;
+  Map<String, dynamic> _dataset;
  
   _HttpConnect(this.server, this.request, this.response, this._cxerrh) {
     _init();
@@ -53,6 +54,9 @@ class _HttpConnect implements HttpConnect {
   ErrorHandler get error => _errh;
   @override
   ErrorDetail errorDetail;
+  @override
+  Map<String, dynamic> get dataset
+  => _dataset != null ? _dataset: MapUtil.onDemand(() => _dataset = new HashMap());
 }
 
 ///[uri]: if null, it means no need to change

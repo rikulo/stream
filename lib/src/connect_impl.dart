@@ -89,6 +89,8 @@ class _ForwardedConnect extends _HttpConnect {
   bool get isIncluded => _inc;
   @override
   bool get isForwarded => true;
+  @override
+  Map<String, dynamic> get dataset => forwarder.dataset;
 }
 class _IncludedConnect extends _HttpConnect {
   final bool _fwd;
@@ -114,6 +116,8 @@ class _IncludedConnect extends _HttpConnect {
   bool get isIncluded => true;
   @override
   bool get isForwarded => _fwd;
+  @override
+  Map<String, dynamic> get dataset => includer.dataset;
 }
 
 class _ReUriRequest extends HttpRequestWrapper {

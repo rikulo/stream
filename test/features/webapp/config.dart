@@ -6,6 +6,12 @@ var _uriMapping = {
   "/forward": forward,
   "/include": includerView,  //generated from includerView.rsp.html
   "/search": search,
+  "/(group:g[a-z]*p)/(matching:ma[a-z]*)": (HttpConnect connect) {
+    connect.response
+      ..headers.contentType = contentTypes["text/plain"]
+      ..addString("Group Matching: ${connect.dataset['group']} and ${connect.dataset['matching']}");
+    connect.close();
+  },
   "/500": (HttpConnect connect) {
     throw new Exception("something wrong");
   },

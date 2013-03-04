@@ -247,7 +247,7 @@ class _StreamServer implements StreamServer {
         final hdl = uriMapping[uri];
         if (hdl is! Function)
           throw new ServerError("URI mapping: function is required for $uri");
-        _uriMapping.add(new _UriMapping(new RegExp("^$uri\$"), hdl));
+        _uriMapping.add(new _UriMapping(uri, hdl));
       }
 
     if (filterMapping != null)
@@ -257,7 +257,7 @@ class _StreamServer implements StreamServer {
         final hdl = filterMapping[uri];
         if (hdl is! Function)
           throw new ServerError("Filter mapping: function is required for $uri");
-        _filterMapping.add(new _UriMapping(new RegExp("^$uri\$"), hdl));
+        _filterMapping.add(new _UriMapping(uri, hdl));
       }
 
     if (errMapping != null)
@@ -341,14 +341,14 @@ class _StreamServer implements StreamServer {
 
       if (iFilter != null) //null means ignore filters
         for (; iFilter < _filterMapping.length; ++iFilter)
-          if (_filterMapping[iFilter].regexp.hasMatch(uri)) {
+          if (_filterMapping[iFilter].match(connect, uri)) {
             _filterMapping[iFilter].handler(connect, (HttpConnect conn) {
                 _handle(conn, iFilter + 1);
               });
             return;
           }
 
-      final hdl = _getHandler(uri);
+      final hdl = _getHandler(connect, uri);
       if (hdl != null) {
         final ret = hdl(connect);
         if (ret is String)
@@ -366,10 +366,10 @@ class _StreamServer implements StreamServer {
       _handleErr(connect, e, st);
     }
   }
-  Function _getHandler(String uri) {
+  Function _getHandler(HttpConnect connect, String uri) {
     //TODO: cache the matched result for better performance
     for (final mp in _uriMapping)
-      if (mp.regexp.hasMatch(uri))
+      if (mp.match(connect, uri))
         return mp.handler;
   }
   void _handleErr(HttpConnect connect, error, [stackTrace]) {
@@ -549,10 +549,100 @@ class _StreamServer implements StreamServer {
 }
 
 class _UriMapping {
-  final RegExp regexp;
+  RegExp _ptn;
+  Map<int, String> _groups;
   final Function handler;
-  _UriMapping(this.regexp, this.handler);
+
+  _UriMapping(String uri, this.handler) {
+    uri = "^$uri\$"; //match the whole URI
+    _groups = new HashMap();
+
+    //parse grouping: ([a-zA-Z_-]+:regex)
+    final sb = new StringBuffer();
+    bool bracket = false;
+    l_top:
+    for (int i = 0, grpId = 0, len = uri.length; i < len; ++i) {
+      switch (uri[i]) {
+        case '\\':
+          if (i + 1 < len) {
+            sb.write('\\');
+            ++i; //skip next
+          }
+          break;
+        case '[':
+          bracket = true;
+          break;
+        case ']':
+          bracket = false;
+          break;
+        case '(':
+          if (!bracket) {
+            sb.write('(');
+
+            //parse the name of the group, if any
+            String nm;
+            final nmsb = new StringBuffer();
+            int j = i;
+            for (;;) {
+              if (++j >= len) {
+                sb.write(nmsb);
+                break l_top;
+              }
+
+              final cc = uri[j];
+              if (StringUtil.isChar(cc, lower:true, upper:true, digit: true, match:"_."))
+                nmsb.write(cc);
+              else {
+                if (cc == ':') {
+                  nm = nmsb.toString();
+                } else {
+                  sb.write(nmsb);
+                  --j;
+                }
+                break;
+              }
+            }
+
+            //parse upto ')'
+            int nparen = 1;
+            while (++j < len) {
+              final cc = uri[j];
+              sb.write(cc);
+              if (cc == ')' && --nparen <= 0)
+                break;
+              if (cc == '(')
+                ++nparen;
+              if (cc == '\\' && j + 1 < len)
+                sb.write(uri[++j]); //skip next
+            }
+            i = j;
+
+            if (nm != null)
+              _groups[grpId] = nm;
+            ++grpId;
+            continue;
+          }
+          break;
+      }
+      sb.write(uri[i]);
+    }
+
+    if (_groups.isEmpty)
+      _groups = null;
+    _ptn = new RegExp(_groups != null ? sb.toString(): uri);
+  }
+  bool match(HttpConnect connect, String uri) {
+    final m = _ptn.firstMatch(uri);
+    if (m != null) {
+      if (_groups != null)
+        for (final key in _groups.keys)
+          connect.dataset[_groups[key]] = m.group(key + 1);
+      return true;
+    }
+    return false;
+  }
 }
+
 class _ErrMapping {
   final ClassMirror error;
   final handler;

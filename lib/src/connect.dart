@@ -106,10 +106,9 @@ abstract class HttpConnect {
    *
    * ##Assign onError with the return value of this method
    *
-   *     file.openInputStream()
-   *       ..onError = connect.error //forward to Stream's error handling
-   *       ..onClosed = connect.close //close on completion
-   *       ..pipe(connect.response.outputStream, close: true);
+   *     final res = connect.response;
+   *     file.openRead().listen((data) {res.add(data);},
+   *       onDone: connect.close, onError: connect.error);
    *
    * ##Future.catchError with the return value of this method
    *

@@ -103,10 +103,6 @@ abstract class StreamServer {
    * Notice [host] and [port] are ignored.
    */
   void startOn(ServerSocket socket);
-  /** Deprecated. Use [start], [startSecure] or [startOn] instead.
-   */
-  @deprecated
-  void run([ServerSocket socket]);
   /** Stops the server.
    */
   void stop();
@@ -524,11 +520,6 @@ class _StreamServer implements StreamServer {
     _startServer();
     logger.info("Rikulo Stream Server $version starting on $socket\n"
       "Home: ${homeDir}");
-  }
-  @override
-  void run([ServerSocket socket]) {
-    if (socket != null) startOn(socket);
-    else start();
   }
   void _startServer() {
     final serverInfo = "Rikulo Stream $version";

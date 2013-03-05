@@ -34,5 +34,6 @@ void search(HttpConnect connect) {
   ObjectUtil.inject(new Criteria(), connect.request.queryParameters, silent: true)
     .then((criteria) {
       searchResult(connect, criteria: criteria); //generated from searchResult.rsp.html
-    });
+    })
+    .catchError(connect.error);
 }

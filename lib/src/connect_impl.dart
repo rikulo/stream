@@ -3,13 +3,14 @@
 // Author: tomyeh
 part of stream;
 
-class _HttpConnect implements HttpConnect {
+///Skeletal implementation
+abstract class _AbstractConnect implements HttpConnect {
   final ConnectErrorHandler _cxerrh;
   ErrorHandler _errh;
   Handler _close;
   Map<String, dynamic> _dataset;
  
-  _HttpConnect(this.server, this.request, this.response, this._cxerrh) {
+  _AbstractConnect(this.request, this.response, this._cxerrh) {
     _init();
   }
   void _init() {
@@ -22,8 +23,6 @@ class _HttpConnect implements HttpConnect {
     };
   }
 
-  @override
-  final StreamServer server;
   @override
   final HttpRequest request;
   @override
@@ -52,6 +51,15 @@ class _HttpConnect implements HttpConnect {
   Handler get close => _close;
   @override
   ErrorHandler get error => _errh;
+}
+
+///The default implementation of HttpConnect
+class _HttpConnect extends _AbstractConnect {
+  _HttpConnect(this.server, HttpRequest request, HttpResponse response,
+      ConnectErrorHandler cxerrh): super(request, response, cxerrh);
+
+  @override
+  final StreamServer server;
   @override
   ErrorDetail errorDetail;
   @override
@@ -59,67 +67,62 @@ class _HttpConnect implements HttpConnect {
   => _dataset != null ? _dataset: MapUtil.onDemand(() => _dataset = new HashMap());
 }
 
-///[uri]: if null, it means no need to change
-HttpRequest _wrapRequest(HttpRequest request, String uri)
-=> uri == null || request.uri == uri ? request: new _ReUriRequest(request, new Uri(uri));
-HttpResponse _wrapResponse(HttpResponse response, bool included)
-=> !included || response is _IncludedResponse ? response: new _IncludedResponse(response);
+class _ProxyConnect extends _AbstractConnect {
+  final HttpConnect _origin;
 
-class _ForwardedConnect extends _HttpConnect {
-  final bool _inc;
+  ///[uri]: if null, it means no need to change
+  _ProxyConnect(this._origin, HttpRequest request, HttpResponse response,
+      ConnectErrorHandler errorHandler): super(request, response, errorHandler);
 
+  @override
+  StreamServer get server => _origin.server;
+  @override
+  ErrorDetail get errorDetail => _origin.errorDetail;
+  @override
+  void set errorDetail(ErrorDetail errorDetail) {
+    _origin.errorDetail = errorDetail;
+  }
+  @override
+  bool get isIncluded => _origin.isIncluded;
+  @override
+  bool get isForwarded => _origin.isForwarded;
+  @override
+  Map<String, dynamic> get dataset => _origin.dataset;
+}
+
+///HttpConnect for forwarded request
+class _ForwardedConnect extends _ProxyConnect {
   ///[uri]: if null, it means no need to change
   _ForwardedConnect(HttpConnect connect, HttpRequest request,
     HttpResponse response, String uri, ConnectErrorHandler errorHandler):
-    forwarder = connect, _inc = connect.isIncluded,
-    super(connect.server,
+    super(connect,
       _wrapRequest(request != null ? request: connect.request, uri),
       _wrapResponse(response != null ? response: connect.response, connect.isIncluded),
       errorHandler);
 
   @override
-  final HttpConnect forwarder;
-  @override
-  ErrorDetail get errorDetail => forwarder.errorDetail;
-  @override
-  void set errorDetail(ErrorDetail errorDetail) {
-    forwarder.errorDetail = errorDetail;
-  }
-  @override
-  bool get isIncluded => _inc;
+  HttpConnect get forwarder => _origin;
   @override
   bool get isForwarded => true;
-  @override
-  Map<String, dynamic> get dataset => forwarder.dataset;
 }
-class _IncludedConnect extends _HttpConnect {
-  final bool _fwd;
 
+///HttpConnect for included request
+class _IncludedConnect extends _ProxyConnect {
   ///[uri]: if null, it means no need to change
   _IncludedConnect(HttpConnect connect, HttpRequest request,
     HttpResponse response, String uri, ConnectErrorHandler errorHandler):
-    includer = connect, _fwd = connect.isForwarded,
-    super(connect.server,
+    super(connect,
       _wrapRequest(request != null ? request: connect.request, uri),
       _wrapResponse(response != null ? response: connect.response, true),
       errorHandler);
 
   @override
-  final HttpConnect includer;
-  @override
-  ErrorDetail get errorDetail => includer.errorDetail;
-  @override
-  void set errorDetail(ErrorDetail errorDetail) {
-    includer.errorDetail = errorDetail;
-  }
+  HttpConnect get includer => _origin;
   @override
   bool get isIncluded => true;
-  @override
-  bool get isForwarded => _fwd;
-  @override
-  Map<String, dynamic> get dataset => includer.dataset;
 }
 
+///Request for renaming URI.
 class _ReUriRequest extends HttpRequestWrapper {
   _ReUriRequest(request, this._uri): super(request);
 
@@ -157,6 +160,7 @@ class _IncludedResponse extends HttpResponseWrapper {
     throw new HttpException("Not allowed in an included connection");
   }
 }
+///Immutable HTTP headers. It ignores any writes.
 class _ReadOnlyHeaders extends HttpHeadersWrapper {
   _ReadOnlyHeaders(HttpHeaders headers): super(headers);
 
@@ -192,3 +196,9 @@ class _ReadOnlyHeaders extends HttpHeadersWrapper {
   void set contentType(ContentType contentType) {
   }
 }
+
+///[uri]: if null, it means no need to change
+HttpRequest _wrapRequest(HttpRequest request, String uri)
+=> uri == null || request.uri == uri ? request: new _ReUriRequest(request, new Uri(uri));
+HttpResponse _wrapResponse(HttpResponse response, bool included)
+=> !included || response is _IncludedResponse ? response: new _IncludedResponse(response);

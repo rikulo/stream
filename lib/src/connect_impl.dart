@@ -47,7 +47,7 @@ class _HttpConnect implements HttpConnect {
   }
 
   @override
-  final HandlerMap on = new HandlerMap();
+  final Handlers on = new Handlers();
   @override
   Handler get close => _close;
   @override

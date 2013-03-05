@@ -88,7 +88,7 @@ abstract class HttpConnect {
    *
    * Notice the sequence of invocation is reversed, i.e., the first added is the last called.
    */
-  HandlerMap get on;
+  Handlers get on;
   /** The close handler.
    * After finishing the handling of a request, the request handler shall invoke this method
    * to start the awaiting task, or to
@@ -166,7 +166,7 @@ class HttpConnectWrapper implements HttpConnect {
   }
 
   @override
-  HandlerMap get on => origin.on;
+  Handlers get on => origin.on;
   @override
   Handler get close => origin.close;
   @override
@@ -187,7 +187,7 @@ class ErrorDetail {
   ErrorDetail(this.error, this.stackTrace);
 }
 
-/** A list of handlers.
+/** A list of handlers of a particular type.
  * Notice the sequence of invocation is reversed, i.e., the first added is the last called.
  */
 class HandlerList<T extends Function> {
@@ -201,6 +201,12 @@ class HandlerList<T extends Function> {
       _handlers = new Queue();
     _handlers.addFirst(handler);
   }
+  /** Removes a handler.
+   */
+  void remove(T handler) {
+    if (_handlers != null)
+      _handlers.remove(handler);
+  }
   void _invoke0() {
     if (_handlers != null)
       for (final h in _handlers)
@@ -212,12 +218,9 @@ class HandlerList<T extends Function> {
         h(arg0, arg1);
   }
 }
-/** A map of handlers.
+/** All handlers.
  */
-class HandlerMap {
-  HandlerList<Handler> _close;
-  HandlerList<ErrorHandler> _error;
-
+class Handlers {
   /** The list of close handlers.
    * Notice the sequence of invocation is reversed, i.e., the first added is the last called.
    */
@@ -225,7 +228,7 @@ class HandlerMap {
   /** The list of error handlers.
    * Notice the sequence of invocation is reversed, i.e., the first added is the last called.
    */
-  final HandlerList<Handler> error = new HandlerList();
+  final HandlerList<ErrorHandler> error = new HandlerList();
 }
 
 /** A HTTP status exception.

@@ -10,7 +10,7 @@
 
 Stream is distributed under an Apache 2.0 License.
 
-##Install from Dart Pub Repository
+##Installation
 
 Add this to your `pubspec.yaml` (or create it):
 
@@ -20,15 +20,6 @@ Add this to your `pubspec.yaml` (or create it):
 Then run the [Pub Package Manager](http://pub.dartlang.org/doc) (comes with the Dart SDK):
 
     pub install
-
-
-##Install from Github for Bleeding Edge Stuff
-
-To install stuff that is still in development, add this to your `pubspec.yam`:
-
-    dependencies:
-      stream:
-        git: git://github.com/rikulo/stream.git
 
 
 ##Usage

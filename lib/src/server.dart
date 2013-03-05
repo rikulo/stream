@@ -183,7 +183,7 @@ class ServerError implements Error {
 
 ///The implementation
 class _StreamServer implements StreamServer {
-  final String version = "0.5.4";
+  final String version = "0.5.5";
   HttpServer _server;
   String _host = "127.0.0.1";
   int _port = 8080;

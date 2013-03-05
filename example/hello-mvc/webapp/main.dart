@@ -22,10 +22,7 @@ void helloMVC(HttpConnect connect) {
   List<FileInfo> list = [];
 
   curdir.list().listen((fse) {
-    if (fse is File)
-      list.add(new FileInfo(fse.name, false));
-    else if (fse is Directory)
-      list.add(new FileInfo(fse.path, true));
+    list.add(new FileInfo(fse.path, fse is Directory));
   })
   ..onError(connect.error)
   ..onDone(() {

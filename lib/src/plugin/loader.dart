@@ -71,7 +71,7 @@ void loadFile(HttpConnect connect, File file) {
   }
 
   final headers = connect.response.headers;
-  final ctype = contentTypes[new Path(file.name).extension];
+  final ctype = contentTypes[new Path(file.path).extension];
   if (ctype != null)
     headers.contentType = ctype;
 

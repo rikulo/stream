@@ -31,8 +31,8 @@ Encoding encoding : Encoding.UTF_8}) {
   final dest = new File(destinationName);
   
   if (verbose) {
-    final int i = dest.name.lastIndexOf('/') + 1;
-    print("Compile ${source.name} to ${i > 0 ? dest.name.substring(i) : dest.name}");
+    final int i = dest.path.lastIndexOf('/') + 1;
+    print("Compile ${source.path} to ${i > 0 ? dest.path.substring(i) : dest.path}");
   }
   
   source.readAsString(encoding).then((text) {
@@ -67,14 +67,14 @@ void build(List<String> arguments) {
   
   if (clean) { // clean only
     new Directory.current().list(recursive: true).listen((fse) {
-      if (fse is File && fse.name.endsWith(".rsp.dart"))
+      if (fse is File && fse.path.endsWith(".rsp.dart"))
         fse.delete();
     });
 
   } else if (removed.isEmpty && changed.isEmpty) { // full build
     new Directory.current().list(recursive: true).listen((fse) {
-      if (fse is File && _rspSource(fse.name) >= 0)
-          compileFile(fse.name);
+      if (fse is File && _rspSource(fse.path) >= 0)
+          compileFile(fse.path);
     });
 
   } else {

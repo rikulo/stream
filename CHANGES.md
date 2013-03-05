@@ -1,9 +1,12 @@
 #CHANGES
 
+**0.5.5**
+
+* URL mapping supports grouping, such as /user/(name:[^/]*)
+
 **0.5.4**
 
 * StreamServer.run() is deprecated. Use start(), startSecure() or startOn() instead.
-* URL mapping supports grouping, such as /user/(name:[^/]*)
 * Support the new Dart I/O.
 
 **0.5.3**

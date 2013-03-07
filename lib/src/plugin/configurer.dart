@@ -17,9 +17,8 @@ abstract class LoggingConfigurer {
 class _LoggingConfigurer implements LoggingConfigurer {
   @override
   void configure(Logger logger) {
-    Logger.root..level = Level.INFO
-      ..on.record.clear();
-    logger.on.record.add((record) {
+    Logger.root..level = Level.INFO;
+    logger.onRecord.listen((record) {
       print("${record.time}:${record.sequenceNumber}\n"
         "${record.level}: ${record.message}");
       if (record.exceptionText != null)

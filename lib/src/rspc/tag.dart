@@ -117,7 +117,8 @@ class PageTag extends Tag {
 ///The dart tag.
 class DartTag extends Tag {
   void begin(TagContext tc, String data) {
-    tc.writeln(data);
+    if (!data.isEmpty)
+      tc.writeln(data);
   }
   bool get hasClosing => true;
   String get name => "dart";

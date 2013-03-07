@@ -77,7 +77,7 @@ class Compiler {
         }
 
         push(token);
-        token.begin(_current, _tagData());
+        token.begin(_current, _tagData(tag: token));
         if (!token.hasClosing) {
           token.end(_current);
           pop();
@@ -301,20 +301,19 @@ class Compiler {
     }
     return "";
   }
-  ///[bracket]: whether to count '[' and ']'
-  int _skipUntil(String until, int from, {bool quotmark: false, bool bracket: false}) {
+  int _skipUntil(String until, int from) {
     final line = _line;
     final nUtil = until.length;
-    String sep, first = until[0];
-    int nbkt = 0;
+    String first = until[0];
     for (; from < _len; ++from) {
       final cc = source[from];
       if (cc == '\n') {
         _line++;
-      } else if (sep == null) {
-        if (quotmark && (cc == '"' || cc == "'")) {
-          sep = cc;
-        } else if (nbkt == 0 && cc == first) {
+      } else if (cc == '\\' && from + 1 < _len) { //escape
+        if (source[++from] == '\n')
+          _line++;
+      } else {
+        if (cc == first) {
           if (from + nUtil > _len)
             break;
           for (int n = nUtil;;) {
@@ -322,18 +321,9 @@ class Compiler {
               return from;
 
             if (source[from + n] != until[n])
-              break;
+              break; //continue to next character
           }
-        } else if (bracket && cc == '[') {
-          ++nbkt;
-        } else if (bracket && cc == ']') {
-          --nbkt;
         }
-      } else if (cc == sep) {
-        sep = null;
-      } else if (cc == '\\' && from + 1 < _len) {
-        if (source[++from] == '\n')
-          _line++;
       }
     }
     _error("Expect '$until'", line);
@@ -346,18 +336,64 @@ class Compiler {
     }
     return from;
   }
-  String _tagData({skipFollowingSpaces: true}) {
-    int k = _skipUntil("]", _pos, quotmark: true, bracket: true);
+  ///Skip arguments (of a tag)
+  int _skipTagArgs(int from) {
+    final line = _line;
+    String sep;
+    int nbkt = 0;
+    for (; from < _len; ++from) {
+      final cc = source[from];
+      if (cc == '\n') {
+        _line++;
+      } else if (cc == '\\' && from + 1 < _len) {
+        if (source[++from] == '\n')
+          _line++;
+      } else if (sep == null) {
+        if (cc == '"' || cc == "'") {
+          sep = cc;
+        } else if (nbkt == 0 && (cc == '/' || cc == ']')) {
+          return from;
+        } else if (cc == '[') {
+          ++nbkt;
+        } else if (cc == ']') {
+          --nbkt;
+        }
+      } else if (cc == sep) {
+        sep = null;
+      }
+    }
+    _error("Expect ']'", line);
+  }
+  ///Note: [tag] is required if `tag.hasClosing` is 
+  String _tagData({Tag tag, skipFollowingSpaces: true}) {
+    int k = _skipTagArgs(_pos);
     final data = source.substring(_pos, k).trim();
     _pos = k + 1;
+    if (source[k] == '/') {
+      if (tag != null && tag.hasClosing)
+        _lookAhead.add(new _Ending(tag.name));
+
+      _skipFollowingSpaces();
+      if (_pos >= _len || source[_pos] != ']')
+        _error("Expect ']'");
+      ++_pos;
+    }
     if (skipFollowingSpaces)
       _skipFollowingSpaces();
     return data;
   }
   String _dartData() {
-    String data = _tagData();
+    String data = _tagData(tag: tags["dart"]);
     if (!data.isEmpty)
       _warning("The dart tag has no attribute", _line);
+
+    if (!_lookAhead.isEmpty) { //we have to check if it is [dart/]
+      final token = _nextToken();
+      if (token is _Ending && token.name == "dart")
+        return ""; //[dart/]
+      _lookAhead.add(token); //add back
+    }
+
     int k = _skipUntil("[/dart]", _pos);
     data = source.substring(_pos, k).trim();
     _pos = k + 7;

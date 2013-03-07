@@ -126,8 +126,11 @@ void syntax(HttpConnect connect, {foo, bool c:false}) { //9
   </body>
 </html>
 
-
 """); //#47
+
+  response.addString("""
+
+"""); //#51
 
   connect.close();
 }

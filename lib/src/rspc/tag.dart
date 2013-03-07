@@ -154,9 +154,9 @@ class IncludeTag extends Tag {
   void begin(TagContext tc, String data) {
     final argInfo = new ArgInfo(tc, data);
     if (argInfo.isID)
-      tc.compiler.includeHandler(argInfo.first, argInfo.args, tc.line);
-    else
       tc.compiler.include(argInfo.first, argInfo.args, tc.line);
+    else
+      tc.compiler.includeUri(argInfo.first, argInfo.args, tc.line);
   }
 
   bool get hasClosing => false;
@@ -178,20 +178,10 @@ class IncludeTag extends Tag {
 class ForwardTag extends Tag {
   void begin(TagContext tc, String data) {
     final argInfo = new ArgInfo(tc, data);
-    if (argInfo.isID) {
-      tc.write("\n${tc.pre}${argInfo.first}(connect");
-      if (argInfo.args != null)
-        for (final arg in argInfo.args.keys)
-          tc.write(", $arg: ${_toEl(argInfo.args[arg])}");
-      tc.writeln("); //#${tc.line}\n${tc.pre}return;");
-    } else {
-      if (argInfo.args != null && !argInfo.args.isEmpty)
-        tc.error("Forward URI with arguments"); //TODO: handle arguments
-
-      tc.writeln("\n${tc.pre}connect.forward("
-        "${_toEl(argInfo.first, quotmark:true)}); //#${tc.line}\n"
-        "${tc.pre}return;");
-    }
+    if (argInfo.isID)
+      tc.compiler.forward(argInfo.first, argInfo.args, tc.line);
+    else
+      tc.compiler.forwardUri(argInfo.first, argInfo.args, tc.line);
   }
 
   bool get hasClosing => false;

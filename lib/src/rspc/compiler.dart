@@ -165,7 +165,7 @@ class Compiler {
   }
 
   ///Include the given URI.
-  void include(String uri, [Map args, int line]) {
+  void includeUri(String uri, [Map args, int line]) {
     _checkInclude(line);
     if (args != null && !args.isEmpty)
       _error("Include URI with arguments", line); //TODO: handle arguments
@@ -177,7 +177,7 @@ class Compiler {
     _incs.add(new _IncInfo("});"));
   }
   ///Include the output of the given renderer
-  void includeHandler(String method, [Map args, int line]) {
+  void include(String method, [Map args, int line]) {
     _checkInclude(line);
     if (verbose) _info("Include $method", line);
 
@@ -199,6 +199,27 @@ class Compiler {
         "(rather than inside ${parent} at line ${pline})."
         "Try to split into multiple files or use an expression in the uri attribute.", line);
     }
+  }
+
+  ///Forward to the given URI.
+  void forwardUri(String uri, [Map args, int line]) {
+    if (args != null && !args.isEmpty)
+      _error("Forward URI with arguments"); //TODO: handle arguments
+    if (verbose) _info("Forward $uri", line);
+
+    _writeln("\n${_current.pre}connect.forward("
+      "${_toEl(uri, quotmark:true)}); //#${line}\n"
+      "${_current.pre}return;");
+  }
+  //Forward to the given renderer
+  void forward(String method, [Map args, int line]) {
+    if (verbose) _info("Forward $method", line);
+
+    _write("\n${_current.pre}${method}(connect");
+    if (args != null)
+      for (final arg in args.keys)
+        _write(", $arg: ${_toEl(args[arg])}");
+    _writeln("); //#${line}\n${_current.pre}return;");
   }
 
   //Tokenizer//

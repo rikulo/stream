@@ -132,7 +132,7 @@ class HeaderTag extends Tag {
       final val = attrs[nm];
       if (val == null)
         tc.error("The $nm attribute requires a value.");
-      tc.writeln('\n${tc.pre}response.headers.add("$nm", ${_toEl(val)}); //#${tc.line}');
+      tc.writeln('\n${tc.pre}response.headers.add("$nm", ${toEL(val)}); //#${tc.line}');
     }
   }
   bool get hasClosing => false;

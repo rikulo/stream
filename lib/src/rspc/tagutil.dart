@@ -3,6 +3,16 @@
 // Author: tomyeh
 part of stream_rspc;
 
+///Test if the given value is enclosed with `[= ]`.
+bool isEL(String val) => val.startsWith("[=") && val.endsWith("]");
+///Converts the value to a valid Dart statement
+///[quotmark] specifies whether to enclose the expression with `"""` if found
+String toEL(String val, {quotmark: false}) {
+  var el = isEL(val) ? val.substring(2, val.length - 1).trim(): null;
+  return el == null ? val != null ? '"""$val"""': quotmark ? '""': "null":
+    el.isEmpty ? '""': quotmark ? '"""\${$el}"""': el;
+}
+
 ///Parse the information of the arguments.
 class ArgInfo {
   ///The first argument, or null if not available

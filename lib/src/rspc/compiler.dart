@@ -149,36 +149,36 @@ class Compiler {
       if (!ctypeSpecified) //if not specified, it is set only if not included
         _write('  if (!connect.isIncluded)\n  ');
       _writeln('  response.headers.contentType = new ContentType.fromString('
-        '${_toEl(_contentType, quotmark:true)});');
+        '${toEL(_contentType, quotmark:true)});');
     }
   }
 
   ///Sets the page information.
   void setPage(String name, String description, String args, String contentType, [int line]) {
     _name = name;
-    _noEl(name, "the name attribute", line);
+    _noEL(name, "the name attribute", line);
     _desc = description;
-    _noEl(description, "the description attribute", line);
+    _noEL(description, "the description attribute", line);
     _args = args;
-    _noEl(args, "the args attribute", line);
+    _noEL(args, "the args attribute", line);
     _contentType = contentType;
   }
 
   ///Include the given URI.
   void includeUri(String uri, [Map args, int line]) {
-    _checkInclude(line);
+    _noNested("include", line);
     if (args != null && !args.isEmpty)
       _error("Include URI with arguments", line); //TODO: handle arguments
     if (verbose) _info("Include $uri", line);
 
     _writeln('\n${_current.pre}connect.include('
-      '${_toEl(uri, quotmark:true)}, success: () { //#$line');
+      '${toEL(uri, quotmark:true)}, success: () { //#$line');
     _extra = "  $_extra";
     _incs.add(new _IncInfo("});"));
   }
   ///Include the output of the given renderer
   void include(String method, [Map args, int line]) {
-    _checkInclude(line);
+    _noNested("include", line);
     if (verbose) _info("Include $method", line);
 
     _writeln("\n${_current.pre}$method(connect.server.connectForInclusion(connect, success: () { //#$line");
@@ -187,18 +187,9 @@ class Compiler {
     final sb = new StringBuffer("})");
     if (args != null)
       for (final arg in args.keys)
-        sb..write(", ")..write(arg)..write(": ")..write(_toEl(args[arg]));
+        sb..write(", ")..write(arg)..write(": ")..write(toEL(args[arg]));
     sb.write(");");
     _incs.add(new _IncInfo(sb.toString()));
-  }
-  void _checkInclude(int line) {
-    final parent = _current.parent;
-    if (parent != null) { //no nested allowed (limitation of async programming)
-      final pline = _tagCtxs[_tagCtxs.length - 2].line;
-      _error("The include tag must be top-level "
-        "(rather than inside ${parent} at line ${pline})."
-        "Try to split into multiple files or use an expression in the uri attribute.", line);
-    }
   }
 
   ///Forward to the given URI.
@@ -208,7 +199,7 @@ class Compiler {
     if (verbose) _info("Forward $uri", line);
 
     _writeln("\n${_current.pre}connect.forward("
-      "${_toEl(uri, quotmark:true)}); //#${line}\n"
+      "${toEL(uri, quotmark:true)}); //#${line}\n"
       "${_current.pre}return;");
   }
   //Forward to the given renderer
@@ -218,7 +209,7 @@ class Compiler {
     _write("\n${_current.pre}${method}(connect");
     if (args != null)
       for (final arg in args.keys)
-        _write(", $arg: ${_toEl(args[arg])}");
+        _write(", $arg: ${toEL(args[arg])}");
     _writeln("); //#${line}\n${_current.pre}return;");
   }
 
@@ -475,9 +466,20 @@ class Compiler {
     text = text.replaceAll("\n", "\\n");
     return text.length > 30 ? "${text.substring(0, 27)}...": text;
   }
+
+  ///Not allow nested tags for the given tag
+  void _noNested(String tagnm, int line) {
+    final parent = _current.parent;
+    if (parent != null) { //no nested allowed (limitation of async programming)
+      final pline = _tagCtxs[_tagCtxs.length - 2].line;
+      _error("The $tagnm tag must be top-level "
+        "(rather than inside ${parent} at line ${pline})."
+        "Try to split into multiple files.", line);
+    }
+  }
   ///Throws an exception if the value is EL
-  void _noEl(String val, String what, [int line]) {
-    if (val != null && _isEl(val))
+  void _noEL(String val, String what, [int line]) {
+    if (val != null && isEL(val))
       _error("Expression not allowed in $what", line);
   }
   ///Throws an exception (and stops execution).
@@ -550,14 +552,4 @@ class _IncInfo {
   ///The statement to generate. If null, it means URI is included (rather than handler)
   final String invocation;
   _IncInfo(this.invocation);
-}
-
-///Test if the given value is enclosed with `[= ]`.
-bool _isEl(String val) => val.startsWith("[=") && val.endsWith("]");
-///Converts the value to a valid Dart statement
-///[quotmark] specifies whether to enclose the expression with `"""` if found
-String _toEl(String val, {quotmark: false}) {
-  var el = _isEl(val) ? val.substring(2, val.length - 1).trim(): null;
-  return el == null ? val != null ? '"""$val"""': quotmark ? '""': "null":
-    el.isEmpty ? '""': quotmark ? '"""\${$el}"""': el;
 }

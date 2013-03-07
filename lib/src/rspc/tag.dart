@@ -84,7 +84,7 @@ Map<String, Tag> _tags;
 class PageTag extends Tag {
   void begin(TagContext tc, String data) {
     String name, desc, args, ctype;
-    final attrs = MapUtil.parse(data, backslash:false, defaultValue:"");
+    final attrs = ArgInfo.parse(data);
     for (final nm in attrs.keys) {
       switch (nm) {
         case "name":
@@ -126,7 +126,7 @@ class DartTag extends Tag {
 ///The header tag to generate HTTP response headers.
 class HeaderTag extends Tag {
   void begin(TagContext tc, String data) {
-    final attrs = MapUtil.parse(data, backslash:false, defaultValue:"");
+    final attrs = ArgInfo.parse(data);
     for (final nm in attrs.keys) {
       final val = attrs[nm];
       if (val == null)
@@ -140,9 +140,9 @@ class HeaderTag extends Tag {
 
 /** The include tag. There are two formats:
  *
- *     [include uri="uri"]
+ *     [include "uri"]
  *
- *     [include method="name" arg0="value0" arg1="value1"]
+ *     [include method_name arg0="value0" arg1="value1"]
  *
  * where `uri`, `value0` and `value1` can be an expression.
  *
@@ -151,32 +151,22 @@ class HeaderTag extends Tag {
  */
 class IncludeTag extends Tag {
   void begin(TagContext tc, String data) {
-    final attrs = MapUtil.parse(data, backslash:false, defaultValue:"");
-    final uri = attrs.remove("uri");
-    if (uri != null) {
-      tc.compiler.include(uri, attrs, tc.line);
-      return;
-    }
-
-    final method = attrs.remove("method");
-    if (method != null) {
-      if (_isEl(method))
-        tc.error("Expression not allowed in the method attribute");
-      tc.compiler.includeHandler(method, attrs, tc.line);
-      return;
-    }
-
-    tc.error("Either uri or method attribute must be required");
+    final argInfo = new ArgInfo(tc, data);
+    if (argInfo.isID)
+      tc.compiler.includeHandler(argInfo.first, argInfo.args, tc.line);
+    else
+      tc.compiler.include(argInfo.first, argInfo.args, tc.line);
   }
+
   bool get hasClosing => false;
   String get name => "include";
 }
 
 /** The forward tag. There are two formats:
  *
- *     [forward uri="uri"]
+ *     [forward "uri"]
  *
- *     [forward method="name" arg0="value0" arg1="value1"]
+ *     [forward method_name arg0="value0" arg1="value1"]
  *
  * where `uri`, `value0` and `value1` can be an expression.
  *
@@ -186,33 +176,23 @@ class IncludeTag extends Tag {
  */
 class ForwardTag extends Tag {
   void begin(TagContext tc, String data) {
-    final attrs = MapUtil.parse(data, backslash:false, defaultValue:"");
-    final uri = attrs.remove("uri");
-    if (uri != null) {
-      if (attrs != null && !attrs.isEmpty)
-        throw new UnsupportedError("Forward to URI with attributes"); //TODO: handle other attributes
+    final argInfo = new ArgInfo(tc, data);
+    if (argInfo.isID) {
+      tc.write("\n${tc.pre}${argInfo.first}(connect");
+      if (argInfo.args != null)
+        for (final arg in argInfo.args.keys)
+          tc.write(", $arg: ${_toEl(argInfo.args[arg])}");
+      tc.writeln("); //#${tc.line}\n${tc.pre}return;");
+    } else {
+      if (argInfo.args != null && !argInfo.args.isEmpty)
+        tc.error("Forward URI with arguments"); //TODO: handle arguments
 
       tc.writeln("\n${tc.pre}connect.forward("
-        "${_toEl(uri, quotmark:true)}); //#${tc.line}\n"
+        "${_toEl(argInfo.first, quotmark:true)}); //#${tc.line}\n"
         "${tc.pre}return;");
-      return;
     }
-
-    final method = attrs.remove("method");
-    if (method != null) {
-      if (_isEl(method))
-        tc.error("Expression not allowed in the method attribute");
-
-      tc.write("\n${tc.pre}$method(connect");
-      if (attrs != null)
-        for (final arg in attrs.keys)
-          tc.write(", $arg: ${_toEl(attrs[arg])}");
-      tc.writeln("); //#${tc.line}\n${tc.pre}return;");
-      return;
-    }
-
-    tc.error("Either uri or method attribute must be required");
   }
+
   bool get hasClosing => false;
   String get name => "forward";
 }

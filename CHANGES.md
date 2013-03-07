@@ -2,10 +2,13 @@
 
 **0.5.5**
 
-* URL mapping supports grouping, such as /user/(name:[^/]*)
+* The composite view (aka., templating) is supported.
+* The syntax of the include and forward tags are simplified.
+* The var tag is introduced.
 
 **0.5.4**
 
+* URL mapping supports grouping, such as /user/(name:[^/]*)
 * StreamServer.run() is deprecated. Use start(), startSecure() or startOn() instead.
 * Support the new Dart I/O.
 

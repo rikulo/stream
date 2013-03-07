@@ -39,7 +39,7 @@ Encoding encoding : Encoding.UTF_8}) {
     final out = dest.openWrite();
     try {
       compile(text, out, sourceName: sourceName, encoding: encoding, verbose: verbose);
-    } on SyntaxException catch (e) {
+    } on SyntaxError catch (e) {
       print("${e.message}\nCompilation aborted.");
     } finally {
       out.close();

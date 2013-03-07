@@ -165,10 +165,10 @@ class Compiler {
   }
 
   ///Include the given URI.
-  void include(String uri, [Map attributes, int line]) {
+  void include(String uri, [Map args, int line]) {
     _checkInclude(line);
-    if (attributes != null && !attributes.isEmpty)
-      throw new UnsupportedError("Include from URI with attributes"); //TODO: handle other attributes
+    if (args != null && !args.isEmpty)
+      _error("Include URI with arguments", line); //TODO: handle arguments
     if (verbose) _info("Include $uri", line);
 
     _writeln('\n${_current.pre}connect.include('
@@ -425,7 +425,7 @@ class Compiler {
   }
   ///Throws an exception (and stops execution).
   void _error(String message, [int line]) {
-    throw new SyntaxException(sourceName, line != null ? line: _current.line, message);
+    throw new SyntaxError(sourceName, line != null ? line: _current.line, message);
   }
   ///Display an warning.
   void _warning(String message, [int line]) {
@@ -446,13 +446,13 @@ class Compiler {
 }
 
 ///Syntax error.
-class SyntaxException implements Exception {
+class SyntaxError implements Error {
   String _msg;
   ///The source name
   final String sourceName;
   ///The line number
   final int line;
-  SyntaxException(this.sourceName, this.line, String message) {
+  SyntaxError(this.sourceName, this.line, String message) {
     _msg = "$sourceName:$line: $message";
   }
   String get message => _msg;

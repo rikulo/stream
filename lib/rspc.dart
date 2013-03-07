@@ -16,5 +16,6 @@ part "src/rspc/main.dart";
 part "src/rspc/build.dart";
 part "src/rspc/compiler.dart";
 part "src/rspc/tag.dart";
+part "src/rspc/tagutil.dart";
 
 const VERSION = "0.5.5";

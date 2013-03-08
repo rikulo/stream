@@ -1,5 +1,5 @@
-//Sample of Stream: Hello Templates
-library hello_template;
+//Sample of Stream: Hello RSP
+library hello_rsp;
 
 import "dart:io";
 import "package:stream/stream.dart";

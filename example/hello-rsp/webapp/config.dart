@@ -1,5 +1,5 @@
 //Configuration
-part of hello_template;
+part of hello_rsp;
 
 //URI mapping
 var _mapping = {

@@ -1,0 +1,32 @@
+* {
+	line-height: 1.6;
+	font: 13px Helvetica, arial, freesans, clean, sans-serif;
+}
+h1 {
+  font-size: 28px;
+  margin: 20px 0 10px;
+}
+h2 {
+  font-size: 22px;
+  margin: 16px 0 8px;
+}
+h3 {
+  font-size: 18px;
+  margin: 13px 0 6px;
+}
+
+.header {
+  background-color: #c4bd97;
+}
+.footer {
+  background-color: #c3d696;
+}
+.sidebar {
+  position: absolute; width: 200px;
+  min-height: 300px; margin-top: 10px;
+  background-color: #93cddd;
+}
+.body {
+  min-height: 300px; margin-left: 210px;
+  background-color: #fac090;
+}

@@ -164,9 +164,14 @@ abstract class StreamServer {
    */
   ResourceLoader resourceLoader;
 
-  /** The error handler. Default: null.
+  /** The application-specific error handler. Default: null.
    */
-  ConnectErrorHandler onError;
+  void onError(ConnectErrorHandler handler);
+  /** The default content handler. It is invoked after the handler assigned
+   * to [onError], if any.
+   */
+  ConnectErrorHandler get defaultErrorHandler;
+
   /** The logger for logging information.
    * The default level is `INFO`.
    */
@@ -194,7 +199,7 @@ class _StreamServer implements StreamServer {
   final Map<int, dynamic> _codeMapping = new HashMap(); //mapping of status code to URI/Function
   final List<_ErrMapping> _errMapping = []; //exception to URI/Function
   ResourceLoader _resLoader;
-  ConnectErrorHandler _cxerrh;
+  ConnectErrorHandler _defaultErrorHandler, _onError;
 
   _StreamServer(Map<String, Function> uriMapping,
     Map errorMapping, Map<String, Filter> filterMapping,
@@ -206,7 +211,7 @@ class _StreamServer implements StreamServer {
     _initMapping(uriMapping, errorMapping, filterMapping);
   }
   void _init() {
-    _cxerrh = (HttpConnect cnn, err, [st]) {
+    _defaultErrorHandler = (HttpConnect cnn, err, [st]) {
       _handleErr(cnn, err, st);
     };
   }
@@ -384,8 +389,8 @@ class _StreamServer implements StreamServer {
     }
 
     try {
-      if (onError != null)
-        onError(connect, error, stackTrace);
+      if (_onError != null)
+        _onError(connect, error, stackTrace);
       if (connect.errorDetail != null) {
         _shout(error, stackTrace);
         _close(connect);
@@ -477,7 +482,11 @@ class _StreamServer implements StreamServer {
   }
 
   @override
-  ConnectErrorHandler onError;
+  void onError(ConnectErrorHandler onError) {
+    _onError = onError;
+  }
+  @override
+  ConnectErrorHandler get defaultErrorHandler => _defaultErrorHandler;
 
   @override
   bool get isRunning => _server != null;
@@ -529,7 +538,7 @@ class _StreamServer implements StreamServer {
         ..add(HttpHeaders.SERVER, serverInfo)
         ..date = new DateTime.now();
       _handle(
-        new _HttpConnect(this, req, req.response, _cxerrh)
+        new _HttpConnect(this, req, req.response)
           ..on.close.add((){req.response.close();}), 0); //process filter from beginning
     }, onError: (err) {
       _handleErr(null, err);

@@ -55,8 +55,8 @@ abstract class _AbstractConnect implements HttpConnect {
 
 ///The default implementation of HttpConnect
 class _HttpConnect extends _AbstractConnect {
-  _HttpConnect(this.server, HttpRequest request, HttpResponse response,
-      ConnectErrorHandler cxerrh): super(request, response, cxerrh);
+  _HttpConnect(StreamServer server, HttpRequest request, HttpResponse response):
+      this.server = server, super(request, response, server.defaultErrorHandler);
 
   @override
   final StreamServer server;
@@ -71,8 +71,8 @@ class _ProxyConnect extends _AbstractConnect {
   final HttpConnect _origin;
 
   ///[uri]: if null, it means no need to change
-  _ProxyConnect(this._origin, HttpRequest request, HttpResponse response,
-      ConnectErrorHandler errorHandler): super(request, response, errorHandler);
+  _ProxyConnect(HttpConnect origin, HttpRequest request, HttpResponse response):
+      _origin = origin, super(request, response, origin.server.defaultErrorHandler);
 
   @override
   StreamServer get server => _origin.server;
@@ -91,20 +91,18 @@ class _ProxyConnect extends _AbstractConnect {
 }
 
 class _BufferedConnect extends _ProxyConnect {
-  _BufferedConnect(HttpConnect connect, StringBuffer buffer, [ConnectErrorHandler errorHandler]):
-    super(connect, connect.request, new BufferedResponse(connect.response, buffer),
-      errorHandler != null ? errorHandler: connect.error);
+  _BufferedConnect(HttpConnect connect, StringBuffer buffer):
+    super(connect, connect.request, new BufferedResponse(connect.response, buffer));
 }
 
 ///HttpConnect for forwarded request
 class _ForwardedConnect extends _ProxyConnect {
   ///[uri]: if null, it means no need to change
   _ForwardedConnect(HttpConnect connect, HttpRequest request,
-    HttpResponse response, String uri, [ConnectErrorHandler errorHandler]):
+    HttpResponse response, String uri):
     super(connect,
       _wrapRequest(request != null ? request: connect.request, uri),
-      _wrapResponse(response != null ? response: connect.response, connect.isIncluded),
-      errorHandler != null ? errorHandler: connect.error);
+      _wrapResponse(response != null ? response: connect.response, connect.isIncluded));
 
   @override
   HttpConnect get forwarder => _origin;
@@ -116,11 +114,10 @@ class _ForwardedConnect extends _ProxyConnect {
 class _IncludedConnect extends _ProxyConnect {
   ///[uri]: if null, it means no need to change
   _IncludedConnect(HttpConnect connect, HttpRequest request,
-    HttpResponse response, String uri, [ConnectErrorHandler errorHandler]):
+    HttpResponse response, String uri):
     super(connect,
       _wrapRequest(request != null ? request: connect.request, uri),
-      _wrapResponse(response != null ? response: connect.response, true),
-      errorHandler != null ? errorHandler: connect.error);
+      _wrapResponse(response != null ? response: connect.response, true));
 
   @override
   HttpConnect get includer => _origin;

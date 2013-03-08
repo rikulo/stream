@@ -23,7 +23,7 @@ else
   homedir=${homedir%/*}
 fi
 if [ "$TERM" = "cygwin" ] || [ "$OSTYPE" = "cygwin" ] ; then
-  homedir=$(cygpath -u $homedir)
+  homedir=$(cygpath -m $homedir)
   dartdoc=dartdoc.bat
 else
   dartdoc=dartdoc
@@ -44,7 +44,7 @@ ver=${ver#version: }
 
 PATH=$PATH:$SDK/bin
 echo Compiling $libdir $ver
-$dartdoc --out $outdir $libdir/*.dart
+$dartdoc --pkg $homedir/packages --exclude-lib args,args.src.parser,args.src.usage,logging,meta,rikulo_async,rikulo_io,rikulo_mirrors,rikulo_util --out $outdir $libdir/*.dart
 if [ ! -f $outdir/index.html ] ; then
 	echo $outdir/index.html not found. Failed?
 	exit 1

@@ -22,6 +22,7 @@ class Compiler {
   final List _lookAhead = [];
   final List<_IncInfo> _incs = []; //included
   String _extra = ""; //extra whitespaces
+  int _nextVar = 0; //used to implement TagContext.nextVar()
 
   Compiler(this.source, this.destination, {
       this.sourceName, this.encoding:Encoding.UTF_8, this.verbose: false}) {
@@ -39,6 +40,10 @@ class Compiler {
     bool pgFound = false, started = false;
     int prevln = 1;
     for (var token; (token = _nextToken()) != null; prevln = _line) {
+      if (_current.args != null && token is! VarTag && token is! _Closing
+      && (token is! String || !token.trim().isEmpty))
+        _error("Only the var tag is allowed inside the ${_current.tag.name} tag, not $token");
+
       if (token is String) {
         String text = token;
         if (!started) {
@@ -82,10 +87,10 @@ class Compiler {
           token.end(_current);
           pop();
         }
-      } else if (token is _Ending) {
-        final _Ending ending = token;
-        if (_current.tag == null || _current.tag.name != ending.name)
-          _error("Unexpected [/${ending.name}] (no beginning tag found)", _line);
+      } else if (token is _Closing) {
+        final _Closing closing = token;
+        if (_current.tag == null || _current.tag.name != closing.name)
+          _error("Unexpected [/${closing.name}] (no beginning tag found)", _line);
         _current.tag.end(_current);
         pop();
       } else {
@@ -142,8 +147,7 @@ class Compiler {
     if (_args != null)
       _write(", {$_args}");
     _writeln(") { //$line\n"
-      "  final request = connect.request, response = connect.response;\n"
-      "  var _v_;");
+      "  var _cxs = new List<HttpConnect>(), request = connect.request, response = connect.response, _v_;\n");
 
     if (_contentType != null) {
       if (!ctypeSpecified) //if not specified, it is set only if not included
@@ -166,7 +170,7 @@ class Compiler {
 
   ///Include the given URI.
   void includeUri(String uri, [Map args, int line]) {
-    _noNested("include", line);
+    _checkInclude(line);
     if (args != null && !args.isEmpty)
       _error("Include URI with arguments", line); //TODO: handle arguments
     if (verbose) _info("Include $uri", line);
@@ -178,7 +182,7 @@ class Compiler {
   }
   ///Include the output of the given renderer
   void include(String method, [Map args, int line]) {
-    _noNested("include", line);
+    _checkInclude(line);
     if (verbose) _info("Include $method", line);
 
     _writeln("\n${_current.pre}$method(connect.server.connectForInclusion(connect, success: () { //#$line");
@@ -190,6 +194,18 @@ class Compiler {
         sb..write(", ")..write(arg)..write(": ")..write(toEL(args[arg]));
     sb.write(");");
     _incs.add(new _IncInfo(sb.toString()));
+  }
+  ///Check if the include tag is allowed.
+  ///It can be not put inside while/for/if...
+  void _checkInclude(int line) {
+    for (TagContext tc = _current; (tc = tc.parent) != null; ) {
+      final tag = tc.tag;
+      if (tag != null && tag is! IncludeTag && tag is! VarTag) {
+        final pline = _tagCtxs[_tagCtxs.length - 2].line;
+        _error("The include tag can't be under the [${tag.name}] tag (at ${pline})."
+          "Try to split into multiple files.", line);
+      }
+    }
   }
 
   ///Forward to the given URI.
@@ -220,7 +236,7 @@ class Compiler {
 
     final sb = new StringBuffer();
     final token = _specialToken(sb);
-    if (token is _Ending)
+    if (token is _Closing)
       _skipFollowingSpaces();
 
     final text = _rmSpacesBeforeTag(sb.toString(), token);
@@ -241,7 +257,7 @@ class Compiler {
           if (c2 == '=') { //[=exprssion]
             _pos = j + 1;
             return new _Expr();
-          } else if (c2 == '/') { //[/ending-tag]
+          } else if (c2 == '/') { //[/closing-tag]
             int k = j + 1;
             if (k < _len && StringUtil.isChar(source[k], lower:true)) {
               int m = _skipId(k);
@@ -249,9 +265,9 @@ class Compiler {
               final tag = tags[tagnm];
               if (tag != null && m < _len && source[m] == ']') { //tag found
                 if (!tag.hasClosing)
-                  _error("[/$tagnm] not allowed. It doesn't need the ending tag.", _line);
+                  _error("[/$tagnm] not allowed. It doesn't need the closing tag.", _line);
                 _pos = m + 1;
-                return new _Ending(tagnm);
+                return new _Closing(tagnm);
               }
             }
             //fall through
@@ -301,7 +317,7 @@ class Compiler {
   ///(Optional but for better output) Removes the whitspaces before the given token,
   ///if it is a tag. Notice: [text] is in front of [token]
   String _rmSpacesBeforeTag(String text, token) {
-    if (token is! Tag && token is! _Ending)
+    if (token is! Tag && token is! _Closing)
       return text;
 
     for (int i = text.length; --i >= 0;) {
@@ -383,7 +399,7 @@ class Compiler {
     _pos = k + 1;
     if (source[k] == '/') {
       if (tag != null && tag.hasClosing)
-        _lookAhead.add(new _Ending(tag.name));
+        _lookAhead.add(new _Closing(tag.name));
 
       _skipFollowingSpaces();
       if (_pos >= _len || source[_pos] != ']')
@@ -401,7 +417,7 @@ class Compiler {
 
     if (!_lookAhead.isEmpty) { //we have to check if it is [dart/]
       final token = _nextToken();
-      if (token is _Ending && token.name == "dart")
+      if (token is _Closing && token.name == "dart")
         return ""; //[dart/]
       _lookAhead.add(token); //add back
     }
@@ -467,16 +483,6 @@ class Compiler {
     return text.length > 30 ? "${text.substring(0, 27)}...": text;
   }
 
-  ///Not allow nested tags for the given tag
-  void _noNested(String tagnm, int line) {
-    final parent = _current.parent;
-    if (parent != null) { //no nested allowed (limitation of async programming)
-      final pline = _tagCtxs[_tagCtxs.length - 2].line;
-      _error("The $tagnm tag must be top-level "
-        "(rather than inside ${parent} at line ${pline})."
-        "Try to split into multiple files.", line);
-    }
-  }
   ///Throws an exception if the value is EL
   void _noEL(String val, String what, [int line]) {
     if (val != null && isEL(val))
@@ -511,6 +517,7 @@ class SyntaxError implements Error {
   final String sourceName;
   ///The line number
   final int line;
+
   SyntaxError(this.sourceName, this.line, String message) {
     _msg = "$sourceName:$line: $message";
   }
@@ -520,23 +527,28 @@ class SyntaxError implements Error {
 class _TagContext extends TagContext {
   String _pre;
 
-  ///The tag
-  Tag tag;
   ///The line number
   final int line;
 
   _TagContext.root(Compiler compiler, IOSink output)
-    : _pre = "", line = 1, super(null, compiler, output);
-  _TagContext.child(_TagContext prev, this.tag, this.line)
-    : _pre = prev._pre, super(prev.tag, prev.compiler, prev.output);
+    : _pre = "", line = 1, super(null, null, compiler, output);
+  _TagContext.child(_TagContext prev, Tag tag, this.line)
+    : _pre = prev._pre, super(prev, tag, prev.compiler, prev.output);
 
+  @override
+  String nextVar() => "_${compiler._nextVar++}";
+  @override
   String get pre => compiler._extra.isEmpty ? _pre: "${compiler._extra}$_pre";
+  @override
   String indent() => _pre = "$_pre  ";
+  @override
   String unindent() => _pre = _pre.isEmpty ? _pre: _pre.substring(2);
 
+  @override
   void error(String message, [int line]) {
     compiler._error(message, line);
   }
+  @override
   void warning(String message, [int line]) {
     compiler._warning(message, line);
   }
@@ -544,9 +556,9 @@ class _TagContext extends TagContext {
 }
 class _Expr {
 }
-class _Ending {
+class _Closing {
   final String name;
-  _Ending(this.name);
+  _Closing(this.name);
 }
 class _IncInfo {
   ///The statement to generate. If null, it means URI is included (rather than handler)

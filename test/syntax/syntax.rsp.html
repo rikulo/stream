@@ -37,12 +37,30 @@ import "package:stream/stream.dart";
     [if foo.isCustomer]
       *Custmer*
     [else if c]
-      [forward "/x/y/z"]
+      [forward "/x/y/z"/]
     [else if foo.isEmployee]
       *Employee*
-      [forward syntax c="[=true]" foo="abc"]
+      [forward syntax c="[=true]" foo="abc"/]
     [else]
       *Unknown* \[/if] [!-- escape a [/if] --]
+    [/if]
+
+    [var whatever]
+    define a variable
+      [for fruit in ["apple", "orange"]]
+        [=fruit]
+      [/for]
+	[/var]
+
+    [include "/abc"/]
+    [include syntax c="[=true]"]
+      [var foo]
+      The content for foo
+      [/var]
+    [/include]
+
+    [if foo.isMeaningful]
+    something is meaningful
     [/if]
   </body>
 </html>

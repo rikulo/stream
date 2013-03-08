@@ -90,15 +90,21 @@ class _ProxyConnect extends _AbstractConnect {
   Map<String, dynamic> get dataset => _origin.dataset;
 }
 
+class _BufferredConnect extends _ProxyConnect {
+  _BufferredConnect(HttpConnect connect, StringBuffer buffer, [ConnectErrorHandler errorHandler]):
+    super(connect, connect.request, new BufferredResponse(connect.response, buffer),
+      errorHandler != null ? errorHandler: connect.error);
+}
+
 ///HttpConnect for forwarded request
 class _ForwardedConnect extends _ProxyConnect {
   ///[uri]: if null, it means no need to change
   _ForwardedConnect(HttpConnect connect, HttpRequest request,
-    HttpResponse response, String uri, ConnectErrorHandler errorHandler):
+    HttpResponse response, String uri, [ConnectErrorHandler errorHandler]):
     super(connect,
       _wrapRequest(request != null ? request: connect.request, uri),
       _wrapResponse(response != null ? response: connect.response, connect.isIncluded),
-      errorHandler);
+      errorHandler != null ? errorHandler: connect.error);
 
   @override
   HttpConnect get forwarder => _origin;
@@ -110,11 +116,11 @@ class _ForwardedConnect extends _ProxyConnect {
 class _IncludedConnect extends _ProxyConnect {
   ///[uri]: if null, it means no need to change
   _IncludedConnect(HttpConnect connect, HttpRequest request,
-    HttpResponse response, String uri, ConnectErrorHandler errorHandler):
+    HttpResponse response, String uri, [ConnectErrorHandler errorHandler]):
     super(connect,
       _wrapRequest(request != null ? request: connect.request, uri),
       _wrapResponse(response != null ? response: connect.response, true),
-      errorHandler);
+      errorHandler != null ? errorHandler: connect.error);
 
   @override
   HttpConnect get includer => _origin;

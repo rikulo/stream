@@ -13,6 +13,9 @@ typedef void ConnectErrorHandler(HttpConnect connect, err, [stackTrace]);
 /** A HTTP request connection.
  */
 abstract class HttpConnect {
+  factory HttpConnect.buffer(HttpConnect origin, StringBuffer buffer)
+  => new _BufferredConnect(origin, buffer);
+
   ///The Stream server
   StreamServer get server;
   ///The HTTP request.

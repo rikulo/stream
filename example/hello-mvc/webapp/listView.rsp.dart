@@ -4,8 +4,8 @@ part of hello_mvc;
 
 /** Template, listView, for rendering the view. */
 void listView(HttpConnect connect, {String path, List<FileInfo> infos}) { //5
-  final request = connect.request, response = connect.response;
-  var _v_;
+  var _cxs = new List<HttpConnect>(), request = connect.request, response = connect.response, _v_;
+
   if (!connect.isIncluded)
     response.headers.contentType = new ContentType.fromString("""text/html; charset=utf-8""");
 
@@ -33,7 +33,7 @@ void listView(HttpConnect connect, {String path, List<FileInfo> infos}) { //5
       </tr>
 """); //#13
 
-  for (var info in infos) { //#20
+  for (var info in infos) { //for#20
 
     response.addString("""
 

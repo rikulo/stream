@@ -7,13 +7,13 @@ import "package:stream/stream.dart";
 
 /** Template, syntax, for rendering the view. */
 void syntax(HttpConnect connect, {foo, bool c:false}) { //9
-  final request = connect.request, response = connect.response;
-  var _v_;
+  var _cxs = new List<HttpConnect>(), request = connect.request, response = connect.response, _v_;
+
   response.headers.contentType = new ContentType.fromString("""${foo.contentType}""");
 
-  response.headers.add("age", """129"""); //#9
+  response.headers.add("age", """129"""); //header#9
 
-  response.headers.add("accept-ranges", foo.acceptRanges); //#9
+  response.headers.add("accept-ranges", foo.acceptRanges); //header#9
 
   response.addString("""
 <!DOCTYPE html>
@@ -48,7 +48,7 @@ void syntax(HttpConnect connect, {foo, bool c:false}) { //9
     <ul>
 """); //#19
 
-  for (var user in foo.friends) { //#22
+  for (var user in foo.friends) { //for#22
 
     response.addString("""      <li>"""); //#23
 
@@ -59,14 +59,14 @@ void syntax(HttpConnect connect, {foo, bool c:false}) { //9
 
 """); //#23
 
-    if (user.isCustomer) { //#24
+    if (user.isCustomer) { //if#24
 
       response.addString("""
       <i>!important!</i>
 """); //#25
     } //if
 
-    while (user.hasMore()) { //#27
+    while (user.hasMore()) { //while#27
 
       response.addString("""        """); //#28
 
@@ -88,25 +88,25 @@ void syntax(HttpConnect connect, {foo, bool c:false}) { //9
 
 """); //#32
 
-  for (var fruit in ["apple", "orange"]) { //#34
+  for (var fruit in ["apple", "orange"]) { //for#34
   } //for
 
   response.addString("""
 
 """); //#36
 
-  if (foo.isCustomer) { //#37
+  if (foo.isCustomer) { //if#37
 
     response.addString("""
       *Custmer*
 """); //#38
 
-  } else if (c) { //#39
+  } else if (c) { //else#39
 
     connect.forward("""/x/y/z"""); //#40
     return;
 
-  } else if (foo.isEmployee) { //#41
+  } else if (foo.isEmployee) { //else#41
 
     response.addString("""
       *Employee*
@@ -115,7 +115,7 @@ void syntax(HttpConnect connect, {foo, bool c:false}) { //9
     syntax(connect, c: true, foo: """abc"""); //#43
     return;
 
-  } else { //#44
+  } else { //else#44
 
     response.addString("""
       *Unknown* [/if] 
@@ -123,14 +123,70 @@ void syntax(HttpConnect connect, {foo, bool c:false}) { //9
   } //if
 
   response.addString("""
-  </body>
-</html>
 
 """); //#47
 
+  var whatever = new StringBuffer(); _cxs.add(connect); //var#48
+  connect = new HttpConnect.buffer(connect, whatever); response = connect.response;
+
   response.addString("""
+    define a variable
+"""); //#49
+
+  for (var fruit in ["apple", "orange"]) { //for#50
+
+    response.addString("""        """); //#51
+
+    _v_ = fruit; //#51
+    if (_v_ != null) response.addString("$_v_");
+
+    response.addString("""
 
 """); //#51
+  } //for
 
-  connect.close();
+  connect = _cxs.removeLast(); response = connect.response;
+  whatever = whatever.toString();
+
+  response.addString("""
+
+"""); //#54
+
+  connect.include("""/abc""", success: () { //#55
+
+    var _0 = new StringBuffer(); _cxs.add(connect); //var#57
+    connect = new HttpConnect.buffer(connect, _0); response = connect.response;
+
+    response.addString("""
+      The content for foo
+"""); //#58
+
+    connect = _cxs.removeLast(); response = connect.response;
+
+    syntax(connect.server.connectForInclusion(connect, success: () { //#56
+
+      response.addString("""
+
+"""); //#61
+
+      if (foo.isMeaningful) { //if#62
+
+        response.addString("""
+    something is meaningful
+"""); //#63
+      } //if
+
+      response.addString("""
+  </body>
+</html>
+
+"""); //#65
+
+      response.addString("""
+
+"""); //#69
+
+      connect.close();
+    }), c: true, foo: _0.toString()); //end-of-include
+  }); //end-of-include
 }

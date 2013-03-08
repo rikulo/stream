@@ -6,7 +6,8 @@
 library stream_rspc;
 
 import "dart:io";
-import "dart:collection" show HashMap;
+import "dart:collection" show HashMap, LinkedHashMap;
+import 'package:meta/meta.dart';
 import "package:args/args.dart";
 import "package:rikulo_commons/util.dart";
 

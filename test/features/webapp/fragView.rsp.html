@@ -1,7 +1,10 @@
 [dart]
 part of features;
 [/dart]
-[page args="Map infos: const {}"]
+[page args="Map infos: const {}, header, footer"]
+[if header != null]
+  [=header]
+[/if]
 <ul>
   <li>This is a fragment and generated dynamically</li>
   [for type in infos.keys]
@@ -14,3 +17,6 @@ part of features;
     </li>
   [/for]
 </ul>
+[if footer != null]
+  [=footer]
+[/if]

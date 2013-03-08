@@ -1,0 +1,16 @@
+[page args="foo, more, less"]
+[dart]
+import "dart:io";
+import "package:stream/stream.dart";
+[/dart]
+
+[var less]
+less is more
+[/var]
+
+[include include foo="[=true]" less="[=less]"]
+  [var more]
+  More information
+    [include include more="recursive"/]
+  [/var]
+[/include]

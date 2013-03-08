@@ -4,8 +4,8 @@ part of features;
 
 /** Template, searchResult, for rendering the view. */
 void searchResult(HttpConnect connect, {criteria}) { //4
-  final request = connect.request, response = connect.response;
-  var _v_;
+  var _cxs = new List<HttpConnect>(), request = connect.request, response = connect.response, _v_;
+
   if (!connect.isIncluded)
     response.headers.contentType = new ContentType.fromString("""text/html; charset=utf-8""");
 

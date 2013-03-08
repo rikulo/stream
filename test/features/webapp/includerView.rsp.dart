@@ -9,8 +9,8 @@ final infos = {
 
 /** Template, includerView, for rendering the view. */
 void includerView(HttpConnect connect) { //8
-  final request = connect.request, response = connect.response;
-  var _v_;
+  var _cxs = new List<HttpConnect>(), request = connect.request, response = connect.response, _v_;
+
   if (!connect.isIncluded)
     response.headers.contentType = new ContentType.fromString("""text/html; charset=utf-8""");
 
@@ -39,11 +39,48 @@ void includerView(HttpConnect connect) { //8
 
       response.addString("""
     </div>
-  </body>
-</html>
+    <div style="border: 1px solid red">
 """); //#23
 
-      connect.close();
+      var _0 = new StringBuffer(); _cxs.add(connect); //var#26
+      connect = new HttpConnect.buffer(connect, _0); response = connect.response;
+
+      response.addString("""
+  <h1>This is a header</h1>
+  <p>Passed from the includer for showing """); //#27
+
+      _v_ = infos; //#28
+      if (_v_ != null) response.addString("$_v_");
+
+      response.addString("""
+</p>
+"""); //#28
+
+      connect = _cxs.removeLast(); response = connect.response;
+
+      var _1 = new StringBuffer(); _cxs.add(connect); //var#30
+      connect = new HttpConnect.buffer(connect, _1); response = connect.response;
+
+      response.addString("""
+  <h2>This is a footer</h2>
+  <p>It also includes another page:</p>
+"""); //#31
+
+      connect.include("""/frag.html""", success: () { //#33
+
+        connect = _cxs.removeLast(); response = connect.response;
+
+        fragView(connect.server.connectForInclusion(connect, success: () { //#25
+
+          response.addString("""
+    </div>
+  </body>
+</html>
+"""); //#36
+
+          connect.close();
+        }), infos: infos, header: _0.toString(), footer: _1.toString()); //end-of-include
+      }); //end-of-include
     }), infos: infos); //end-of-include
   }); //end-of-include
 }

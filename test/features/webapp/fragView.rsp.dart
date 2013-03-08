@@ -3,50 +3,74 @@
 part of features;
 
 /** Template, fragView, for rendering the view. */
-void fragView(HttpConnect connect, {Map infos: const {}}) { //5
-  final request = connect.request, response = connect.response;
-  var _v_;
+void fragView(HttpConnect connect, {Map infos: const {}, header, footer}) { //5
+  var _cxs = new List<HttpConnect>(), request = connect.request, response = connect.response, _v_;
+
   if (!connect.isIncluded)
     response.headers.contentType = new ContentType.fromString("""text/html; charset=utf-8""");
+
+  if (header != null) { //if#5
+
+    response.addString("""  """); //#6
+
+    _v_ = header; //#6
+    if (_v_ != null) response.addString("$_v_");
+
+    response.addString("""
+
+"""); //#6
+  } //if
 
   response.addString("""
 <ul>
   <li>This is a fragment and generated dynamically</li>
-"""); //#5
+"""); //#8
 
-  for (var type in infos.keys) { //#7
+  for (var type in infos.keys) { //for#10
 
-    response.addString("""    <li>"""); //#8
+    response.addString("""    <li>"""); //#11
 
-    _v_ = type; //#8
+    _v_ = type; //#11
     if (_v_ != null) response.addString("$_v_");
 
     response.addString("""
 
       <ol>
-"""); //#8
+"""); //#11
 
-    for (var name in infos[type]) { //#10
+    for (var name in infos[type]) { //for#13
 
-      response.addString("""        <li>"""); //#11
+      response.addString("""        <li>"""); //#14
 
-      _v_ = name; //#11
+      _v_ = name; //#14
       if (_v_ != null) response.addString("$_v_");
 
       response.addString("""
 </li>
-"""); //#11
+"""); //#14
     } //for
 
     response.addString("""
       </ol>
     </li>
-"""); //#13
+"""); //#16
   } //for
 
   response.addString("""
 </ul>
-"""); //#16
+"""); //#19
+
+  if (footer != null) { //if#20
+
+    response.addString("""  """); //#21
+
+    _v_ = footer; //#21
+    if (_v_ != null) response.addString("$_v_");
+
+    response.addString("""
+
+"""); //#21
+  } //if
 
   connect.close();
 }

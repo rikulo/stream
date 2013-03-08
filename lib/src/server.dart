@@ -296,7 +296,7 @@ class _StreamServer implements StreamServer {
     if (uri.indexOf('?') >= 0)
       throw new UnsupportedError("Forward with query string"); //TODO
 
-    _handle(new _ForwardedConnect(connect, request, response, _toAbsUri(connect, uri), _cxerrh)
+    _handle(new _ForwardedConnect(connect, request, response, _toAbsUri(connect, uri))
       ..on.close.add((){
           if (success != null)
             success();
@@ -316,7 +316,7 @@ class _StreamServer implements StreamServer {
   HttpConnect connectForInclusion(HttpConnect connect, {String uri, Handler success,
     HttpRequest request, HttpResponse response}) {
     final inc = new _IncludedConnect(connect, request, response,
-        uri != null ? _toAbsUri(connect, uri): null, _cxerrh);
+        uri != null ? _toAbsUri(connect, uri): null);
     if (success != null)
       inc.on.close.add(success);
     return inc;

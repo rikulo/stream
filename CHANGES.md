@@ -3,7 +3,7 @@
 **0.5.5**
 
 * The composite view (aka., templating) is supported.
-* The syntax of the include and forward tags are simplified.
+* The syntax of the include and forward tags are changed.
 * The var tag is introduced.
 
 **0.5.4**

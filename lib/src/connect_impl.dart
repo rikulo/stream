@@ -90,9 +90,9 @@ class _ProxyConnect extends _AbstractConnect {
   Map<String, dynamic> get dataset => _origin.dataset;
 }
 
-class _BufferredConnect extends _ProxyConnect {
-  _BufferredConnect(HttpConnect connect, StringBuffer buffer, [ConnectErrorHandler errorHandler]):
-    super(connect, connect.request, new BufferredResponse(connect.response, buffer),
+class _BufferedConnect extends _ProxyConnect {
+  _BufferedConnect(HttpConnect connect, StringBuffer buffer, [ConnectErrorHandler errorHandler]):
+    super(connect, connect.request, new BufferedResponse(connect.response, buffer),
       errorHandler != null ? errorHandler: connect.error);
 }
 

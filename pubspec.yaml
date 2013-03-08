@@ -7,7 +7,7 @@ authors:
 - Tom Yeh <tomyeh@rikulo.org>
 homepage: http://rikulo.org/projects/stream
 dependencies:
-  rikulo_commons: {path: ../commons}
+  rikulo_commons: any
   logging: any
   args: any
   meta: any

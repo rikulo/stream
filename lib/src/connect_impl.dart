@@ -9,16 +9,20 @@ abstract class _AbstractConnect implements HttpConnect {
   ErrorHandler _errh;
   Handler _close;
   Map<String, dynamic> _dataset;
+  _StreamTarget<HttpConnect> _closeEvtTarget;
+  _StreamTarget _errEvtTarget;
  
   _AbstractConnect(this.request, this.response, this._cxerrh) {
+    _closeEvtTarget = new _StreamTarget<HttpConnect>();
+    _errEvtTarget = new _StreamTarget();
     _init();
   }
   void _init() {
     _close = () {
-      on.close._invoke0();
+      _closeEvtTarget.send(this);
     };
     _errh = (e, [st]) {
-      on.error._invoke2(e, st);
+      _errEvtTarget.send(st != null ? new AsyncError(e, st): e);
       _cxerrh(this, e, st);
     };
   }
@@ -46,11 +50,13 @@ abstract class _AbstractConnect implements HttpConnect {
   }
 
   @override
-  final Handlers on = new Handlers();
-  @override
   Handler get close => _close;
   @override
   ErrorHandler get error => _errh;
+  @override
+  Stream<HttpConnect> get onClose => _closeEvent.forTarget(_closeEvtTarget);
+  @override
+  Stream get onError => _errorEvent.forTarget(_errEvtTarget);
 }
 
 ///The default implementation of HttpConnect
@@ -205,3 +211,30 @@ HttpRequest _wrapRequest(HttpRequest request, String uri)
 => uri == null || request.uri == uri ? request: new _ReUriRequest(request, new Uri(uri));
 HttpResponse _wrapResponse(HttpResponse response, bool included)
 => !included || response is _IncludedResponse ? response: new _IncludedResponse(response);
+
+//Close and error stream (for implementing HttpConnect.onClose and onError)
+class _StreamTarget<T> implements StreamTarget<T> {
+  Queue<Function> _listeners;
+
+  _StreamTarget();
+
+  void send(T event) {
+    if (_listeners != null)
+      for (final l in _listeners)
+        l(event);
+  }
+
+  @override
+  void addEventListener(String type, void listener(T event)) {
+    if (_listeners == null)
+      _listeners = new Queue();
+    _listeners.addFirst(listener);
+  }
+  @override
+  void removeEventListener(String type, void listener(T event)) {
+    if (_listeners != null)
+      _listeners.remove(listener);
+  }
+}
+const StreamProvider<HttpConnect> _closeEvent = const StreamProvider<HttpConnect>('close');
+const StreamProvider _errorEvent = const StreamProvider('error');

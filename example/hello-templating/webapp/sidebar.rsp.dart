@@ -3,17 +3,16 @@
 part of hello_templating;
 
 /** Template, sidebar, for rendering the view. */
-void sidebar(HttpConnect connect) { //1
+void sidebar(HttpConnect connect) { //2
   var _cxs = new List<HttpConnect>(), request = connect.request, response = connect.response, _v_;
 
   if (!connect.isIncluded)
     response.headers.contentType = new ContentType.fromString("""text/html; charset=utf-8""");
 
   response.addString("""
-
 <ul>
   <li>This is a sidebar.</li>
-  <li>"""); //#1
+  <li>"""); //#2
 
   _v_ = new DateTime.now(); //#4
   if (_v_ != null) response.addString("$_v_");

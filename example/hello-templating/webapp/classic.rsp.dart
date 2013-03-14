@@ -3,7 +3,7 @@
 part of hello_templating;
 
 /** Template, classic, for rendering the view. */
-void classic(HttpConnect connect, {header, sidebar, body, footer}) { //3
+void classic(HttpConnect connect, {header, sidebar, body, footer}) { //2
   var _cxs = new List<HttpConnect>(), request = connect.request, response = connect.response, _v_;
 
   if (!connect.isIncluded)
@@ -12,43 +12,43 @@ void classic(HttpConnect connect, {header, sidebar, body, footer}) { //3
   response.addString("""
 <div>
   <div class="header">
-    """); //#3
+    """); //#2
 
-  _v_ = header; //#5
+  _v_ = header; //#4
   if (_v_ != null) response.addString("$_v_");
 
   response.addString("""
 
   </div>
   <div class="sidebar">
-    """); //#5
+    """); //#4
 
-  _v_ = sidebar; //#8
+  _v_ = sidebar; //#7
   if (_v_ != null) response.addString("$_v_");
 
   response.addString("""
 
   </div>
   <div class="body">
-    """); //#8
+    """); //#7
 
-  _v_ = body; //#11
+  _v_ = body; //#10
   if (_v_ != null) response.addString("$_v_");
 
   response.addString("""
 
   </div>
   <div class="footer">
-    """); //#11
+    """); //#10
 
-  _v_ = footer; //#14
+  _v_ = footer; //#13
   if (_v_ != null) response.addString("$_v_");
 
   response.addString("""
 
   </div>
 </div>
-"""); //#14
+"""); //#13
 
   connect.close();
 }

@@ -12,8 +12,8 @@ class Compiler {
   final IOSink destination;
   final Encoding encoding;
   final bool verbose;
-  //the closure's name, args
-  String _name, _args, _desc, _contentType;
+  //the closure's partOf, import, name, args...
+  String _partOf, _import, _name, _args, _desc, _contentType;
   final List<_TagContext> _tagCtxs = [];
   _TagContext _current;
   //The position, length and _line of the source
@@ -21,6 +21,7 @@ class Compiler {
   //Look-ahead tokens
   final List _lookAhead = [];
   final List<_IncInfo> _incs = []; //included
+  final List<_QuedTag> _quedTags = []; //queued tags (before _start is called)
   String _extra = ""; //extra whitespaces
   int _nextVar = 0; //used to implement TagContext.nextVar()
 
@@ -71,12 +72,22 @@ class Compiler {
         token.end(_current);
         pop();
       } else if (token is DartTag) {
+        if (!started) {
+          _quedTags.add(new _QuedTag(token, _dartData()));
+          continue;
+        }
+
         push(token);
         token.begin(_current, _dartData());
         token.end(_current);
         pop();
       } else if (token is Tag) {
         if (!started) {
+          if (token is HeaderTag) {
+          //note: token.hasClosing must be false
+            _quedTags.add(new _QuedTag(token, _tagData(tag: token)));
+            continue;
+          }
           started = true;
           _start();
         }
@@ -142,6 +153,28 @@ class Compiler {
       }
     }
 
+    final imports = new LinkedHashSet.from(["dart:io", "package:stream/stream.dart"]);
+    if (_import != null && !_import.isEmpty)
+      imports.addAll(_import.split(','));
+
+    if (_partOf == null || _partOf.isEmpty) { //independent library
+      final i = sourceName.lastIndexOf('.'),
+        j = sourceName.lastIndexOf('/'),
+        lib = i >= 0 && i > j ? sourceName.substring(j >= 0 ? j + 1: 0, i):
+            j >= 0 ? sourceName.substring(j + 1): sourceName;
+      _writeln("library ${lib.replaceAll('.', '_')};\n");
+      for (final impt in imports)
+        _outImport(impt);
+    } else if (_partOf.endsWith(".dart")) { //needs to maintain the given dart file
+      _error("Not supported yet: the partOf attribute refers to a dart file");
+      //TODO: consider to maintain the given dart file automatically
+      //However, wonder if it is too complicated for users to understand
+    } else {
+      if (_import != null && !_import.isEmpty)
+        _warning("The import attribute is ignored since the part-of attribute is given");
+      _writeln("part of $_partOf;");
+    }
+
     _current.indent();
     _write("\n/** $_desc */\nvoid $_name(HttpConnect connect");
     if (_args != null)
@@ -155,10 +188,24 @@ class Compiler {
       _writeln('  response.headers.contentType = new ContentType.fromString('
         '${toEL(_contentType, quotmark:true)});');
     }
+
+    //generated the tags found before _start() is called.
+    for (final ti in _quedTags) {
+      push(ti.tag);
+      ti.tag.begin(_current, ti.data);
+      ti.tag.end(_current);
+      pop();
+    }
+    _quedTags.clear();
   }
 
   ///Sets the page information.
-  void setPage(String name, String description, String args, String contentType, [int line]) {
+  void setPage(String partOf, String imports, String name, String description, String args,
+      String contentType, [int line]) {
+    _partOf = partOf;
+    _noEL(partOf, "the partOf attribute", line);
+    _import = imports;
+    _noEL(_import, "the import attribute", line);
     _name = name;
     _noEL(name, "the name attribute", line);
     _desc = description;
@@ -470,6 +517,14 @@ class Compiler {
     }
   }
 
+  ///Generate import xxx;
+  void _outImport(String impt) {
+    impt = impt.trim();
+    final i = impt.indexOf(' ');
+    impt = i >= 0 ? "'${impt.substring(0,i)}'${impt.substring(i)}": "'$impt'";
+    _writeln("import $impt;");
+  }
+
   void _write(String str) {
     _current.write(str);
   }
@@ -564,4 +619,10 @@ class _IncInfo {
   ///The statement to generate. If null, it means URI is included (rather than handler)
   final String invocation;
   _IncInfo(this.invocation);
+}
+///Queued tag
+class _QuedTag {
+  Tag tag;
+  String data;
+  _QuedTag(this.tag, this.data);
 }

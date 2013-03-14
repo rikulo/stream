@@ -6,7 +6,7 @@
 library stream_rspc;
 
 import "dart:io";
-import "dart:collection" show HashMap, LinkedHashMap;
+import "dart:collection";
 import 'package:meta/meta.dart';
 import "package:args/args.dart";
 import "package:rikulo_commons/util.dart";
@@ -19,4 +19,4 @@ part "src/rspc/compiler.dart";
 part "src/rspc/tag.dart";
 part "src/rspc/tagutil.dart";
 
-const VERSION = "0.5.5";
+const VERSION = "0.6.0";

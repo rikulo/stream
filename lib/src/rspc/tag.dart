@@ -97,10 +97,17 @@ Map<String, Tag> _tags;
 class PageTag extends Tag {
   @override
   void begin(TagContext tc, String data) {
-    String name, desc, args, ctype;
+    String partOf, imports, name, desc, args, ctype;
     final attrs = ArgInfo.parse(data);
     for (final nm in attrs.keys) {
       switch (nm) {
+        case "partOf":
+        case "part-of":
+          partOf = attrs[nm];
+          break;
+        case "import":
+          imports = attrs[nm];
+          break;
         case "name":
           name = attrs[nm];
           break;
@@ -122,7 +129,7 @@ class PageTag extends Tag {
           break;
       }
     }
-    tc.compiler.setPage(name, desc, args, ctype);
+    tc.compiler.setPage(partOf, imports, name, desc, args, ctype);
   }
   @override
   bool get hasClosing => false;

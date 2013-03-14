@@ -3,7 +3,7 @@
 part of hello_mvc;
 
 /** Template, listView, for rendering the view. */
-void listView(HttpConnect connect, {String path, List<FileInfo> infos}) { //5
+void listView(HttpConnect connect, {String path, List<FileInfo> infos}) { //2
   var _cxs = new List<HttpConnect>(), request = connect.request, response = connect.response, _v_;
 
   if (!connect.isIncluded)
@@ -18,9 +18,9 @@ void listView(HttpConnect connect, {String path, List<FileInfo> infos}) { //5
     <link href="theme.css" rel="stylesheet" type="text/css" />
   </head>
   <body>
-    <h1>Directory: """); //#5
+    <h1>Directory: """); //#2
 
-  _v_ = path; //#13
+  _v_ = path; //#10
   if (_v_ != null) response.addString("$_v_");
 
   response.addString("""
@@ -31,29 +31,29 @@ void listView(HttpConnect connect, {String path, List<FileInfo> infos}) { //5
         <th>Type</th>
         <th>Name</th>
       </tr>
-"""); //#13
+"""); //#10
 
-  for (var info in infos) { //for#20
+  for (var info in infos) { //for#17
 
     response.addString("""
 
       <tr>
-        <td><img src=\""""); //#20
+        <td><img src=\""""); //#17
 
-    _v_ = info.isDirectory ? 'file.png': 'directory.png'; //#22
+    _v_ = info.isDirectory ? 'file.png': 'directory.png'; //#19
     if (_v_ != null) response.addString("$_v_");
 
     response.addString("""
 "/></td>
-        <td>"""); //#22
+        <td>"""); //#19
 
-    _v_ = info.name; //#23
+    _v_ = info.name; //#20
     if (_v_ != null) response.addString("$_v_");
 
     response.addString("""
 </td>
       </tr>
-"""); //#23
+"""); //#20
   } //for
 
   response.addString("""
@@ -65,7 +65,7 @@ void listView(HttpConnect connect, {String path, List<FileInfo> infos}) { //5
   <a href="https://github.com/rikulo/stream/tree/master/example/hello-mvc">Github</a> for how it is implemented.</a></li></ul>
   </body>
 </html>
-"""); //#25
+"""); //#22
 
   connect.close();
 }

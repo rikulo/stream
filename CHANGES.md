@@ -1,5 +1,10 @@
 #CHANGES
 
+**0.6.0**
+
+* [page] introduces the partOf and imports attributes
+* [dart] is always generated inside the render function
+
 **0.5.5**
 
 * The composite view (aka., templating) is supported.

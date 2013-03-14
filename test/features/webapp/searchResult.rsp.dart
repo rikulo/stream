@@ -3,14 +3,13 @@
 part of features;
 
 /** Template, searchResult, for rendering the view. */
-void searchResult(HttpConnect connect, {criteria}) { //4
+void searchResult(HttpConnect connect, {criteria}) { //2
   var _cxs = new List<HttpConnect>(), request = connect.request, response = connect.response, _v_;
 
   if (!connect.isIncluded)
     response.headers.contentType = new ContentType.fromString("""text/html; charset=utf-8""");
 
   response.addString("""
-
 <html>
   <head>
     <title>Search Result</title>
@@ -20,30 +19,30 @@ void searchResult(HttpConnect connect, {criteria}) { //4
     <h1>Search Result</h1>
     <p>Criteria:</p>
     <ul>
-      <li>text: """); //#4
+      <li>text: """); //#2
 
-  _v_ = criteria.text; //#14
+  _v_ = criteria.text; //#11
   if (_v_ != null) response.addString("$_v_");
 
   response.addString("""
 </li>
-      <li>since: """); //#14
+      <li>since: """); //#11
 
-  _v_ = criteria.since; //#15
+  _v_ = criteria.since; //#12
   if (_v_ != null) response.addString("$_v_");
 
   response.addString("""
 </li>
-      <li>within: """); //#15
+      <li>within: """); //#12
 
-  _v_ = criteria.within; //#16
+  _v_ = criteria.within; //#13
   if (_v_ != null) response.addString("$_v_");
 
   response.addString("""
 </li>
-      <li>hasAttachment: """); //#16
+      <li>hasAttachment: """); //#13
 
-  _v_ = criteria.hasAttachment; //#17
+  _v_ = criteria.hasAttachment; //#14
   if (_v_ != null) response.addString("$_v_");
 
   response.addString("""
@@ -51,7 +50,7 @@ void searchResult(HttpConnect connect, {criteria}) { //4
     </ul>
   </body>
 </html>
-"""); //#17
+"""); //#14
 
   connect.close();
 }

@@ -9,12 +9,10 @@ abstract class _AbstractConnect implements HttpConnect {
   ErrorHandler _errh;
   Handler _close;
   Map<String, dynamic> _dataset;
-  _StreamTarget<HttpConnect> _closeEvtTarget;
+  final _StreamTarget<HttpConnect> _closeEvtTarget = new _StreamTarget<HttpConnect>();
   _StreamTarget _errEvtTarget;
  
   _AbstractConnect(this.request, this.response, this._cxerrh) {
-    _closeEvtTarget = new _StreamTarget<HttpConnect>();
-    _errEvtTarget = new _StreamTarget();
     _init();
   }
   void _init() {
@@ -22,7 +20,8 @@ abstract class _AbstractConnect implements HttpConnect {
       _closeEvtTarget.send(this);
     };
     _errh = (e, [st]) {
-      _errEvtTarget.send(st != null ? new AsyncError(e, st): e);
+      if (_errEvtTarget != null)
+        _errEvtTarget.send(st != null ? new AsyncError(e, st): e);
       _cxerrh(this, e, st);
     };
   }
@@ -54,9 +53,11 @@ abstract class _AbstractConnect implements HttpConnect {
   @override
   ErrorHandler get error => _errh;
   @override
-  Stream<HttpConnect> get onClose => _closeEvent.forTarget(_closeEvtTarget);
+  Stream<HttpConnect> get onClose => _provider.forTarget(_closeEvtTarget);
   @override
-  Stream get onError => _errorEvent.forTarget(_errEvtTarget);
+  Stream get onError
+  => _provider.forTarget(_errEvtTarget != null ? _errEvtTarget:
+      (_errEvtTarget = new _StreamTarget()));
 }
 
 ///The default implementation of HttpConnect
@@ -236,5 +237,4 @@ class _StreamTarget<T> implements StreamTarget<T> {
       _listeners.remove(listener);
   }
 }
-const StreamProvider<HttpConnect> _closeEvent = const StreamProvider<HttpConnect>('close');
-const StreamProvider _errorEvent = const StreamProvider('error');
+const StreamProvider _provider = const StreamProvider('');

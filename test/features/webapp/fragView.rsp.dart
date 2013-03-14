@@ -3,73 +3,73 @@
 part of features;
 
 /** Template, fragView, for rendering the view. */
-void fragView(HttpConnect connect, {Map infos: const {}, header, footer}) { //5
+void fragView(HttpConnect connect, {Map infos: const {}, header, footer}) { //2
   var _cxs = new List<HttpConnect>(), request = connect.request, response = connect.response, _v_;
 
   if (!connect.isIncluded)
     response.headers.contentType = new ContentType.fromString("""text/html; charset=utf-8""");
 
-  if (header != null) { //if#5
+  if (header != null) { //if#2
 
-    response.addString("""  """); //#6
+    response.addString("""  """); //#3
 
-    _v_ = header; //#6
+    _v_ = header; //#3
     if (_v_ != null) response.addString("$_v_");
 
     response.addString("""
 
-"""); //#6
+"""); //#3
   } //if
 
   response.addString("""
 <ul>
   <li>This is a fragment and generated dynamically</li>
-"""); //#8
+"""); //#5
 
-  for (var type in infos.keys) { //for#10
+  for (var type in infos.keys) { //for#7
 
-    response.addString("""    <li>"""); //#11
+    response.addString("""    <li>"""); //#8
 
-    _v_ = type; //#11
+    _v_ = type; //#8
     if (_v_ != null) response.addString("$_v_");
 
     response.addString("""
 
       <ol>
-"""); //#11
+"""); //#8
 
-    for (var name in infos[type]) { //for#13
+    for (var name in infos[type]) { //for#10
 
-      response.addString("""        <li>"""); //#14
+      response.addString("""        <li>"""); //#11
 
-      _v_ = name; //#14
+      _v_ = name; //#11
       if (_v_ != null) response.addString("$_v_");
 
       response.addString("""
 </li>
-"""); //#14
+"""); //#11
     } //for
 
     response.addString("""
       </ol>
     </li>
-"""); //#16
+"""); //#13
   } //for
 
   response.addString("""
 </ul>
-"""); //#19
+"""); //#16
 
-  if (footer != null) { //if#20
+  if (footer != null) { //if#17
 
-    response.addString("""  """); //#21
+    response.addString("""  """); //#18
 
-    _v_ = footer; //#21
+    _v_ = footer; //#18
     if (_v_ != null) response.addString("$_v_");
 
     response.addString("""
 
-"""); //#21
+"""); //#18
   } //if
 
   connect.close();

@@ -1,11 +1,6 @@
 [!-- Syntax Test --]
-[dart]
-library syntax;
-
-import "dart:io";
-import "package:stream/stream.dart";
-[/dart]
-[page contentType="[=foo.contentType]" args="foo, bool c:false"/]
+[page contentType="[=foo.contentType]" args="foo, bool c:false"
+	import="dart:collection show LinkedHashMap, dart:async"/]
 [header age="129" accept-ranges="[=foo.acceptRanges]" ]
 <!DOCTYPE html>
 <html>

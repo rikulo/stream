@@ -185,7 +185,7 @@ class Compiler {
       if (!ctypeSpecified) //if not specified, it is set only if not included
         _write('  if (!connect.isIncluded)\n  ');
       _writeln('  response.headers.contentType = new ContentType.fromString('
-        '${toEL(_contentType, quotmark:true)});');
+        '${toEL(_contentType, auto: false)});');
     }
 
     //generated the tags found before _start() is called.
@@ -222,7 +222,7 @@ class Compiler {
     if (verbose) _info("Include $uri", line);
 
     _writeln('\n${_current.pre}connect.include('
-      '${toEL(uri, quotmark:true)}, success: () { //#$line');
+      '${toEL(uri, auto: false)}, success: () { //#$line');
     _extra = "  $_extra";
     _incs.add(new _IncInfo("});"));
   }
@@ -261,7 +261,7 @@ class Compiler {
     if (verbose) _info("Forward $uri", line);
 
     _writeln("\n${_current.pre}connect.forward("
-      "${toEL(uri, quotmark:true)}); //#${line}\n"
+      "${toEL(uri, auto: false)}); //#${line}\n"
       "${_current.pre}return;");
   }
   //Forward to the given renderer
@@ -411,7 +411,7 @@ class Compiler {
     return from;
   }
   ///Skip arguments (of a tag)
-  int _skipTagArgs(int from) {
+  int _skipTagArgs(int from, bool ignoreSlash) {
     final line = _line;
     String sep;
     int nbkt = 0;
@@ -425,7 +425,7 @@ class Compiler {
       } else if (sep == null) {
         if (cc == '"' || cc == "'") {
           sep = cc;
-        } else if (nbkt == 0 && (cc == '/' || cc == ']')) {
+        } else if (nbkt == 0 && ((!ignoreSlash && cc == '/') || cc == ']')) {
           return from;
         } else if (cc == '[') {
           ++nbkt;
@@ -439,8 +439,8 @@ class Compiler {
     _error("Expect ']'", line);
   }
   ///Note: [tag] is required if `tag.hasClosing` is 
-  String _tagData({Tag tag, skipFollowingSpaces: true}) {
-    int k = _skipTagArgs(_pos);
+  String _tagData({Tag tag, skipFollowingSpaces: true, ignoreSlash: false}) {
+    int k = _skipTagArgs(_pos, ignoreSlash);
     final data = source.substring(_pos, k).trim();
     _pos = k + 1;
     if (source[k] == '/') {
@@ -508,7 +508,8 @@ class Compiler {
   void _outExpr() {
     //it doesn't push, so we have to use _line instead of _current.line
     final line = _line; //_tagData might have multiple lines
-    final expr = _tagData(skipFollowingSpaces: false); //no skip space for expression
+    final expr = _tagData(ignoreSlash: true, skipFollowingSpaces: false);
+      //1) '/' is NOT a terminal, 2) no skip space for expression
     if (!expr.isEmpty) {
       final pre = _current.pre;
       _writeln('\n${pre}response.addString(stringize($expr)); //#${line}\n');
@@ -553,13 +554,17 @@ class Compiler {
         if (cc == '\n')
           comment0 = false;
       } else if (comment1) {
-        if (cc == '*' && i + 1 < len && data[++i] == '/')
+        if (cc == '*' && i + 1 < len && data[i + 1] == '/') {
+          ++i;
           comment1 = false;
+        }
       } else if (cc == '/') {
         if (i + 1 < len) {
-          final c2 = data[++i];
+          final c2 = data[i + 1];
           comment0 = c2 == '/';
           comment1 = c2 == '*';
+          if (comment0 || comment1)
+            ++i;
         }
       } else if ((j = _startsWith(data, i, "library")) >= 0) {
         i = _skipWhitespace(data, j);

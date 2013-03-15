@@ -5,12 +5,11 @@ part of features;
 /** Template, searchResult, for rendering the view. */
 void searchResult(HttpConnect connect, {criteria}) { //2
   var _cs_ = new List<HttpConnect>(), request = connect.request, response = connect.response;
-  _e_(v) => v != null ? "$v": ""; _o_(String v) => response.addString(v);
 
   if (!connect.isIncluded)
     response.headers.contentType = new ContentType.fromString("""text/html; charset=utf-8""");
 
-  _o_("""
+  response.addString("""
 <html>
   <head>
     <title>Search Result</title>
@@ -22,31 +21,31 @@ void searchResult(HttpConnect connect, {criteria}) { //2
     <ul>
       <li>text: """); //#2
 
-  _o_(_e_(criteria.text)); //#11
+  response.addString(stringize(criteria.text)); //#11
 
 
-  _o_("""
+  response.addString("""
 </li>
       <li>since: """); //#11
 
-  _o_(_e_(criteria.since)); //#12
+  response.addString(stringize(criteria.since)); //#12
 
 
-  _o_("""
+  response.addString("""
 </li>
       <li>within: """); //#12
 
-  _o_(_e_(criteria.within)); //#13
+  response.addString(stringize(criteria.within)); //#13
 
 
-  _o_("""
+  response.addString("""
 </li>
       <li>hasAttachment: """); //#13
 
-  _o_(_e_(criteria.hasAttachment)); //#14
+  response.addString(stringize(criteria.hasAttachment)); //#14
 
 
-  _o_("""
+  response.addString("""
 </li>
     </ul>
   </body>

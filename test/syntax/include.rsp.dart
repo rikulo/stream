@@ -8,7 +8,6 @@ import 'package:stream/stream.dart';
 /** Template, include, for rendering the view. */
 void include(HttpConnect connect, {foo, more, less}) { //3
   var _cs_ = new List<HttpConnect>(), request = connect.request, response = connect.response;
-  _e_(v) => v != null ? "$v": ""; _o_(String v) => response.addString(v);
 
   if (!connect.isIncluded)
     response.headers.contentType = new ContentType.fromString("""text/html; charset=utf-8""");
@@ -16,21 +15,21 @@ void include(HttpConnect connect, {foo, more, less}) { //3
   var less = new StringBuffer(); _cs_.add(connect); //var#3
   connect = new HttpConnect.buffer(connect, less); response = connect.response;
 
-  _o_("""
+  response.addString("""
 less is more
 """); //#4
 
   connect = _cs_.removeLast(); response = connect.response;
   less = less.toString();
 
-  _o_("""
+  response.addString("""
 
 """); //#6
 
   var _0 = new StringBuffer(); _cs_.add(connect); //var#8
   connect = new HttpConnect.buffer(connect, _0); response = connect.response;
 
-  _o_("""
+  response.addString("""
   More information
 """); //#9
 

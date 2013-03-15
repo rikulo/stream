@@ -5,7 +5,6 @@ part of features;
 /** Template, includerView, for rendering the view. */
 void includerView(HttpConnect connect) { //7
   var _cs_ = new List<HttpConnect>(), request = connect.request, response = connect.response;
-  _e_(v) => v != null ? "$v": ""; _o_(String v) => response.addString(v);
 
   if (!connect.isIncluded)
     response.headers.contentType = new ContentType.fromString("""text/html; charset=utf-8""");
@@ -14,7 +13,7 @@ final infos = {
   "cars": ["bmw", "audi", "honda"]
 };
 
-  _o_("""
+  response.addString("""
 
 <html>
   <head>
@@ -30,14 +29,14 @@ final infos = {
 
   connect.include("""/frag.html""", success: () { //#18
 
-    _o_("""
+    response.addString("""
     </div>
     <div style="border: 1px solid red">
 """); //#19
 
     fragView(connect.server.connectForInclusion(connect, success: () { //#21
 
-      _o_("""
+      response.addString("""
     </div>
     <div style="border: 1px solid red">
 """); //#22
@@ -45,14 +44,14 @@ final infos = {
       var _0 = new StringBuffer(); _cs_.add(connect); //var#25
       connect = new HttpConnect.buffer(connect, _0); response = connect.response;
 
-      _o_("""
+      response.addString("""
   <h1>This is a header</h1>
   <p>Passed from the includer for showing """); //#26
 
-      _o_(_e_(infos)); //#27
+      response.addString(stringize(infos)); //#27
 
 
-      _o_("""
+      response.addString("""
 </p>
 """); //#27
 
@@ -61,7 +60,7 @@ final infos = {
       var _1 = new StringBuffer(); _cs_.add(connect); //var#29
       connect = new HttpConnect.buffer(connect, _1); response = connect.response;
 
-      _o_("""
+      response.addString("""
   <h2>This is a footer</h2>
   <p>It also includes another page:</p>
 """); //#30
@@ -72,7 +71,7 @@ final infos = {
 
         fragView(connect.server.connectForInclusion(connect, success: () { //#24
 
-          _o_("""
+          response.addString("""
     </div>
   </body>
 </html>

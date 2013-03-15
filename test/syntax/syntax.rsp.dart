@@ -10,7 +10,6 @@ import 'dart:async';
 /** Template, syntax, for rendering the view. */
 void syntax(HttpConnect connect, {foo, bool c:false}) { //5
   var _cs_ = new List<HttpConnect>(), request = connect.request, response = connect.response;
-  _e_(v) => v != null ? "$v": ""; _o_(String v) => response.addString(v);
 
   response.headers.contentType = new ContentType.fromString("""${foo.contentType}""");
 
@@ -18,34 +17,34 @@ void syntax(HttpConnect connect, {foo, bool c:false}) { //5
 
   response.headers.add("accept-ranges", foo.acceptRanges); //header#8
 
-  _o_("""
+  response.addString("""
 <!DOCTYPE html>
 <html>
   <head>
     <title>"""); //#5
 
-  _o_(_e_("$foo.name [${foo.title}]")); //#8
+  response.addString(stringize("$foo.name [${foo.title}]")); //#8
 
 
   //#8
-  _o_("""
+  response.addString("""
 </title>
   </head>
   <body>
     <p>This is a test with """);
-  _o_('"""');
-  _o_("""
+  response.addString('"""');
+  response.addString("""
 .
     <p>Another expresion: """);
 
-  _o_(_e_(foo.description)); //#12
+  response.addString(stringize(foo.description)); //#12
 
 
-  _o_("""
+  response.addString("""
 
     <p>An empty expression: """); //#12
 
-  _o_("""
+  response.addString("""
 
     <p>This is not a tag: [foo ], [another and [/none].
     <ul>
@@ -53,40 +52,40 @@ void syntax(HttpConnect connect, {foo, bool c:false}) { //5
 
   for (var user in foo.friends) { //for#17
 
-    _o_("""      <li>"""); //#18
+    response.addString("""      <li>"""); //#18
 
-    _o_(_e_(user.name)); //#18
+    response.addString(stringize(user.name)); //#18
 
 
-    _o_("""
+    response.addString("""
 
 """); //#18
 
     if (user.isCustomer) { //if#19
 
-      _o_("""
+      response.addString("""
       <i>!important!</i>
 """); //#20
     } //if
 
     while (user.hasMore()) { //while#22
 
-      _o_("""        """); //#23
+      response.addString("""        """); //#23
 
-      _o_(_e_(user.showMore())); //#23
+      response.addString(stringize(user.showMore())); //#23
 
 
-      _o_("""
+      response.addString("""
 
 """); //#23
     } //while
 
-    _o_("""
+    response.addString("""
       </li>
 """); //#25
   } //for
 
-  _o_("""
+  response.addString("""
     </ul>
 
 """); //#27
@@ -94,13 +93,13 @@ void syntax(HttpConnect connect, {foo, bool c:false}) { //5
   for (var fruit in ["apple", "orange"]) { //for#29
   } //for
 
-  _o_("""
+  response.addString("""
 
 """); //#31
 
   if (foo.isCustomer) { //if#32
 
-    _o_("""
+    response.addString("""
       *Custmer*
 """); //#33
 
@@ -111,7 +110,7 @@ void syntax(HttpConnect connect, {foo, bool c:false}) { //5
 
   } else if (foo.isEmployee) { //else#36
 
-    _o_("""
+    response.addString("""
       *Employee*
 """); //#37
 
@@ -120,30 +119,30 @@ void syntax(HttpConnect connect, {foo, bool c:false}) { //5
 
   } else { //else#39
 
-    _o_("""
+    response.addString("""
       *Unknown* [/if] 
 """); //#40
   } //if
 
-  _o_("""
+  response.addString("""
 
 """); //#42
 
   var whatever = new StringBuffer(); _cs_.add(connect); //var#43
   connect = new HttpConnect.buffer(connect, whatever); response = connect.response;
 
-  _o_("""
+  response.addString("""
     define a variable
 """); //#44
 
   for (var fruit in ["apple", "orange"]) { //for#45
 
-    _o_("""        """); //#46
+    response.addString("""        """); //#46
 
-    _o_(_e_(fruit)); //#46
+    response.addString(stringize(fruit)); //#46
 
 
-    _o_("""
+    response.addString("""
 
 """); //#46
   } //for
@@ -151,7 +150,7 @@ void syntax(HttpConnect connect, {foo, bool c:false}) { //5
   connect = _cs_.removeLast(); response = connect.response;
   whatever = whatever.toString();
 
-  _o_("""
+  response.addString("""
 
 """); //#49
 
@@ -160,7 +159,7 @@ void syntax(HttpConnect connect, {foo, bool c:false}) { //5
     var _0 = new StringBuffer(); _cs_.add(connect); //var#52
     connect = new HttpConnect.buffer(connect, _0); response = connect.response;
 
-    _o_("""
+    response.addString("""
       The content for foo
 """); //#53
 
@@ -168,24 +167,24 @@ void syntax(HttpConnect connect, {foo, bool c:false}) { //5
 
     syntax(connect.server.connectForInclusion(connect, success: () { //#51
 
-      _o_("""
+      response.addString("""
 
 """); //#56
 
       if (foo.isMeaningful) { //if#57
 
-        _o_("""
+        response.addString("""
     something is meaningful
 """); //#58
       } //if
 
-      _o_("""
+      response.addString("""
   </body>
 </html>
 
 """); //#60
 
-      _o_("""
+      response.addString("""
 
 """); //#64
 

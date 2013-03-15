@@ -179,8 +179,7 @@ class Compiler {
     if (_args != null)
       _write(", {$_args}");
     _writeln(") { //$line\n"
-      "  var _cs_ = new List<HttpConnect>(), request = connect.request, response = connect.response;\n"
-      '  _e_(v) => v != null ? "\$v": ""; _o_(String v) => response.addString(v);\n');
+      "  var _cs_ = new List<HttpConnect>(), request = connect.request, response = connect.response;\n");
 
     if (_contentType != null) {
       if (!ctypeSpecified) //if not specified, it is set only if not included
@@ -486,7 +485,7 @@ class Compiler {
         line = null;
       }
       _writeln('$pre${_toTripleQuot(text.substring(i, j))}\n'
-        '${pre}_o_(\'"""\');');
+        '${pre}response.addString(\'"""\');');
       i = j + 3;
     }
     if (i == 0) {
@@ -503,7 +502,7 @@ class Compiler {
       ce = '\\"';
       text = text.substring(0, text.length - 1);
     }
-    return '_o_("""$cb$text$ce""");';
+    return 'response.addString("""$cb$text$ce""");';
   }
 
   void _outExpr() {
@@ -512,7 +511,7 @@ class Compiler {
     final expr = _tagData(skipFollowingSpaces: false); //no skip space for expression
     if (!expr.isEmpty) {
       final pre = _current.pre;
-      _writeln('\n${pre}_o_(_e_($expr)); //#${line}\n');
+      _writeln('\n${pre}response.addString(stringize($expr)); //#${line}\n');
     }
   }
 
@@ -606,6 +605,7 @@ class Compiler {
       mynm = null; //no need to add
 
     if (!importToAdd.isEmpty || mynm != null) {
+      final srcnm = sourceName != null ? sourceName: mypath.toString();
       final buf = new StringBuffer();
 
       if (importToAdd.isEmpty) {
@@ -615,12 +615,12 @@ class Compiler {
           importPos = partPos;
         buf.write(data.substring(0, importPos));
         for (final impt in importToAdd)
-          buf..write("import ")..write(impt)..writeln("; //auto-inject from $mypath");
+          buf..write("import ")..write(impt)..writeln("; //auto-inject from $srcnm");
         buf..write('\n')..write(data.substring(importPos, partPos));
       }
 
       if (mynm != null)
-        buf..write("part ")..write(mynm)..writeln("; //auto-inject from $mypath\n");
+        buf..write("part ")..write(mynm)..writeln("; //auto-inject from $srcnm\n");
       buf.write(data.substring(partPos));
 
       libfile.writeAsStringSync(buf.toString(), encoding: encoding);

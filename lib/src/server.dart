@@ -14,6 +14,11 @@ part of stream;
  */
 typedef void Filter(HttpConnect connect, void chain(HttpConnect conn));
 
+/** Converts the given value to a string by calling its `toString`.
+ * If the given value is null, an empty string is returned.
+ */
+String stringize(v) => v != null ? v.toString(): "";
+
 /**
  * Stream server.
  *

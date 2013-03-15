@@ -5,12 +5,11 @@ part of hello_templating;
 /** Template, home, for rendering the view. */
 void home(HttpConnect connect) { //2
   var _cs_ = new List<HttpConnect>(), request = connect.request, response = connect.response;
-  _e_(v) => v != null ? "$v": ""; _o_(String v) => response.addString(v);
 
   if (!connect.isIncluded)
     response.headers.contentType = new ContentType.fromString("""text/html; charset=utf-8""");
 
-  _o_("""
+  response.addString("""
 <!DOCTYPE html>
 <html>
   <head>
@@ -27,7 +26,7 @@ void home(HttpConnect connect) { //2
 
     connect = _cs_.removeLast(); response = connect.response;
 
-    _o_("""
+    response.addString("""
 
 """); //#13
 
@@ -38,7 +37,7 @@ void home(HttpConnect connect) { //2
 
       connect = _cs_.removeLast(); response = connect.response;
 
-      _o_("""
+      response.addString("""
 
 """); //#17
 
@@ -49,14 +48,14 @@ void home(HttpConnect connect) { //2
 
         connect = _cs_.removeLast(); response = connect.response;
 
-        _o_("""
+        response.addString("""
 
 """); //#21
 
         var _3 = new StringBuffer(); _cs_.add(connect); //var#22
         connect = new HttpConnect.buffer(connect, _3); response = connect.response;
 
-        _o_("""
+        response.addString("""
   <h1>Hello Templating</h1>
   <p>In this example, we demostrate how to define the shared layout (aka., the template), define page fragments and assemble them into a complete page. It is based on the so-called *Composite View* pattern.</p>
   <p>For more information, please refer to <a href="http://docs.rikulo.org/stream/latest/RSP/Fundamentals/Templating-_Composite_View_Pattern.html">Templating: Composite View Pattern</a>.</p>
@@ -66,7 +65,7 @@ void home(HttpConnect connect) { //2
 
         classic(connect.server.connectForInclusion(connect, success: () { //#9
 
-          _o_("""
+          response.addString("""
   </body>
 </html>
 """); //#28

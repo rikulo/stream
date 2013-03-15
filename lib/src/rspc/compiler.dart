@@ -165,11 +165,9 @@ class Compiler {
             j >= 0 ? sourceName.substring(j + 1): sourceName;
       _writeln("library ${lib.replaceAll('.', '_')};\n");
       for (final impt in imports)
-        _outImport(impt);
+        _writeln("import ${_toImport(impt)};");
     } else if (_partOf.endsWith(".dart")) { //needs to maintain the given dart file
-      _error("Not supported yet: the partOf attribute refers to a dart file");
-      //TODO: consider to maintain the given dart file automatically
-      //However, wonder if it is too complicated for users to understand
+      _writeln("part of ${_mergePartOf(imports)};");
     } else {
       if (_import != null && !_import.isEmpty)
         _warning("The import attribute is ignored since the part-of attribute is given");
@@ -486,18 +484,18 @@ class Compiler {
         _writeln("\n$pre//#$line");
         line = null;
       }
-      _writeln('$pre${_outTripleQuot(text.substring(i, j))}\n'
+      _writeln('$pre${_toTripleQuot(text.substring(i, j))}\n'
         '${pre}response.addString(\'"""\');');
       i = j + 3;
     }
     if (i == 0) {
-      _write('\n$pre${_outTripleQuot(text)}');
+      _write('\n$pre${_toTripleQuot(text)}');
       if (line != null) _writeln(" //#$line");
     } else {
-      _writeln('$pre${_outTripleQuot(text.substring(i))}');
+      _writeln('$pre${_toTripleQuot(text.substring(i))}');
     }
   }
-  String _outTripleQuot(String text) {
+  String _toTripleQuot(String text) {
     //Note: Dart can't handle """" (four quotation marks)
     var cb = text.startsWith('"') || text.indexOf('\n') >= 0 ? '\n': '', ce = "";
     if (text.endsWith('"')) {
@@ -518,12 +516,125 @@ class Compiler {
     }
   }
 
+  ///merge partOf, and returns the library name
+  String _mergePartOf(Set<String> imports) {
+    if (destinationName == null)
+      _error("The partOf attribute refers to a dart file is allowed only if destination is specified");
+
+    Path libpath = new Path(_partOf),
+        mypath = new Path(destinationName);
+    if (!libpath.isAbsolute)
+      libpath = mypath.directoryPath.join(libpath);
+    mypath = mypath.relativeTo(libpath.directoryPath);
+
+    File libfile = new File.fromPath(libpath);
+    if (!libfile.existsSync()) {
+      String libnm = libpath.filename;
+      libnm = libnm.substring(0, libnm.indexOf('.')).toString();
+        //filename must end with .dart (but it might have other extension ahead)
+
+      final buf = new StringBuffer()
+        ..write("library ")..write(libnm)..writeln(";\n");
+      for (final impt in imports)
+        buf.writeln("import ${_toImport(impt)};");
+      buf..write("\npart '")..write(mypath)..writeln("';");
+      file.writeAsStringSync(buf.toString(), encoding: encoding);
+      return libnm;
+    }
+
+    //parse libfile (TODO: use a better algorithm to parse rather than readAsStringSync/writeAsStringSync)
+    String libnm;
+    bool comment0 = false, comment1 = false;
+    Set<String> libimports = new Set(), libparts = new Set();
+    final data = libfile.readAsStringSync();
+    int len = data.length, importPos, partPos = len;
+    for (int i = 0, j; i < len; ++i) {
+      final cc = data[i];
+      if (comment0) { //look for \n
+        if (cc == '\n')
+          comment0 = false;
+      } else if (comment1) {
+        if (cc == '*' && i + 1 < len && data[++i] == '/')
+          comment1 = false;
+      } else if (cc == '/') {
+        if (i + 1 < len) {
+          final c2 = data[++i];
+          comment0 = c2 == '/';
+          comment1 = c2 == '*';
+        }
+      } else if ((j = _startsWith(data, i, "library")) >= 0) {
+        i = _skipWhitespace(data, j);
+        j = data.indexOf(';', i);
+        if (j < 0)
+          _error("Illegal library syntax found in $libfile");
+        libnm = data.substring(i, j).trim();
+        i = j;
+      } else if ((j = _startsWith(data, i, "import")) >= 0) {
+        i = _skipWhitespace(data, j);
+        j = data.indexOf(';', i);
+        if (j < 0)
+          _error("Illegal import syntax found in $libfile");
+        libimports.add(data.substring(i, j).trim().replaceAll('"', "'").replaceAll('\\', '/'));
+        i = j;
+      } else if ((j = _startsWith(data, i, "part")) >= 0) {
+        if (importPos == null)
+          importPos = i;
+        i = _skipWhitespace(data, j);
+        j = data.indexOf(';', i);
+        if (j < 0)
+          _error("Illegal part syntax found in $libfile");
+        libparts.add(data.substring(i, j).trim().replaceAll('"', "'").replaceAll('\\', '/'));
+        i = j;
+      } else if (!StringUtil.isChar(cc, whitespace: true)) {
+        partPos = i;
+        break;
+      }
+    }
+
+    if (libnm == null)
+      _error("The library directive not found in $libfile");
+
+    List<String> importToAdd = [];
+    for (final impt in imports) {
+      final s = _toImport(impt);
+      if (!libimports.contains(s))
+        importToAdd.add(s);
+    }
+
+    String mynm = "'$mypath'";
+    if (libparts.contains(mynm))
+      mynm = null; //no need to add
+
+    if (!importToAdd.isEmpty || mynm != null) {
+      final buf = new StringBuffer();
+
+      if (importToAdd.isEmpty) {
+        buf.write(data.substring(0, partPos));
+      } else {
+        if (importPos == null)
+          importPos = partPos;
+        buf.write(data.substring(0, importPos));
+        for (final impt in importToAdd)
+          buf..write("import ")..write(impt)..writeln("; //auto-inject from $mypath");
+        buf..write('\n')..write(data.substring(importPos, partPos));
+      }
+
+      if (mynm != null)
+        buf..write("part ")..write(mynm)..writeln("; //auto-inject from $mypath\n");
+      buf.write(data.substring(partPos));
+
+      libfile.writeAsStringSync(buf.toString(), encoding: encoding);
+    }
+    return libnm;
+  }
+
   ///Generate import xxx;
-  void _outImport(String impt) {
+  String _toImport(String impt) {
     impt = impt.trim();
-    final i = impt.indexOf(' ');
-    impt = i >= 0 ? "'${impt.substring(0,i)}'${impt.substring(i)}": "'$impt'";
-    _writeln("import $impt;");
+    for (int i = 0, len = impt.length; i < len; ++i)
+      if (StringUtil.isChar(impt[i], whitespace: true))
+        return "'${impt.substring(0, i)}'${impt.substring(i)}";
+    return "'$impt'";
   }
 
   void _write(String str) {
@@ -626,4 +737,18 @@ class _QuedTag {
   Tag tag;
   String data;
   _QuedTag(this.tag, this.data);
+}
+
+int _startsWith(String data, int i, String pattern) {
+  for (int len = data.length, pl = pattern.length, j = 0;; ++i, ++j) {
+    if (j >= pl)
+      return i; //found
+    if (i >= len || data[i] != pattern[j])
+      return -1;
+  }
+}
+int _skipWhitespace(String data, int i) {
+  for (int len = data.length; i < len && StringUtil.isChar(data[i], whitespace: true); ++i)
+    ;
+  return i;
 }

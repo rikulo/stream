@@ -179,7 +179,8 @@ class Compiler {
     if (_args != null)
       _write(", {$_args}");
     _writeln(") { //$line\n"
-      "  var _cxs = new List<HttpConnect>(), request = connect.request, response = connect.response, _v_;\n");
+      "  var _cs_ = new List<HttpConnect>(), request = connect.request, response = connect.response;\n"
+      '  _e_(v) => v != null ? "\$v": ""; _o_(String v) => response.addString(v);\n');
 
     if (_contentType != null) {
       if (!ctypeSpecified) //if not specified, it is set only if not included
@@ -218,7 +219,7 @@ class Compiler {
   void includeUri(String uri, [Map args, int line]) {
     _checkInclude(line);
     if (args != null && !args.isEmpty)
-      _error("Include URI with arguments", line); //TODO: handle arguments
+      _error("Not supported: include URI with arguments", line); //TODO: handle arguments
     if (verbose) _info("Include $uri", line);
 
     _writeln('\n${_current.pre}connect.include('
@@ -257,7 +258,7 @@ class Compiler {
   ///Forward to the given URI.
   void forwardUri(String uri, [Map args, int line]) {
     if (args != null && !args.isEmpty)
-      _error("Forward URI with arguments"); //TODO: handle arguments
+      _error("Not supported: forward URI with arguments"); //TODO: handle arguments
     if (verbose) _info("Forward $uri", line);
 
     _writeln("\n${_current.pre}connect.forward("
@@ -485,7 +486,7 @@ class Compiler {
         line = null;
       }
       _writeln('$pre${_toTripleQuot(text.substring(i, j))}\n'
-        '${pre}response.addString(\'"""\');');
+        '${pre}_o_(\'"""\');');
       i = j + 3;
     }
     if (i == 0) {
@@ -502,7 +503,7 @@ class Compiler {
       ce = '\\"';
       text = text.substring(0, text.length - 1);
     }
-    return 'response.addString("""$cb$text$ce""");';
+    return '_o_("""$cb$text$ce""");';
   }
 
   void _outExpr() {
@@ -511,8 +512,7 @@ class Compiler {
     final expr = _tagData(skipFollowingSpaces: false); //no skip space for expression
     if (!expr.isEmpty) {
       final pre = _current.pre;
-      _writeln('\n${pre}_v_ = $expr; //#${line}\n'
-        '${pre}if (_v_ != null) response.addString("\$_v_");');
+      _writeln('\n${pre}_o_(_e_($expr)); //#${line}\n');
     }
   }
 
@@ -538,7 +538,7 @@ class Compiler {
       for (final impt in imports)
         buf.writeln("import ${_toImport(impt)};");
       buf..write("\npart '")..write(mypath)..writeln("';");
-      file.writeAsStringSync(buf.toString(), encoding: encoding);
+      libfile.writeAsStringSync(buf.toString(), encoding: encoding);
       return libnm;
     }
 

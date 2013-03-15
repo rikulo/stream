@@ -4,7 +4,8 @@ part of features;
 
 /** Template, includerView, for rendering the view. */
 void includerView(HttpConnect connect) { //7
-  var _cxs = new List<HttpConnect>(), request = connect.request, response = connect.response, _v_;
+  var _cs_ = new List<HttpConnect>(), request = connect.request, response = connect.response;
+  _e_(v) => v != null ? "$v": ""; _o_(String v) => response.addString(v);
 
   if (!connect.isIncluded)
     response.headers.contentType = new ContentType.fromString("""text/html; charset=utf-8""");
@@ -13,7 +14,7 @@ final infos = {
   "cars": ["bmw", "audi", "honda"]
 };
 
-  response.addString("""
+  _o_("""
 
 <html>
   <head>
@@ -29,49 +30,49 @@ final infos = {
 
   connect.include("""/frag.html""", success: () { //#18
 
-    response.addString("""
+    _o_("""
     </div>
     <div style="border: 1px solid red">
 """); //#19
 
     fragView(connect.server.connectForInclusion(connect, success: () { //#21
 
-      response.addString("""
+      _o_("""
     </div>
     <div style="border: 1px solid red">
 """); //#22
 
-      var _0 = new StringBuffer(); _cxs.add(connect); //var#25
+      var _0 = new StringBuffer(); _cs_.add(connect); //var#25
       connect = new HttpConnect.buffer(connect, _0); response = connect.response;
 
-      response.addString("""
+      _o_("""
   <h1>This is a header</h1>
   <p>Passed from the includer for showing """); //#26
 
-      _v_ = infos; //#27
-      if (_v_ != null) response.addString("$_v_");
+      _o_(_e_(infos)); //#27
 
-      response.addString("""
+
+      _o_("""
 </p>
 """); //#27
 
-      connect = _cxs.removeLast(); response = connect.response;
+      connect = _cs_.removeLast(); response = connect.response;
 
-      var _1 = new StringBuffer(); _cxs.add(connect); //var#29
+      var _1 = new StringBuffer(); _cs_.add(connect); //var#29
       connect = new HttpConnect.buffer(connect, _1); response = connect.response;
 
-      response.addString("""
+      _o_("""
   <h2>This is a footer</h2>
   <p>It also includes another page:</p>
 """); //#30
 
       connect.include("""/frag.html""", success: () { //#32
 
-        connect = _cxs.removeLast(); response = connect.response;
+        connect = _cs_.removeLast(); response = connect.response;
 
         fragView(connect.server.connectForInclusion(connect, success: () { //#24
 
-          response.addString("""
+          _o_("""
     </div>
   </body>
 </html>

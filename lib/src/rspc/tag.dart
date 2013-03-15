@@ -252,12 +252,12 @@ class VarTag extends Tag {
     var varnm = tc.data
       = parentArgs != null ? (parentArgs[argInfo.first] = tc.nextVar()): argInfo.first;
 
-    tc.writeln("\n${tc.pre}var $varnm = new StringBuffer(); _cxs.add(connect); //var#${tc.line}\n"
+    tc.writeln("\n${tc.pre}var $varnm = new StringBuffer(); _cs_.add(connect); //var#${tc.line}\n"
       "${tc.pre}connect = new HttpConnect.buffer(connect, $varnm); response = connect.response;");
   }
   @override
   void end(TagContext tc) {
-    tc.writeln("\n${tc.pre}connect = _cxs.removeLast(); response = connect.response;");
+    tc.writeln("\n${tc.pre}connect = _cs_.removeLast(); response = connect.response;");
     if (tc.parent.args == null) {
       String varnm = tc.data;
       tc.writeln("${tc.pre}$varnm = $varnm.toString();");

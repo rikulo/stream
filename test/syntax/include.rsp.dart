@@ -7,35 +7,36 @@ import 'package:stream/stream.dart';
 
 /** Template, include, for rendering the view. */
 void include(HttpConnect connect, {foo, more, less}) { //3
-  var _cxs = new List<HttpConnect>(), request = connect.request, response = connect.response, _v_;
+  var _cs_ = new List<HttpConnect>(), request = connect.request, response = connect.response;
+  _e_(v) => v != null ? "$v": ""; _o_(String v) => response.addString(v);
 
   if (!connect.isIncluded)
     response.headers.contentType = new ContentType.fromString("""text/html; charset=utf-8""");
 
-  var less = new StringBuffer(); _cxs.add(connect); //var#3
+  var less = new StringBuffer(); _cs_.add(connect); //var#3
   connect = new HttpConnect.buffer(connect, less); response = connect.response;
 
-  response.addString("""
+  _o_("""
 less is more
 """); //#4
 
-  connect = _cxs.removeLast(); response = connect.response;
+  connect = _cs_.removeLast(); response = connect.response;
   less = less.toString();
 
-  response.addString("""
+  _o_("""
 
 """); //#6
 
-  var _0 = new StringBuffer(); _cxs.add(connect); //var#8
+  var _0 = new StringBuffer(); _cs_.add(connect); //var#8
   connect = new HttpConnect.buffer(connect, _0); response = connect.response;
 
-  response.addString("""
+  _o_("""
   More information
 """); //#9
 
   include(connect.server.connectForInclusion(connect, success: () { //#10
 
-    connect = _cxs.removeLast(); response = connect.response;
+    connect = _cs_.removeLast(); response = connect.response;
 
     include(connect.server.connectForInclusion(connect, success: () { //#7
 

@@ -4,12 +4,13 @@ part of hello_mvc;
 
 /** Template, listView, for rendering the view. */
 void listView(HttpConnect connect, {String path, List<FileInfo> infos}) { //2
-  var _cxs = new List<HttpConnect>(), request = connect.request, response = connect.response, _v_;
+  var _cs_ = new List<HttpConnect>(), request = connect.request, response = connect.response;
+  _e_(v) => v != null ? "$v": ""; _o_(String v) => response.addString(v);
 
   if (!connect.isIncluded)
     response.headers.contentType = new ContentType.fromString("""text/html; charset=utf-8""");
 
-  response.addString("""
+  _o_("""
 
 <!DOCTYPE html>
 <html>
@@ -20,10 +21,10 @@ void listView(HttpConnect connect, {String path, List<FileInfo> infos}) { //2
   <body>
     <h1>Directory: """); //#2
 
-  _v_ = path; //#10
-  if (_v_ != null) response.addString("$_v_");
+  _o_(_e_(path)); //#10
 
-  response.addString("""
+
+  _o_("""
 </h1>
 
     <table border="1px" cellspacing="0">
@@ -35,28 +36,28 @@ void listView(HttpConnect connect, {String path, List<FileInfo> infos}) { //2
 
   for (var info in infos) { //for#17
 
-    response.addString("""
+    _o_("""
 
       <tr>
         <td><img src=\""""); //#17
 
-    _v_ = info.isDirectory ? 'file.png': 'directory.png'; //#19
-    if (_v_ != null) response.addString("$_v_");
+    _o_(_e_(info.isDirectory ? 'file.png': 'directory.png')); //#19
 
-    response.addString("""
+
+    _o_("""
 "/></td>
         <td>"""); //#19
 
-    _v_ = info.name; //#20
-    if (_v_ != null) response.addString("$_v_");
+    _o_(_e_(info.name)); //#20
 
-    response.addString("""
+
+    _o_("""
 </td>
       </tr>
 """); //#20
   } //for
 
-  response.addString("""
+  _o_("""
 
     </table>
 

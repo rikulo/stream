@@ -32,8 +32,7 @@ void compileFile(String sourceName, {String destinationName, bool verbose : fals
   } else {
     dest = new File(destinationName);
   }
-  
-  
+
   if (verbose) {
     final int i = dest.path.lastIndexOf('/') + 1;
     print("Compile ${source.path} to ${i > 0 ? dest.path.substring(i) : dest.path}");

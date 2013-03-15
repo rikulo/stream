@@ -4,47 +4,48 @@ part of hello_templating;
 
 /** Template, classic, for rendering the view. */
 void classic(HttpConnect connect, {header, sidebar, body, footer}) { //2
-  var _cxs = new List<HttpConnect>(), request = connect.request, response = connect.response, _v_;
+  var _cs_ = new List<HttpConnect>(), request = connect.request, response = connect.response;
+  _e_(v) => v != null ? "$v": ""; _o_(String v) => response.addString(v);
 
   if (!connect.isIncluded)
     response.headers.contentType = new ContentType.fromString("""text/html; charset=utf-8""");
 
-  response.addString("""
+  _o_("""
 <div>
   <div class="header">
     """); //#2
 
-  _v_ = header; //#4
-  if (_v_ != null) response.addString("$_v_");
+  _o_(_e_(header)); //#4
 
-  response.addString("""
+
+  _o_("""
 
   </div>
   <div class="sidebar">
     """); //#4
 
-  _v_ = sidebar; //#7
-  if (_v_ != null) response.addString("$_v_");
+  _o_(_e_(sidebar)); //#7
 
-  response.addString("""
+
+  _o_("""
 
   </div>
   <div class="body">
     """); //#7
 
-  _v_ = body; //#10
-  if (_v_ != null) response.addString("$_v_");
+  _o_(_e_(body)); //#10
 
-  response.addString("""
+
+  _o_("""
 
   </div>
   <div class="footer">
     """); //#10
 
-  _v_ = footer; //#13
-  if (_v_ != null) response.addString("$_v_");
+  _o_(_e_(footer)); //#13
 
-  response.addString("""
+
+  _o_("""
 
   </div>
 </div>

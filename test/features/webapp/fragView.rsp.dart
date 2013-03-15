@@ -4,70 +4,71 @@ part of features;
 
 /** Template, fragView, for rendering the view. */
 void fragView(HttpConnect connect, {Map infos: const {}, header, footer}) { //2
-  var _cxs = new List<HttpConnect>(), request = connect.request, response = connect.response, _v_;
+  var _cs_ = new List<HttpConnect>(), request = connect.request, response = connect.response;
+  _e_(v) => v != null ? "$v": ""; _o_(String v) => response.addString(v);
 
   if (!connect.isIncluded)
     response.headers.contentType = new ContentType.fromString("""text/html; charset=utf-8""");
 
   if (header != null) { //if#2
 
-    response.addString("""  """); //#3
+    _o_("""  """); //#3
 
-    _v_ = header; //#3
-    if (_v_ != null) response.addString("$_v_");
+    _o_(_e_(header)); //#3
 
-    response.addString("""
+
+    _o_("""
 
 """); //#3
   } //if
 
-  response.addString("""
+  _o_("""
 <ul>
   <li>This is a fragment and generated dynamically</li>
 """); //#5
 
   for (var type in infos.keys) { //for#7
 
-    response.addString("""    <li>"""); //#8
+    _o_("""    <li>"""); //#8
 
-    _v_ = type; //#8
-    if (_v_ != null) response.addString("$_v_");
+    _o_(_e_(type)); //#8
 
-    response.addString("""
+
+    _o_("""
 
       <ol>
 """); //#8
 
     for (var name in infos[type]) { //for#10
 
-      response.addString("""        <li>"""); //#11
+      _o_("""        <li>"""); //#11
 
-      _v_ = name; //#11
-      if (_v_ != null) response.addString("$_v_");
+      _o_(_e_(name)); //#11
 
-      response.addString("""
+
+      _o_("""
 </li>
 """); //#11
     } //for
 
-    response.addString("""
+    _o_("""
       </ol>
     </li>
 """); //#13
   } //for
 
-  response.addString("""
+  _o_("""
 </ul>
 """); //#16
 
   if (footer != null) { //if#17
 
-    response.addString("""  """); //#18
+    _o_("""  """); //#18
 
-    _v_ = footer; //#18
-    if (_v_ != null) response.addString("$_v_");
+    _o_(_e_(footer)); //#18
 
-    response.addString("""
+
+    _o_("""
 
 """); //#18
   } //if

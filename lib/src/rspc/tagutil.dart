@@ -3,9 +3,11 @@
 // Author: tomyeh
 part of stream_rspc;
 
-///Test if the given value is enclosed with `[= ]`.
+/** Test if the given value is enclosed with `[= ]`.
+ * If null, false is returned.
+ */
 bool isEL(String data) {
-  for (int i = 0, len = data.length; i < len; ++i) {
+  for (int i = 0, len = data != null ? data.length: 0; i < len; ++i) {
     final cc = data[i];
     if (cc == '\\')
       ++i;
@@ -14,19 +16,25 @@ bool isEL(String data) {
   }
   return false;
 }
-/** Converts the value to a valid Dart statement
+/** Converts the given value to a valid Dart statement.
  *
- * * [auto] specifies whether NOT to enclose the expression with `"""`
- * if `data` contains nothing but a single expression.
+ * * [data] - the value to convert. It can be null.
+ * * [direct] - whether it is OK to return an expression, if any, directly
+ * without enclosing with `"""`/
+ * If true and `data` contains nothing but a single expression, the expression
+ * is output directly
  */
-String toEL(String data, {auto: true}) {
+String toEL(String data, {direct: true}) {
+  if (data == null)
+    return direct ? "null": '""';
+
   final sb = new StringBuffer();
   for (int i = 0, len = data.length; i < len; ++i) {
     final cc = data[i];
     if (cc == '[' && i + 1 < len && data[i + 1] == '=') { //found
       final j = _skipToELEnd(data, i + 2),
           val = data.substring(i + 2, j).trim();
-      if (auto && i == 0 && j + 1 == len) //single EL
+      if (direct && i == 0 && j + 1 == len) //single EL
         return val;
       if (!val.isEmpty)
         sb..write("\${")..write(val)..write("}");
@@ -40,9 +48,6 @@ String toEL(String data, {auto: true}) {
       sb.write(data[++i]);
   }
   return '"""$sb"""';
-//  var el = isEL(val) ? val.substring(2, val.length - 1).trim(): null;
-//  return el == null ? val != null ? '"""$val"""': stringize ? '""': "null":
-//    el.isEmpty ? '""': stringize ? '"""\${$el}"""': el;
 }
 int _skipToELEnd(String data, int from) {
   String sep;

@@ -185,7 +185,7 @@ class Compiler {
       if (!ctypeSpecified) //if not specified, it is set only if not included
         _write('  if (!connect.isIncluded)\n  ');
       _writeln('  response.headers.contentType = new ContentType.fromString('
-        '${toEL(_contentType, auto: false)});');
+        '${toEL(_contentType, direct: false)});');
     }
 
     //generated the tags found before _start() is called.
@@ -222,7 +222,7 @@ class Compiler {
     if (verbose) _info("Include $uri", line);
 
     _writeln('\n${_current.pre}connect.include('
-      '${toEL(uri, auto: false)}, success: () { //#$line');
+      '${toEL(uri, direct: false)}, success: () { //#$line');
     _extra = "  $_extra";
     _incs.add(new _IncInfo("});"));
   }
@@ -261,7 +261,7 @@ class Compiler {
     if (verbose) _info("Forward $uri", line);
 
     _writeln("\n${_current.pre}connect.forward("
-      "${toEL(uri, auto: false)}); //#${line}\n"
+      "${toEL(uri, direct: false)}); //#${line}\n"
       "${_current.pre}return;");
   }
   //Forward to the given renderer

@@ -36,16 +36,21 @@ if [ "$1" == "cleanup" ] || [ "$1" == "clean" ] ; then
 	exit
 fi
 
+minify=
 warning=false
 function d2j {
 	f=$1
 	if [ ${f%.dart} != $f ] ; then
 		grep -w 'main[(] *[)]' $f > /dev/null
 		if [ "$?" = "0" ] ; then #found
-			dart2js $f
+			$dart2js $minify $f
 			if [ "$?" = "0" ] ; then
 				mv out.js ${f%.dart}.dart.js
-				mv out.js.map ${f%.dart}.dart.js.map
+				if [ "$minify" = "--minify" ] ; then
+					rm out.js.map
+				else
+					mv out.js.map ${f%.dart}.dart.js.map
+				fi
 			else
 				exit 1
 			fi
@@ -69,7 +74,9 @@ function d2jx {
 	done
 }
 for f in $* ; do
-	if [ -f "$f" ] ; then
+	if [ "$f" == "--minify" ] ; then
+		minify=--minify
+	elif [ -f "$f" ] ; then
 		warning=true
 		d2j "$f"
 	elif [ -d "$f" ] ; then

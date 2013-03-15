@@ -7,9 +7,10 @@ part of stream_rspc;
  * The RSP compiler
  */
 class Compiler {
-  final String sourceName;
   final String source;
+  final String sourceName;
   final IOSink destination;
+  final String destinationName;
   final Encoding encoding;
   final bool verbose;
   //the closure's partOf, import, name, args...
@@ -26,7 +27,7 @@ class Compiler {
   int _nextVar = 0; //used to implement TagContext.nextVar()
 
   Compiler(this.source, this.destination, {
-      this.sourceName, this.encoding:Encoding.UTF_8, this.verbose: false}) {
+      this.sourceName, this.destinationName, this.encoding:Encoding.UTF_8, this.verbose: false}) {
     _tagCtxs.add(_current = new _TagContext.root(this, destination));
     _len = source.length;
   }

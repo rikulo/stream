@@ -4,6 +4,7 @@
 
 * [page] introduces the partOf and imports attributes
 * [dart] is always generated inside the render function
+* RSP files shall be put in the client folder (i.e., not under the webapp folder)
 
 **0.5.5**
 
@@ -24,7 +25,7 @@
 
 **0.5.2**
 
-* The error mapping takes the syntax of Map<code or exception, uri or function>.
+* The error mapping takes the syntax of Map<code or exception, URI or function>.
 
 **0.5.1**
 

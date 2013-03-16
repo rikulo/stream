@@ -63,8 +63,8 @@ class _StreamServer implements StreamServer {
   void _initMapping(Map<String, Function> uriMapping, Map errMapping, Map<String, Filter> filterMapping) {
     if (uriMapping != null)
       for (final uri in uriMapping.keys) {
-        if (!uri.startsWith("/"))
-          throw new ServerError("URI mapping: URI must start with '/': $uri");
+        _chkUri(uri, "URI");
+
         final hdl = uriMapping[uri];
         if (hdl is! Function)
           throw new ServerError("URI mapping: function is required for $uri");
@@ -72,12 +72,13 @@ class _StreamServer implements StreamServer {
       }
 
     //default mapping
-    _uriMapping.add(new _UriMapping("/.*[.]rsp(|[.][^/]*)", _404));
+    _uriMapping.add(new _UriMapping("/.*[.]rsp(|[.][^/]*)", _f404));
+      //prevent .rsp and .rsp.* from access
 
     if (filterMapping != null)
       for (final uri in filterMapping.keys) {
-        if (!uri.startsWith("/"))
-          throw new ServerError("Filter mapping: URI must start with '/': $uri");
+        _chkUri(uri, "Filter");
+
         final hdl = filterMapping[uri];
         if (hdl is! Function)
           throw new ServerError("Filter mapping: function is required for $uri");
@@ -88,8 +89,7 @@ class _StreamServer implements StreamServer {
       for (var code in errMapping.keys) {
         final handler = errMapping[code];
         if (handler is String) {
-          if (!handler.startsWith("/"))
-            throw new ServerError("Error mapping: URI must start with '/': $handler");
+          _chkUri(handler, "Error");
         } else if (handler is! Function) {
           throw new ServerError("Error mapping: URI or function is required for $code");
         }
@@ -113,7 +113,6 @@ class _StreamServer implements StreamServer {
           throw new ServerError("Error mapping: status code or exception is required, not $code");
       }
   }
-  static final Function _404 = (_) => throw new Http404();
 
   @override
   void forward(HttpConnect connect, String uri, {Handler success,
@@ -375,6 +374,17 @@ class _StreamServer implements StreamServer {
     if (_server != null)
       throw new StateError("Already running");
   }
+}
+
+///Renderer for 404
+final _f404 = (_) => throw new Http404();
+
+///check if the given URI is correct
+void _chkUri(String uri, String msg) {
+  String cc;
+  if (uri.isEmpty || ((cc = uri[0]) != '/' && cc != '.' && cc != '[' && cc != '('))
+    throw new ServerError("$msg mapping: URI must start with '/', '.', '[' or '('; not '$uri'");
+      //ensure it is absolute or starts with regex wildcard
 }
 
 class _UriMapping {

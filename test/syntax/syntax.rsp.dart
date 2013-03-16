@@ -11,7 +11,7 @@ import 'dart:async';
 void syntax(HttpConnect connect, {foo, bool c:false}) { //5
   var _cs_ = new List<HttpConnect>(), request = connect.request, response = connect.response;
 
-  response.headers.contentType = new ContentType.fromString("""${foo.contentType}""");
+  response.headers.contentType = new ContentType.fromString("""${stringize(foo.contentType)}""");
 
   response.headers.add("age", """129"""); //header#8
 

@@ -71,6 +71,10 @@ class _StreamServer implements StreamServer {
         _uriMapping.add(new _UriMapping(uri, hdl));
       }
 
+    //default mapping
+    _uriMapping.add(new _UriMapping("/.*[.]rsp", _404));
+    _uriMapping.add(new _UriMapping("/.*[.]rsp[.][^/]*", _404));
+
     if (filterMapping != null)
       for (final uri in filterMapping.keys) {
         if (!uri.startsWith("/"))
@@ -109,7 +113,8 @@ class _StreamServer implements StreamServer {
         else
           throw new ServerError("Error mapping: status code or exception is required, not $code");
       }
-   }
+  }
+  static final Function _404 = (_) => throw new Http404();
 
   @override
   void forward(HttpConnect connect, String uri, {Handler success,

@@ -27,14 +27,14 @@ abc/"""); //#5
 
 """); //#7
 
-  connect.include("""${foo}""", success: () { //#8
+  connect.include("""${stringize(foo)}""", success: () { //#8
 
-    connect.include("""abc/${foo}""", success: () { //#9
+    connect.include("""abc/${stringize(foo)}""", success: () { //#9
 
       render(connect.server.connectForInclusion(connect, success: () { //#10
 
         connect.close();
-      }), more: """abc/${foo}""", less: foo); //end-of-include
+      }), more: """abc/${stringize(foo)}""", less: foo); //end-of-include
     }); //end-of-include
   }); //end-of-include
 }

@@ -72,8 +72,7 @@ class _StreamServer implements StreamServer {
       }
 
     //default mapping
-    _uriMapping.add(new _UriMapping("/.*[.]rsp", _404));
-    _uriMapping.add(new _UriMapping("/.*[.]rsp[.][^/]*", _404));
+    _uriMapping.add(new _UriMapping("/.*[.]rsp(|[.][^/]*)", _404));
 
     if (filterMapping != null)
       for (final uri in filterMapping.keys) {

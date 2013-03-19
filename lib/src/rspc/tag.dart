@@ -41,7 +41,7 @@ abstract class TagContext {
 
   ///Writes a string to [output] in the compiler's encoding.
   void write(String str) {
-    output.addString(str, compiler.encoding);
+    output.write(str);
   }
   ///Write a string plus a linefeed to [output] in the compiler's encoding.
   void writeln([String str]) {

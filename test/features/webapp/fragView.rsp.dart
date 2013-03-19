@@ -11,63 +11,63 @@ void fragView(HttpConnect connect, {Map infos: const {}, header, footer}) { //2
 
   if (header != null) { //if#2
 
-    response.addString("""  """); //#3
+    response.write("""  """); //#3
 
-    response.addString(stringize(header)); //#3
+    response.write(toNString(header)); //#3
 
 
-    response.addString("""
+    response.write("""
 
 """); //#3
   } //if
 
-  response.addString("""
+  response.write("""
 <ul>
   <li>This is a fragment and generated dynamically</li>
 """); //#5
 
   for (var type in infos.keys) { //for#7
 
-    response.addString("""    <li>"""); //#8
+    response.write("""    <li>"""); //#8
 
-    response.addString(stringize(type)); //#8
+    response.write(toNString(type)); //#8
 
 
-    response.addString("""
+    response.write("""
 
       <ol>
 """); //#8
 
     for (var name in infos[type]) { //for#10
 
-      response.addString("""        <li>"""); //#11
+      response.write("""        <li>"""); //#11
 
-      response.addString(stringize(name)); //#11
+      response.write(toNString(name)); //#11
 
 
-      response.addString("""
+      response.write("""
 </li>
 """); //#11
     } //for
 
-    response.addString("""
+    response.write("""
       </ol>
     </li>
 """); //#13
   } //for
 
-  response.addString("""
+  response.write("""
 </ul>
 """); //#16
 
   if (footer != null) { //if#17
 
-    response.addString("""  """); //#18
+    response.write("""  """); //#18
 
-    response.addString(stringize(footer)); //#18
+    response.write(toNString(footer)); //#18
 
 
-    response.addString("""
+    response.write("""
 
 """); //#18
   } //if

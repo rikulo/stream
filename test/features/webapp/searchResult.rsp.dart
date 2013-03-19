@@ -9,7 +9,7 @@ void searchResult(HttpConnect connect, {criteria}) { //2
   if (!connect.isIncluded)
     response.headers.contentType = new ContentType.fromString("""text/html; charset=utf-8""");
 
-  response.addString("""
+  response.write("""
 <html>
   <head>
     <title>Search Result</title>
@@ -21,31 +21,31 @@ void searchResult(HttpConnect connect, {criteria}) { //2
     <ul>
       <li>text: """); //#2
 
-  response.addString(stringize(criteria.text)); //#11
+  response.write(toNString(criteria.text)); //#11
 
 
-  response.addString("""
+  response.write("""
 </li>
       <li>since: """); //#11
 
-  response.addString(stringize(criteria.since)); //#12
+  response.write(toNString(criteria.since)); //#12
 
 
-  response.addString("""
+  response.write("""
 </li>
       <li>within: """); //#12
 
-  response.addString(stringize(criteria.within)); //#13
+  response.write(toNString(criteria.within)); //#13
 
 
-  response.addString("""
+  response.write("""
 </li>
       <li>hasAttachment: """); //#13
 
-  response.addString(stringize(criteria.hasAttachment)); //#14
+  response.write(toNString(criteria.hasAttachment)); //#14
 
 
-  response.addString("""
+  response.write("""
 </li>
     </ul>
   </body>

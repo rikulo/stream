@@ -15,26 +15,26 @@ var foo = "test";
 void render(HttpConnect connect, {more, less}) {
 }
 
-  response.addString("""
+  response.write("""
 
 
 abc/"""); //#5
 
-  response.addString(stringize(foo)); //#7
+  response.write(toNString(foo)); //#7
 
 
-  response.addString("""
+  response.write("""
 
 """); //#7
 
-  connect.include("""${stringize(foo)}""", success: () { //#8
+  connect.include("""${toNString(foo)}""", success: () { //#8
 
-    connect.include("""abc/${stringize(foo)}""", success: () { //#9
+    connect.include("""abc/${toNString(foo)}""", success: () { //#9
 
       render(connect.server.connectForInclusion(connect, success: () { //#10
 
         connect.close();
-      }), more: """abc/${stringize(foo)}""", less: foo); //end-of-include
+      }), more: """abc/${toNString(foo)}""", less: foo); //end-of-include
     }); //end-of-include
   }); //end-of-include
 }

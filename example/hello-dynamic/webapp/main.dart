@@ -10,7 +10,7 @@ void serverInfo(HttpConnect connect) {
   final info = {"name": "Rikulo Stream", "version": connect.server.version};
   connect.response
     ..headers.contentType = contentTypes["json"]
-    ..addString(Json.stringify(info));
+    ..write(Json.stringify(info));
   connect.close();
 }
 

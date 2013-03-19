@@ -38,8 +38,8 @@ void compileFile(String sourceName, {String destinationName, bool verbose : fals
     print("Compile ${source.path} to ${i > 0 ? dest.path.substring(i) : dest.path}");
   }
   
-  source.readAsString(encoding).then((text) {
-    final out = dest.openWrite();
+  source.readAsString(encoding: encoding).then((text) {
+    final out = dest.openWrite(encoding: encoding);
     try {
       compile(text, out, sourceName: sourceName,
           destinationName: new Path(dest.path).toString(), //force to use '/' even in Windows

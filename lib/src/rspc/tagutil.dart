@@ -37,7 +37,7 @@ String toEL(String data, {direct: true}) {
       if (direct && i == 0 && j + 1 == len) //single EL
         return val;
       if (!val.isEmpty)
-        sb..write("\${stringize(")..write(val)..write(")}");
+        sb..write("\${toNString(")..write(val)..write(")}");
 
       i = j;
       continue;

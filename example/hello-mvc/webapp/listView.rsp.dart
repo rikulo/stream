@@ -9,7 +9,7 @@ void listView(HttpConnect connect, {String path, List<FileInfo> infos}) { //2
   if (!connect.isIncluded)
     response.headers.contentType = new ContentType.fromString("""text/html; charset=utf-8""");
 
-  response.addString("""
+  response.write("""
 
 <!DOCTYPE html>
 <html>
@@ -20,10 +20,10 @@ void listView(HttpConnect connect, {String path, List<FileInfo> infos}) { //2
   <body>
     <h1>Directory: """); //#2
 
-  response.addString(stringize(path)); //#10
+  response.write(toNString(path)); //#10
 
 
-  response.addString("""
+  response.write("""
 </h1>
 
     <table border="1px" cellspacing="0">
@@ -35,28 +35,28 @@ void listView(HttpConnect connect, {String path, List<FileInfo> infos}) { //2
 
   for (var info in infos) { //for#17
 
-    response.addString("""
+    response.write("""
 
       <tr>
         <td><img src=\""""); //#17
 
-    response.addString(stringize(info.isDirectory ? 'file.png': 'directory.png')); //#19
+    response.write(toNString(info.isDirectory ? 'file.png': 'directory.png')); //#19
 
 
-    response.addString("""
+    response.write("""
 "/></td>
         <td>"""); //#19
 
-    response.addString(stringize(info.name)); //#20
+    response.write(toNString(info.name)); //#20
 
 
-    response.addString("""
+    response.write("""
 </td>
       </tr>
 """); //#20
   } //for
 
-  response.addString("""
+  response.write("""
 
     </table>
 

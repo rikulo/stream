@@ -381,8 +381,7 @@ final _f404 = (_) => throw new Http404();
 
 ///check if the given URI is correct
 void _chkUri(String uri, String msg) {
-  String cc;
-  if (uri.isEmpty || ((cc = uri[0]) != '/' && cc != '.' && cc != '[' && cc != '('))
+  if (uri.isEmpty || "/.[(".indexOf(uri[0]) < 0)
     throw new ServerError("$msg mapping: URI must start with '/', '.', '[' or '('; not '$uri'");
       //ensure it is absolute or starts with regex wildcard
 }

@@ -13,7 +13,7 @@ final infos = {
   "cars": ["bmw", "audi", "honda"]
 };
 
-  response.addString("""
+  response.write("""
 
 <html>
   <head>
@@ -29,14 +29,14 @@ final infos = {
 
   connect.include("""/frag.html""", success: () { //#18
 
-    response.addString("""
+    response.write("""
     </div>
     <div style="border: 1px solid red">
 """); //#19
 
     fragView(connect.server.connectForInclusion(connect, success: () { //#21
 
-      response.addString("""
+      response.write("""
     </div>
     <div style="border: 1px solid red">
 """); //#22
@@ -44,14 +44,14 @@ final infos = {
       var _0 = new StringBuffer(); _cs_.add(connect); //var#25
       connect = new HttpConnect.buffer(connect, _0); response = connect.response;
 
-      response.addString("""
+      response.write("""
   <h1>This is a header</h1>
   <p>Passed from the includer for showing """); //#26
 
-      response.addString(stringize(infos)); //#27
+      response.write(toNString(infos)); //#27
 
 
-      response.addString("""
+      response.write("""
 </p>
 """); //#27
 
@@ -60,7 +60,7 @@ final infos = {
       var _1 = new StringBuffer(); _cs_.add(connect); //var#29
       connect = new HttpConnect.buffer(connect, _1); response = connect.response;
 
-      response.addString("""
+      response.write("""
   <h2>This is a footer</h2>
   <p>It also includes another page:</p>
 """); //#30
@@ -71,7 +71,7 @@ final infos = {
 
         fragView(connect.server.connectForInclusion(connect, success: () { //#24
 
-          response.addString("""
+          response.write("""
     </div>
   </body>
 </html>

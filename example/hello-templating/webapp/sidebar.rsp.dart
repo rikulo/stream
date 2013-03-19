@@ -9,15 +9,15 @@ void sidebar(HttpConnect connect) { //2
   if (!connect.isIncluded)
     response.headers.contentType = new ContentType.fromString("""text/html; charset=utf-8""");
 
-  response.addString("""
+  response.write("""
 <ul>
   <li>This is a sidebar.</li>
   <li>"""); //#2
 
-  response.addString(stringize(new DateTime.now())); //#4
+  response.write(toNString(new DateTime.now())); //#4
 
 
-  response.addString("""
+  response.write("""
 </li>
 </ul>
 """); //#4

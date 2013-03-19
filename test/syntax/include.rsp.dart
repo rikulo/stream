@@ -15,21 +15,21 @@ void include(HttpConnect connect, {foo, more, less}) { //3
   var less = new StringBuffer(); _cs_.add(connect); //var#3
   connect = new HttpConnect.buffer(connect, less); response = connect.response;
 
-  response.addString("""
+  response.write("""
 less is more
 """); //#4
 
   connect = _cs_.removeLast(); response = connect.response;
   less = less.toString();
 
-  response.addString("""
+  response.write("""
 
 """); //#6
 
   var _0 = new StringBuffer(); _cs_.add(connect); //var#8
   connect = new HttpConnect.buffer(connect, _0); response = connect.response;
 
-  response.addString("""
+  response.write("""
   More information
 """); //#9
 

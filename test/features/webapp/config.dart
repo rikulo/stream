@@ -9,7 +9,7 @@ var _uriMapping = {
   "/(group:g[a-z]*p)/(matching:ma[a-z]*)": (HttpConnect connect) {
     connect.response
       ..headers.contentType = contentTypes["text/plain"]
-      ..addString("Group Matching: ${connect.dataset['group']} and ${connect.dataset['matching']}");
+      ..write("Group Matching: ${connect.dataset['group']} and ${connect.dataset['matching']}");
     connect.close();
   },
   "/500": (HttpConnect connect) {
@@ -21,7 +21,7 @@ var _uriMapping = {
   "/log5": (HttpConnect connect) {
     connect.response
       ..headers.contentType = contentTypes["text/plain"]
-      ..addString("You see two logs shown on the console");
+      ..write("You see two logs shown on the console");
     connect.close();
   }
 };
@@ -32,7 +32,7 @@ var _errMapping = {
   "500": (HttpConnect connect) {
     connect.response
       ..headers.contentType = contentTypes["text/html"]
-      ..addString("""
+      ..write("""
 <html>
 <head><title>500: ${connect.errorDetail.error.runtimeType}</title></head>
 <body>
@@ -47,7 +47,7 @@ var _errMapping = {
     connect.errorDetail = null; //clear error
     connect.response
       ..headers.contentType = contentTypes["text/plain"]
-      ..addString("Recovered from an error");
+      ..write("Recovered from an error");
     connect.close();
   }
 };

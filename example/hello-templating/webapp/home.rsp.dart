@@ -9,7 +9,7 @@ void home(HttpConnect connect) { //2
   if (!connect.isIncluded)
     response.headers.contentType = new ContentType.fromString("""text/html; charset=utf-8""");
 
-  response.addString("""
+  response.write("""
 <!DOCTYPE html>
 <html>
   <head>
@@ -26,7 +26,7 @@ void home(HttpConnect connect) { //2
 
     connect = _cs_.removeLast(); response = connect.response;
 
-    response.addString("""
+    response.write("""
 
 """); //#13
 
@@ -37,7 +37,7 @@ void home(HttpConnect connect) { //2
 
       connect = _cs_.removeLast(); response = connect.response;
 
-      response.addString("""
+      response.write("""
 
 """); //#17
 
@@ -48,14 +48,14 @@ void home(HttpConnect connect) { //2
 
         connect = _cs_.removeLast(); response = connect.response;
 
-        response.addString("""
+        response.write("""
 
 """); //#21
 
         var _3 = new StringBuffer(); _cs_.add(connect); //var#22
         connect = new HttpConnect.buffer(connect, _3); response = connect.response;
 
-        response.addString("""
+        response.write("""
   <h1>Hello Templating</h1>
   <p>In this example, we demostrate how to define the shared layout (aka., the template), define page fragments and assemble them into a complete page. It is based on the so-called *Composite View* pattern.</p>
   <p>For more information, please refer to <a href="http://docs.rikulo.org/stream/latest/RSP/Fundamentals/Templating-_Composite_View_Pattern.html">Templating: Composite View Pattern</a>.</p>
@@ -65,7 +65,7 @@ void home(HttpConnect connect) { //2
 
         classic(connect.server.connectForInclusion(connect, success: () { //#9
 
-          response.addString("""
+          response.write("""
   </body>
 </html>
 """); //#28

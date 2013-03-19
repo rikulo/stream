@@ -9,42 +9,42 @@ void classic(HttpConnect connect, {header, sidebar, body, footer}) { //2
   if (!connect.isIncluded)
     response.headers.contentType = new ContentType.fromString("""text/html; charset=utf-8""");
 
-  response.addString("""
+  response.write("""
 <div>
   <div class="header">
     """); //#2
 
-  response.addString(stringize(header)); //#4
+  response.write(toNString(header)); //#4
 
 
-  response.addString("""
+  response.write("""
 
   </div>
   <div class="sidebar">
     """); //#4
 
-  response.addString(stringize(sidebar)); //#7
+  response.write(toNString(sidebar)); //#7
 
 
-  response.addString("""
+  response.write("""
 
   </div>
   <div class="body">
     """); //#7
 
-  response.addString(stringize(body)); //#10
+  response.write(toNString(body)); //#10
 
 
-  response.addString("""
+  response.write("""
 
   </div>
   <div class="footer">
     """); //#10
 
-  response.addString(stringize(footer)); //#13
+  response.write(toNString(footer)); //#13
 
 
-  response.addString("""
+  response.write("""
 
   </div>
 </div>

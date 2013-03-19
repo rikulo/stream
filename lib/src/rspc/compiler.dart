@@ -485,7 +485,7 @@ class Compiler {
         line = null;
       }
       _writeln('$pre${_toTripleQuot(text.substring(i, j))}\n'
-        '${pre}response.addString(\'"""\');');
+        '${pre}response.write(\'"""\');');
       i = j + 3;
     }
     if (i == 0) {
@@ -502,7 +502,7 @@ class Compiler {
       ce = '\\"';
       text = text.substring(0, text.length - 1);
     }
-    return 'response.addString("""$cb$text$ce""");';
+    return 'response.write("""$cb$text$ce""");';
   }
 
   void _outExpr() {
@@ -512,7 +512,7 @@ class Compiler {
       //1) '/' is NOT a terminal, 2) no skip space for expression
     if (!expr.isEmpty) {
       final pre = _current.pre;
-      _writeln('\n${pre}response.addString(stringize($expr)); //#${line}\n');
+      _writeln('\n${pre}response.write(toNString($expr)); //#${line}\n');
     }
   }
 

@@ -377,7 +377,7 @@ class _StreamServer implements StreamServer {
 }
 
 ///Renderer for 404
-final _f404 = (_) => throw new Http404();
+final _f404 = (_) {throw new Http404();};
 
 ///check if the given URI is correct
 void _chkUri(String uri, String msg) {

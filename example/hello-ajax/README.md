@@ -1,6 +1,6 @@
-#Hello Dynamic Contents
+#Hello Ajax Contents
 
-This sample demonstrates how to generate dynamic contents in your web application.
+This sample demonstrates how to show dynamic contents retrieved with Ajax in your web application.
 
 ##How the application works
 

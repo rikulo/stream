@@ -13,7 +13,7 @@ void fragView(HttpConnect connect, {Map infos: const {}, header, footer}) { //2
 
     response.write("""  """); //#3
 
-    response.write(toNString(header)); //#3
+    response.write(nnstr(header)); //#3
 
 
     response.write("""
@@ -30,7 +30,7 @@ void fragView(HttpConnect connect, {Map infos: const {}, header, footer}) { //2
 
     response.write("""    <li>"""); //#8
 
-    response.write(toNString(type)); //#8
+    response.write(nnstr(type)); //#8
 
 
     response.write("""
@@ -42,7 +42,7 @@ void fragView(HttpConnect connect, {Map infos: const {}, header, footer}) { //2
 
       response.write("""        <li>"""); //#11
 
-      response.write(toNString(name)); //#11
+      response.write(nnstr(name)); //#11
 
 
       response.write("""
@@ -64,7 +64,7 @@ void fragView(HttpConnect connect, {Map infos: const {}, header, footer}) { //2
 
     response.write("""  """); //#18
 
-    response.write(toNString(footer)); //#18
+    response.write(nnstr(footer)); //#18
 
 
     response.write("""

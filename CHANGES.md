@@ -2,7 +2,7 @@
 
 **0.6.0**
 
-* [page] introduces the partOf and imports attributes
+* [page] introduces the partOf and import attributes
 * [dart] is always generated inside the render function
 * Issue 2: RSP files can be put in the client folder (i.e., not under the webapp folder)
 * Issue 3: [page] partOf accepts a dart file and maintains it automatically

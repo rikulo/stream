@@ -20,21 +20,21 @@ void render(HttpConnect connect, {more, less}) {
 
 abc/"""); //#5
 
-  response.write(toNString(foo)); //#7
+  response.write(nnstr(foo)); //#7
 
 
   response.write("""
 
 """); //#7
 
-  connect.include("""${toNString(foo)}""", success: () { //#8
+  connect.include("""${nnstr(foo)}""", success: () { //#8
 
-    connect.include("""abc/${toNString(foo)}""", success: () { //#9
+    connect.include("""abc/${nnstr(foo)}""", success: () { //#9
 
       render(connect.server.connectForInclusion(connect, success: () { //#10
 
         connect.close();
-      }), more: """abc/${toNString(foo)}""", less: foo); //end-of-include
+      }), more: """abc/${nnstr(foo)}""", less: foo); //end-of-include
     }); //end-of-include
   }); //end-of-include
 }

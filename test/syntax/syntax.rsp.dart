@@ -11,7 +11,7 @@ import 'dart:async';
 void syntax(HttpConnect connect, {foo, bool c:false}) { //5
   var _cs_ = new List<HttpConnect>(), request = connect.request, response = connect.response;
 
-  response.headers.contentType = new ContentType.fromString("""${toNString(foo.contentType)}""");
+  response.headers.contentType = new ContentType.fromString("""${nnstr(foo.contentType)}""");
 
   response.headers.add("age", """129"""); //header#8
 
@@ -23,7 +23,7 @@ void syntax(HttpConnect connect, {foo, bool c:false}) { //5
   <head>
     <title>"""); //#5
 
-  response.write(toNString("$foo.name [${foo.title}]")); //#8
+  response.write(nnstr("$foo.name [${foo.title}]")); //#8
 
 
   //#8
@@ -37,7 +37,7 @@ void syntax(HttpConnect connect, {foo, bool c:false}) { //5
 .
     <p>Another expresion: """);
 
-  response.write(toNString(foo.description)); //#12
+  response.write(nnstr(foo.description)); //#12
 
 
   response.write("""
@@ -54,7 +54,7 @@ void syntax(HttpConnect connect, {foo, bool c:false}) { //5
 
     response.write("""      <li>"""); //#18
 
-    response.write(toNString(user.name)); //#18
+    response.write(nnstr(user.name)); //#18
 
 
     response.write("""
@@ -72,7 +72,7 @@ void syntax(HttpConnect connect, {foo, bool c:false}) { //5
 
       response.write("""        """); //#23
 
-      response.write(toNString(user.showMore())); //#23
+      response.write(nnstr(user.showMore())); //#23
 
 
       response.write("""
@@ -139,7 +139,7 @@ void syntax(HttpConnect connect, {foo, bool c:false}) { //5
 
     response.write("""        """); //#46
 
-    response.write(toNString(fruit)); //#46
+    response.write(nnstr(fruit)); //#46
 
 
     response.write("""

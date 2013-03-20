@@ -48,7 +48,7 @@ final infos = {
   <h1>This is a header</h1>
   <p>Passed from the includer for showing """); //#26
 
-      response.write(toNString(infos)); //#27
+      response.write(nnstr(infos)); //#27
 
 
       response.write("""

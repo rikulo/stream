@@ -512,7 +512,7 @@ class Compiler {
       //1) '/' is NOT a terminal, 2) no skip space for expression
     if (!expr.isEmpty) {
       final pre = _current.pre;
-      _writeln('\n${pre}response.write(toNString($expr)); //#${line}\n');
+      _writeln('\n${pre}response.write(nnstr($expr)); //#${line}\n');
     }
   }
 

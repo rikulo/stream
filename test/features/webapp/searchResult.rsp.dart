@@ -21,28 +21,28 @@ void searchResult(HttpConnect connect, {criteria}) { //2
     <ul>
       <li>text: """); //#2
 
-  response.write(toNString(criteria.text)); //#11
+  response.write(nnstr(criteria.text)); //#11
 
 
   response.write("""
 </li>
       <li>since: """); //#11
 
-  response.write(toNString(criteria.since)); //#12
+  response.write(nnstr(criteria.since)); //#12
 
 
   response.write("""
 </li>
       <li>within: """); //#12
 
-  response.write(toNString(criteria.within)); //#13
+  response.write(nnstr(criteria.within)); //#13
 
 
   response.write("""
 </li>
       <li>hasAttachment: """); //#13
 
-  response.write(toNString(criteria.hasAttachment)); //#14
+  response.write(nnstr(criteria.hasAttachment)); //#14
 
 
   response.write("""

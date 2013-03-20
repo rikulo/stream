@@ -18,7 +18,7 @@ typedef void Filter(HttpConnect connect, void chain(HttpConnect conn));
  * If the given value is not null, `toString` is called.
  * If null, an empty string is returned.
  */
-String toNString(v) => v != null ? v.toString(): "";
+String nnstr(v) => v != null ? v.toString(): "";
 
 /**
  * Stream server.

@@ -14,7 +14,7 @@ void sidebar(HttpConnect connect) { //2
   <li>This is a sidebar.</li>
   <li>"""); //#2
 
-  response.write(toNString(new DateTime.now())); //#4
+  response.write(nnstr(new DateTime.now())); //#4
 
 
   response.write("""

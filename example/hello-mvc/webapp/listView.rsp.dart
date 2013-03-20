@@ -20,7 +20,7 @@ void listView(HttpConnect connect, {String path, List<FileInfo> infos}) { //2
   <body>
     <h1>Directory: """); //#2
 
-  response.write(toNString(path)); //#10
+  response.write(nnstr(path)); //#10
 
 
   response.write("""
@@ -40,14 +40,14 @@ void listView(HttpConnect connect, {String path, List<FileInfo> infos}) { //2
       <tr>
         <td><img src=\""""); //#17
 
-    response.write(toNString(info.isDirectory ? 'file.png': 'directory.png')); //#19
+    response.write(nnstr(info.isDirectory ? 'file.png': 'directory.png')); //#19
 
 
     response.write("""
 "/></td>
         <td>"""); //#19
 
-    response.write(toNString(info.name)); //#20
+    response.write(nnstr(info.name)); //#20
 
 
     response.write("""

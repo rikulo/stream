@@ -14,7 +14,7 @@ void classic(HttpConnect connect, {header, sidebar, body, footer}) { //2
   <div class="header">
     """); //#2
 
-  response.write(toNString(header)); //#4
+  response.write(nnstr(header)); //#4
 
 
   response.write("""
@@ -23,7 +23,7 @@ void classic(HttpConnect connect, {header, sidebar, body, footer}) { //2
   <div class="sidebar">
     """); //#4
 
-  response.write(toNString(sidebar)); //#7
+  response.write(nnstr(sidebar)); //#7
 
 
   response.write("""
@@ -32,7 +32,7 @@ void classic(HttpConnect connect, {header, sidebar, body, footer}) { //2
   <div class="body">
     """); //#7
 
-  response.write(toNString(body)); //#10
+  response.write(nnstr(body)); //#10
 
 
   response.write("""
@@ -41,7 +41,7 @@ void classic(HttpConnect connect, {header, sidebar, body, footer}) { //2
   <div class="footer">
     """); //#10
 
-  response.write(toNString(footer)); //#13
+  response.write(nnstr(footer)); //#13
 
 
   response.write("""

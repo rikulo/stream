@@ -21,14 +21,14 @@ void helloView(HttpConnect connect) { //2
     <h1>Stream: Hello RSP</h1>
     <p>Now is """); //#2
 
-  response.write(toNString(new DateTime.now())); //#11
+  response.write(nnstr(new DateTime.now())); //#11
 
 
   response.write("""
 .</p>
     <p>This page is served by Rikulo Stream """); //#11
 
-  response.write(toNString(connect.server.version)); //#12
+  response.write(nnstr(connect.server.version)); //#12
 
 
   response.write("""

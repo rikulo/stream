@@ -67,10 +67,11 @@ File _locate(String flnm) {
 
     final dir = new Directory.fromPath(path);
     if (dir.existsSync()) {
-      if (new File.fromPath(new Path(dir.path).append("pubspec.yaml")).existsSync())
-        break; //project found, no more processing
+      if (path.filename == "webapp"
+      || new File.fromPath(new Path(dir.path).append("pubspec.yaml")).existsSync())
+        break; //under webapp, or no webapp at all (since project found)
       if (new Directory.fromPath(new Path(dir.path).append("webapp")).existsSync()) {
-        segs.add("webapp"); //webapp found
+        segs.add("webapp"); //not under webapp
         break;
       }
     }

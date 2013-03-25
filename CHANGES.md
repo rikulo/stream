@@ -1,5 +1,9 @@
 #CHANGES
 
+**0.6.1**
+
+* Issue 7: Allow URI mapping to be pluggable
+
 **0.6.0**
 
 * [page] introduces the partOf and import attributes

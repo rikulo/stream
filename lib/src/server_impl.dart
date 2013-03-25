@@ -4,30 +4,34 @@
 part of stream;
 
 class _StreamServer implements StreamServer {
-  final String version = "0.6.0";
+  final String version = "0.6.1";
   HttpServer _server;
   String _host = "127.0.0.1";
   int _port = 8080;
   int _sessTimeout = 20 * 60; //20 minutes
   final Logger logger;
   Path _homeDir;
-  final List<_UriMapping> _uriMapping = [], _filterMapping = [];
-  final Map<int, dynamic> _codeMapping = new HashMap(); //mapping of status code to URI/Function
-  final List<_ErrMapping> _errMapping = []; //exception to URI/Function
   ResourceLoader _resLoader;
-  ConnectErrorHandler _defaultErrorHandler, _onError;
+  final Router _router;
+  ConnectErrorCallback _defaultErrorCallback, _onError;
 
-  _StreamServer(Map<String, Function> uriMapping,
-    Map errorMapping, Map<String, Filter> filterMapping,
-    String homeDir, LoggingConfigurer loggingConfigurer): logger = new Logger("stream") {
+  _StreamServer(Map<String, RequestHandler> uriMapping,
+      Map errorMapping, Map<String, RequestFilter> filterMapping,
+      String homeDir, LoggingConfigurer loggingConfigurer):
+      this.router(new DefaultRouter(uriMapping, errorMapping, filterMapping),
+          homeDir, loggingConfigurer);
+
+  _StreamServer.router(Router router, String homeDir,
+      LoggingConfigurer loggingConfigurer):
+      _router = router, logger = new Logger("stream") {
     (loggingConfigurer != null ? loggingConfigurer: new LoggingConfigurer())
       .configure(logger);
     _init();
     _initDir(homeDir);
-    _initMapping(uriMapping, errorMapping, filterMapping);
   }
+
   void _init() {
-    _defaultErrorHandler = (HttpConnect cnn, err, [st]) {
+    _defaultErrorCallback = (HttpConnect cnn, err, [st]) {
       _handleErr(cnn, err, st);
     };
   }
@@ -60,62 +64,9 @@ class _StreamServer implements StreamServer {
       throw new ServerError("$homeDir doesn't exist.");
     _resLoader = new ResourceLoader(_homeDir);
   }
-  void _initMapping(Map<String, Function> uriMapping, Map errMapping, Map<String, Filter> filterMapping) {
-    if (uriMapping != null)
-      for (final uri in uriMapping.keys) {
-        _chkUri(uri, "URI");
-
-        final hdl = uriMapping[uri];
-        if (hdl is! Function)
-          throw new ServerError("URI mapping: function is required for $uri");
-        _uriMapping.add(new _UriMapping(uri, hdl));
-      }
-
-    //default mapping
-    _uriMapping.add(new _UriMapping("/.*[.]rsp(|[.][^/]*)", _f404));
-      //prevent .rsp and .rsp.* from access
-
-    if (filterMapping != null)
-      for (final uri in filterMapping.keys) {
-        _chkUri(uri, "Filter");
-
-        final hdl = filterMapping[uri];
-        if (hdl is! Function)
-          throw new ServerError("Filter mapping: function is required for $uri");
-        _filterMapping.add(new _UriMapping(uri, hdl));
-      }
-
-    if (errMapping != null)
-      for (var code in errMapping.keys) {
-        final handler = errMapping[code];
-        if (handler is String) {
-          _chkUri(handler, "Error");
-        } else if (handler is! Function) {
-          throw new ServerError("Error mapping: URI or function is required for $code");
-        }
-
-        if (code is String) {
-          try {
-            if (StringUtil.isChar(code[0], digit:true))
-              code = int.parse(code);
-            else
-              code = ClassUtil.forName(code);
-          } catch (e) { //silent; handle it  later
-          }
-        } else if (code != null && code is! int) {
-          code = reflect(code).type;
-        }
-        if (code is int)
-          _codeMapping[code] = handler;
-        else if (code is ClassMirror)
-          _errMapping.add(new _ErrMapping(code, handler));
-        else
-          throw new ServerError("Error mapping: status code or exception is required, not $code");
-      }
-  }
 
   @override
-  void forward(HttpConnect connect, String uri, {Handler success,
+  void forward(HttpConnect connect, String uri, {VoidCallback success,
     HttpRequest request, HttpResponse response}) {
     if (uri.indexOf('?') >= 0)
       throw new UnsupportedError("Forward with query string"); //TODO
@@ -128,7 +79,7 @@ class _StreamServer implements StreamServer {
         })); //no filter invocation
   }
   @override
-  void include(HttpConnect connect, String uri, {Handler success,
+  void include(HttpConnect connect, String uri, {VoidCallback success,
     HttpRequest request, HttpResponse response}) {
     if (uri.indexOf('?') >= 0)
       throw new UnsupportedError("Include with query string"); //TODO
@@ -137,7 +88,7 @@ class _StreamServer implements StreamServer {
       //no filter invocation
   }
   @override
-  HttpConnect connectForInclusion(HttpConnect connect, {String uri, Handler success,
+  HttpConnect connectForInclusion(HttpConnect connect, {String uri, VoidCallback success,
     HttpRequest request, HttpResponse response}) {
     final inc = new _IncludedConnect(connect, request, response,
         uri != null ? _toAbsUri(connect, uri): null);
@@ -163,18 +114,19 @@ class _StreamServer implements StreamServer {
       if (!uri.startsWith('/'))
         uri = "/$uri"; //not possible; just in case
 
-      if (iFilter != null) //null means ignore filters
-        for (; iFilter < _filterMapping.length; ++iFilter)
-          if (_filterMapping[iFilter].match(connect, uri)) {
-            _filterMapping[iFilter].handler(connect, (HttpConnect conn) {
-                _handle(conn, iFilter + 1);
-              });
-            return;
-          }
+      if (iFilter != null) { //null means ignore filters
+        iFilter = _router.getFilterIndex(connect, uri, iFilter);
+        if (iFilter != null) { //found
+          _router.getFilterAt(iFilter)(connect, (HttpConnect conn) {
+              _handle(conn, iFilter + 1);
+            });
+          return;
+        }
+      }
 
-      final hdl = _getHandler(connect, uri);
-      if (hdl != null) {
-        final ret = hdl(connect);
+      final handler = _router.getHandler(connect, uri);
+      if (handler != null) {
+        final ret = handler(connect);
         if (ret is String)
           forward(connect, ret);
         return;
@@ -189,12 +141,6 @@ class _StreamServer implements StreamServer {
     } catch (e, st) {
       _handleErr(connect, e, st);
     }
-  }
-  Function _getHandler(HttpConnect connect, String uri) {
-    //TODO: cache the matched result for better performance
-    for (final mp in _uriMapping)
-      if (mp.match(connect, uri))
-        return mp.handler;
   }
   void _handleErr(HttpConnect connect, error, [stackTrace]) {
     while (error is AsyncError) {
@@ -217,14 +163,10 @@ class _StreamServer implements StreamServer {
       }
 
       connect.errorDetail = new ErrorDetail(error, stackTrace);
-      if (!_errMapping.isEmpty) {
-        final caughtClass = reflect(error).type;
-        for (final mapping in _errMapping) {
-          if (ClassUtil.isAssignableFrom(mapping.error, caughtClass)) { //found
-            _forwardDyna(connect, mapping.handler);
-            return;
-          }
-        }
+      var handler = _router.getErrorHandler(error);
+      if (handler != null) {
+        _forwardDyna(connect, handler);
+        return;
       }
 
       if (error is! HttpStatusException) {
@@ -236,7 +178,7 @@ class _StreamServer implements StreamServer {
       connect.response
         ..statusCode = code
         ..reasonPhrase = error.message;
-      final handler = _codeMapping[code];
+      handler = _router.getErrorHandlerByCode(code);
       if (handler != null) {
         _forwardDyna(connect, handler);
       } else {
@@ -301,11 +243,11 @@ class _StreamServer implements StreamServer {
   }
 
   @override
-  void onError(ConnectErrorHandler onError) {
+  void onError(ConnectErrorCallback onError) {
     _onError = onError;
   }
   @override
-  ConnectErrorHandler get defaultErrorHandler => _defaultErrorHandler;
+  ConnectErrorCallback get defaultErrorCallback => _defaultErrorCallback;
 
   @override
   bool get isRunning => _server != null;
@@ -374,115 +316,4 @@ class _StreamServer implements StreamServer {
     if (_server != null)
       throw new StateError("Already running");
   }
-}
-
-///Renderer for 404
-final _f404 = (_) {throw new Http404();};
-
-///check if the given URI is correct
-void _chkUri(String uri, String msg) {
-  if (uri.isEmpty || "/.[(".indexOf(uri[0]) < 0)
-    throw new ServerError("$msg mapping: URI must start with '/', '.', '[' or '('; not '$uri'");
-      //ensure it is absolute or starts with regex wildcard
-}
-
-class _UriMapping {
-  RegExp _ptn;
-  Map<int, String> _groups;
-  final Function handler;
-
-  _UriMapping(String uri, this.handler) {
-    uri = "^$uri\$"; //match the whole URI
-    _groups = new HashMap();
-
-    //parse grouping: ([a-zA-Z_-]+:regex)
-    final sb = new StringBuffer();
-    bool bracket = false;
-    l_top:
-    for (int i = 0, grpId = 0, len = uri.length; i < len; ++i) {
-      switch (uri[i]) {
-        case '\\':
-          if (i + 1 < len) {
-            sb.write('\\');
-            ++i; //skip next
-          }
-          break;
-        case '[':
-          bracket = true;
-          break;
-        case ']':
-          bracket = false;
-          break;
-        case '(':
-          if (!bracket) {
-            sb.write('(');
-
-            //parse the name of the group, if any
-            String nm;
-            final nmsb = new StringBuffer();
-            int j = i;
-            for (;;) {
-              if (++j >= len) {
-                sb.write(nmsb);
-                break l_top;
-              }
-
-              final cc = uri[j];
-              if (StringUtil.isChar(cc, lower:true, upper:true, digit: true, match:"_."))
-                nmsb.write(cc);
-              else {
-                if (cc == ':') {
-                  nm = nmsb.toString();
-                } else {
-                  sb.write(nmsb);
-                  --j;
-                }
-                break;
-              }
-            }
-
-            //parse upto ')'
-            int nparen = 1;
-            while (++j < len) {
-              final cc = uri[j];
-              sb.write(cc);
-              if (cc == ')' && --nparen <= 0)
-                break;
-              if (cc == '(')
-                ++nparen;
-              if (cc == '\\' && j + 1 < len)
-                sb.write(uri[++j]); //skip next
-            }
-            i = j;
-
-            if (nm != null)
-              _groups[grpId] = nm;
-            ++grpId;
-            continue;
-          }
-          break;
-      }
-      sb.write(uri[i]);
-    }
-
-    if (_groups.isEmpty)
-      _groups = null;
-    _ptn = new RegExp(_groups != null ? sb.toString(): uri);
-  }
-  bool match(HttpConnect connect, String uri) {
-    final m = _ptn.firstMatch(uri);
-    if (m != null) {
-      if (_groups != null)
-        for (final key in _groups.keys)
-          connect.dataset[_groups[key]] = m.group(key + 1);
-      return true;
-    }
-    return false;
-  }
-}
-
-class _ErrMapping {
-  final ClassMirror error;
-  final handler;
-  _ErrMapping(this.error, this.handler);
 }

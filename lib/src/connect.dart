@@ -4,11 +4,30 @@
 part of stream;
 
 /** The general handler. */
-typedef void Handler();
+typedef void VoidCallback();
 /** The error handler. */
-typedef void ErrorHandler(err, [stackTrace]);
+typedef void ErrorCallback(err, [stackTrace]);
 /** The error handler for HTTP connection. */
-typedef void ConnectErrorHandler(HttpConnect connect, err, [stackTrace]);
+typedef void ConnectErrorCallback(HttpConnect connect, err, [stackTrace]);
+
+/** The request filter. It is used with the `filterMapping` parameter of [StreamServer].
+ *
+ * * [chain] - the callback to *resume* the request handling. If there is another filter,
+ * it will be invoked when you call back [chain]. If you'd like to skip the handling (e.g., redirect to another page),
+ * you don't have to call back [chain].
+ *
+ * Before calling back [chain], you can proxy the request and/or response, such as writing the
+ * the response to a string buffer.
+ */
+typedef void RequestFilter(HttpConnect connect, void chain(HttpConnect conn));
+/** The request filter.
+ *
+ * If it renders the response, it doesn't need to return anything (i.e., `void`).
+ * If not, it shall return an URI (which is a non-empty string,
+ * starting with * `/`) that the request shall be forwarded to.
+ */
+typedef RequestHandler(HttpConnect connect);
+
 
 /** A HTTP request connection.
  */
@@ -60,7 +79,7 @@ abstract class HttpConnect {
    *
    * Notice the default implementation is `connect.forward(connect, uri...)`.
    */
-  void forward(String uri, {Handler success, HttpRequest request, HttpResponse response});
+  void forward(String uri, {VoidCallback success, HttpRequest request, HttpResponse response});
   /** Includes the given [uri].
    * If you'd like to include a request handler (i.e., a function), use [StreamServer]'s
    * `connectForInclusion` instead.
@@ -83,7 +102,7 @@ abstract class HttpConnect {
    *
    * Notice the default implementation is `connect.include(connect, uri...)`.
    */
-  void include(String uri, {Handler success, HttpRequest request, HttpResponse response});
+  void include(String uri, {VoidCallback success, HttpRequest request, HttpResponse response});
 
   /** The close handler.
    * After finishing the handling of a request, the request handler shall invoke this method
@@ -93,7 +112,7 @@ abstract class HttpConnect {
    * To register an awaiting task that shall be run after the request handling, you can invoke
    * [onClose], i.e., `onClose.listen(...)`. To register an error handler, you can invoke [onError].
    */
-  Handler get close;
+  VoidCallback get close;
   /** The error handler.
    *
    * Notice that it is important to invoke this method if an error occurs.
@@ -119,7 +138,7 @@ abstract class HttpConnect {
    *
    * To register an error handler, you can invoke [onError].
    */
-  ErrorHandler get error;
+  ErrorCallback get error;
   /** The error detailed information (which is the information when [error]
    * has been called), or null if no error.
    */
@@ -171,18 +190,18 @@ class HttpConnectWrapper implements HttpConnect {
   bool get isForwarded => origin.isForwarded;
 
   @override
-  void forward(String uri, {Handler success, HttpRequest request, HttpResponse response}) {
+  void forward(String uri, {VoidCallback success, HttpRequest request, HttpResponse response}) {
     origin.forward(uri, success: success, request: request, response: response);
   }
   @override
-  void include(String uri, {Handler success, HttpRequest request, HttpResponse response}) {
+  void include(String uri, {VoidCallback success, HttpRequest request, HttpResponse response}) {
     origin.include(uri, success: success, request: request, response: response);
   }
 
   @override
-  Handler get close => origin.close;
+  VoidCallback get close => origin.close;
   @override
-  ErrorHandler get error => origin.error;
+  ErrorCallback get error => origin.error;
   @override
   ErrorDetail get errorDetail => origin.errorDetail;
   @override

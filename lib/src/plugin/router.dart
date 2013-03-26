@@ -39,8 +39,6 @@ class DefaultRouter implements Router {
       Map errorMapping, Map<String, RequestFilter> filterMapping) {
     if (uriMapping != null)
       for (final uri in uriMapping.keys) {
-        _chkUri(uri, "URI");
-
         final handler = uriMapping[uri];
         if (handler is! Function && handler is! String)
           throw new ServerError("URI mapping: function (renderer) or string (URI) is required for $uri");
@@ -53,8 +51,6 @@ class DefaultRouter implements Router {
 
     if (filterMapping != null)
       for (final uri in filterMapping.keys) {
-        _chkUri(uri, "Filter");
-
         final handler = filterMapping[uri];
         if (handler is! Function)
           throw new ServerError("Filter mapping: function (filter) is required for $uri");
@@ -149,6 +145,8 @@ class _UriMapping {
   Map<int, String> _groups;
   ///It could be a function, a string or a list of (string or _Var).
   var handler;
+  ///The method to match with
+  String method;
 
   _UriMapping(String uri, handler) {
     _parseHandler(handler);
@@ -192,6 +190,21 @@ class _UriMapping {
     this.handler = handler;
   }
   void _parseUri(String uri) {
+    //handle get:xxx, post:xxx
+    for (int i = 0, len = uri.length; i < len; ++i) {
+      final cc = uri[i];
+      if (cc == ':') {
+        if (i > 0) {
+          method = uri.substring(0, i).toUpperCase();
+          uri = uri.substring(i + 1);
+        }
+        break; //done
+      } else if (!StringUtil.isChar(cc, upper:true, lower:true)) {
+        break;
+      }
+    }
+
+    _chkUri(uri, "URI");
     uri = "^$uri\$"; //match the whole URI
     _groups = new HashMap();
 
@@ -270,6 +283,9 @@ class _UriMapping {
     _ptn = new RegExp(_groups != null ? sb.toString(): uri);
   }
   bool match(HttpConnect connect, String uri) {
+    if (method != null && method != connect.request.method)
+      return false; //not matched
+
     final m = _ptn.firstMatch(uri);
     if (m != null) {
       if (_groups != null)
@@ -280,6 +296,7 @@ class _UriMapping {
     return false;
   }
 }
+
 class _Var {
   final String name;
   _Var(this.name);

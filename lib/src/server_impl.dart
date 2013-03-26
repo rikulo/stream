@@ -194,10 +194,8 @@ class _StreamServer implements StreamServer {
     logger.shout(st != null ? "$err:\n$st": err);
   }
   void _close(HttpConnect connect) {
-    try {
-      connect.response.close();
-    } catch (e) { //silent
-    }
+    connect.response.close();
+      //no need to catch since close() is asynchronous
   }
 
   @override
@@ -294,7 +292,9 @@ class _StreamServer implements StreamServer {
         ..date = new DateTime.now();
       _handle(
         new _HttpConnect(this, req, req.response)
-          ..onClose.listen((_) {req.response.close();}), 0); //process filter from beginning
+          ..onClose.listen((_) {
+            req.response.close();
+          }), 0); //process filter from beginning
     }, onError: (err) {
       _handleErr(null, err);
     });

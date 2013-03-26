@@ -3,6 +3,7 @@
 **0.6.1**
 
 * Issue 7: Allow URI mapping to be pluggable
+* Issue 9: URI mapping allows to forward to another URI
 
 **0.6.0**
 

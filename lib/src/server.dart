@@ -42,10 +42,16 @@ abstract class StreamServer {
    * (i.e., `void`). If not, it shall return an URI (which is a non-empty string,
    * starting with * `/`) that the request shall be forwarded to.
    *
-   * * [uriMapping] - a map of URI mappings, `<String uri, Function handler>`.  The URI is
-   * a regular exception used to match the request URI.
-   * * [filterMapping] - a map of filter mapping, `<String uri, Function filter>`. The signature
-   * of a filter is `void foo(HttpConnect connect, void chain(HttpConnect conn))`.
+   * * [uriMapping] - a map of URI mappings, `<String uri, RequestHandler handler>`
+   * or `<String uri, String forwardURI>`.
+   * The key is a regular exception used to match the request URI.
+   * The value can be the handler for handling the request, or another URI that this request
+   * will be forwarded to. If the value is a URI and the key has named groups, the URI can
+   * refer to the group with the $ expression.
+   * For example: `'/dead-link(info:.*)': '/new-link$info'`.
+   * * [filterMapping] - a map of filter mapping, `<String uri, RequestFilter filter>`.
+   * The key is a regular exception used to match the request URI.
+   * The signature of a filter is `void foo(HttpConnect connect, void chain(HttpConnect conn))`.
    * * [errorMapping] - a map of error mapping. The key can be a number, an instance of
    * exception, a string representing a number, or a string representing the exception class.
    * The value can be an URI or a renderer function. The number is used to represent a status code,
@@ -53,17 +59,18 @@ abstract class StreamServer {
    * Notice that, if you specify the name of the exception to handle,
    * it must include the library name and the class name, such as `"stream.ServerError"`.
    */
-  factory StreamServer({Map<String, Function> uriMapping,
+  factory StreamServer({Map<String, dynamic> uriMapping,
       Map errorMapping, Map<String, RequestFilter> filterMapping,
       String homeDir, LoggingConfigurer loggingConfigurer})
-  => new _StreamServer(uriMapping, errorMapping, filterMapping, homeDir, loggingConfigurer);
+  => new _StreamServer(new DefaultRouter(uriMapping, errorMapping, filterMapping),
+      homeDir, loggingConfigurer);
 
   /** Constructs a server with the given router.
    * It is used if you'd like to use your own router, rather than the default one.
    */
   factory StreamServer.router(Router router, {String homeDir,
       LoggingConfigurer loggingConfigurer})
-  => new _StreamServer.router(router, homeDir, loggingConfigurer);
+  => new _StreamServer(router, homeDir, loggingConfigurer);
 
   /** The version.
    */

@@ -15,14 +15,7 @@ class _StreamServer implements StreamServer {
   final Router _router;
   ConnectErrorCallback _defaultErrorCallback, _onError;
 
-  _StreamServer(Map<String, RequestHandler> uriMapping,
-      Map errorMapping, Map<String, RequestFilter> filterMapping,
-      String homeDir, LoggingConfigurer loggingConfigurer):
-      this.router(new DefaultRouter(uriMapping, errorMapping, filterMapping),
-          homeDir, loggingConfigurer);
-
-  _StreamServer.router(Router router, String homeDir,
-      LoggingConfigurer loggingConfigurer):
+  _StreamServer(Router router, String homeDir, LoggingConfigurer loggingConfigurer):
       _router = router, logger = new Logger("stream") {
     (loggingConfigurer != null ? loggingConfigurer: new LoggingConfigurer())
       .configure(logger);
@@ -124,11 +117,12 @@ class _StreamServer implements StreamServer {
         }
       }
 
-      final handler = _router.getHandler(connect, uri);
+      var handler = _router.getHandler(connect, uri);
       if (handler != null) {
-        final ret = handler(connect);
-        if (ret is String)
-          forward(connect, ret);
+        if (handler is Function)
+          handler = handler(connect);
+        if (handler is String)
+          forward(connect, handler);
         return;
       }
 

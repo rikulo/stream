@@ -12,6 +12,13 @@ var _uriMapping = {
       ..write("Group Matching: ${connect.dataset['group']} and ${connect.dataset['matching']}");
     connect.close();
   },
+  "/old-link(extra:.*)": "/new-link(extra)/more",
+  "/new-link.*": (HttpConnect connect) {
+    connect.response
+      ..headers.contentType = contentTypes["text/plain"]
+      ..write("old-link forwarded to ${connect.request.uri}");
+    connect.close();
+  },
   "/500": (HttpConnect connect) {
     throw new Exception("something wrong");
   },
@@ -36,7 +43,7 @@ var _errMapping = {
 <html>
 <head><title>500: ${connect.errorDetail.error.runtimeType}</title></head>
 <body>
- <h1>500: ${connect.errorDetail.error.message}</h1>
+ <h1>500: ${connect.errorDetail.error}</h1>
  <pre><code>${connect.errorDetail.stackTrace}</code></pre>
 </body>
 </html>

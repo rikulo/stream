@@ -22,21 +22,20 @@ if [ $# = 0 ] ; then
 	echo d2j - Compile Dart to Javascript
 	echo
 	echo Usage:
-	echo "  d2j cleanup"
-	echo "  d2j clean"
-	echo "  d2j file1.dart directory1 file2.dart..."
+	echo "  d2j --cleanup"
+	echo "  d2j [--debug] file1.dart directory1 file2.dart..."
 	echo
 	echo "If the directory is specified all dart files containing main() will be compiled"
 	exit 1
 fi
 
-if [ "$1" == "cleanup" ] || [ "$1" == "clean" ] ; then
+if [ "$1" == "--cleanup" ] ; then
 	find -name '*.dart.js' | xargs rm -f
 	find -name '*.dart.js.map' | xargs rm -f
 	exit
 fi
 
-minify=
+minify=--minify
 warning=false
 function d2j {
 	f=$1
@@ -74,7 +73,9 @@ function d2jx {
 	done
 }
 for f in $* ; do
-	if [ "$f" == "--minify" ] ; then
+	if [ "$f" == "--debug" ] ; then
+		minify=
+	elif [ "$f" == "--minify" ] ; then
 		minify=--minify
 	elif [ -f "$f" ] ; then
 		warning=true

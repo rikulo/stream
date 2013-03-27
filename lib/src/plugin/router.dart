@@ -61,7 +61,9 @@ class DefaultRouter implements Router {
       for (var code in errorMapping.keys) {
         final handler = errorMapping[code];
         if (handler is String) {
-          _chkUri(handler, "Error");
+          String uri = handler;
+          if (!uri.startsWith('/'))
+            throw new ServerError("URI must start with '/'; not '$uri'");
         } else if (handler is! Function) {
           throw new ServerError("Error mapping: function (renderer) or string (URI) is required for $code");
         }
@@ -133,13 +135,6 @@ class DefaultRouter implements Router {
 ///Renderer for 404
 final _f404 = (_) {throw new Http404();};
 
-///check if the given URI is correct
-void _chkUri(String uri, String msg) {
-  if (uri.isEmpty || "/.[(".indexOf(uri[0]) < 0)
-    throw new ServerError("$msg mapping: URI must start with '/', '.', '[' or '('; not '$uri'");
-      //ensure it is absolute or starts with regex wildcard
-}
-
 class _UriMapping {
   RegExp _ptn;
   Map<int, String> _groups;
@@ -204,7 +199,10 @@ class _UriMapping {
       }
     }
 
-    _chkUri(uri, "URI");
+    if (uri.isEmpty || "/.[(".indexOf(uri[0]) < 0)
+      throw new ServerError("URI pattern must start with '/', '.', '[' or '('; not '$uri'");
+      //ensure it is absolute or starts with regex wildcard
+
     uri = "^$uri\$"; //match the whole URI
     _groups = new HashMap();
 

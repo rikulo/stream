@@ -169,9 +169,8 @@ class _StreamServer implements StreamServer {
       }
 
       final code = error.statusCode;
-      connect.response
-        ..statusCode = code
-        ..reasonPhrase = error.message;
+      connect.response.statusCode = code;
+        //spec: not to update reasonPhrase (it is up to error handler if any)
       handler = _router.getErrorHandlerByCode(code);
       if (handler != null) {
         _forwardDyna(connect, handler);

@@ -1,5 +1,5 @@
 name: stream
-version: 0.6.1
+version: 0.6.1+1
 description: > 
   Stream is a Dart web server supporting request routing, filtering,
   template technology, file-based static resources and MVC design pattern.

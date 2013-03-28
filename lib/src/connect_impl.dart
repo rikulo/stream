@@ -148,14 +148,11 @@ class _IncludedResponse extends HttpResponseWrapper {
 
   HttpHeaders _headers;
 
+  //Note: we don't override set:statusCode since we have to report the error
+  //back to the browser if it happens in the included renderer
+
   @override
   void set contentLength(int contentLength) {
-  }
-  @override
-  void set statusCode(int statusCode) {
-  }
-  @override
-  void set reasonPhrase(String reasonPhrase) {
   }
 
   @override

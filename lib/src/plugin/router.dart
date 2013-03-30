@@ -7,6 +7,26 @@ part of stream_plugin;
  * Router for mapping URI to renderers.
  */
 abstract class Router {
+  /** Maps the given URI to the given handler.
+   *
+   * The interpretation of [uri] and [handler] is really up to the
+   * implementation of [Router].
+   *
+   * * [handler] - if handler is null, it means removal.
+   * * [preceding] - whether to make the mapping preceding any previous mappings.
+   * In other words, if true, this mapping will be interpreted first.
+   */
+  void map(String uri, handler, {preceding: false});
+  /** Maps the given URI to the given filter.
+   *
+   * The interpretation of [uri] is really up to the implementation of [Router].
+   *
+   * * [filter] - if filter is null, it means removal.
+   * * [preceding] - whether to make the mapping preceding any previous mappings.
+   * In other words, if true, this mapping will be interpreted first.
+   */
+  void filter(String uri, RequestFilter filter, {preceding: false});
+
   /** Retrieves the first matched request handler ([RequestHandler]) or
    * forwarded URI ([String]) for the given URI.
    */
@@ -38,24 +58,16 @@ class DefaultRouter implements Router {
   DefaultRouter(Map<String, dynamic> uriMapping,
       Map errorMapping, Map<String, RequestFilter> filterMapping) {
     if (uriMapping != null)
-      for (final uri in uriMapping.keys) {
-        final handler = uriMapping[uri];
-        if (handler is! Function && handler is! String)
-          throw new ServerError("URI mapping: function (renderer) or string (URI) is required for $uri");
-        _uriMapping.add(new _UriMapping(uri, handler));
-      }
+      for (final uri in uriMapping.keys)
+        map(uri, uriMapping[uri]);
 
     //default mapping
     _uriMapping.add(new _UriMapping("/.*[.]rsp(|[.][^/]*)", _f404));
       //prevent .rsp and .rsp.* from access
 
     if (filterMapping != null)
-      for (final uri in filterMapping.keys) {
-        final handler = filterMapping[uri];
-        if (handler is! Function)
-          throw new ServerError("Filter mapping: function (filter) is required for $uri");
-        _filterMapping.add(new _UriMapping(uri, handler));
-      }
+      for (final uri in filterMapping.keys)
+        filter(uri, filterMapping[uri]);
 
     if (errorMapping != null)
       for (var code in errorMapping.keys) {
@@ -86,6 +98,59 @@ class DefaultRouter implements Router {
         else
           throw new ServerError("Error mapping: status code or exception is required, not $code");
       }
+  }
+
+  /** Maps the given URI to the given handler.
+   *
+   * * [uri] - a regular exception used to match the request URI.
+   * * [handler] - the handler for handling the request, or another URI that this request
+   * will be forwarded to. If the value is a URI and the key has named groups, the URI can
+   * refer to the group with the $ expression.
+   * For example: `'/dead-link(info:.*)': '/new-link$info'`.
+   * If it is null, it means removal.
+   * * [preceding] - whether to make the mapping preceding any previous mappings.
+   * In other words, if true, this mapping will be interpreted first.
+   */
+  void map(String uri, handler, {preceding: false}) {
+    if (handler != null && handler is! Function && handler is! String)
+      throw new ServerError("URI mapping: function (renderer) or string (URI) is required for $uri");
+
+    _map(_uriMapping, uri, handler, preceding);
+  }
+  /** Maps the given URI to the given filter.
+   *
+   * * [uri]: a regular exception used to match the request URI.
+   * * [filter]: the filter. If it is null, it means removal.
+   * * [preceding] - whether to make the mapping preceding any previous mappings.
+   * In other words, if true, this mapping will be interpreted first.
+   */
+  void filter(String uri, RequestFilter filter, {preceding: false}) {
+//    if (filter is! Function)
+//      throw new ServerError("Filter mapping: function (filter) is required for $uri");
+    _map(_filterMapping, uri, filter, preceding);
+  }
+  static void _map(List<_UriMapping> mapping, String uri, handler, bool preceding) {
+    if (handler == null) { //removal
+      if (preceding) {
+        for (int i = 0, len = mapping.length; i < len; ++i)
+          if (mapping[i].uri == uri) {
+            mapping.removeAt(i);
+            break; //done
+          }
+      } else {
+        for (int i = mapping.length; --i >= 0;)
+          if (mapping[i].uri == uri) {
+            mapping.removeAt(i);
+            break; //done
+          }
+      }
+    } else { //add
+      final m = new _UriMapping(uri, handler);
+      if (preceding)
+        mapping.insert(0, m);
+      else
+        mapping.add(m);
+    }
   }
 
   @override
@@ -136,6 +201,7 @@ class DefaultRouter implements Router {
 final _f404 = (_) {throw new Http404();};
 
 class _UriMapping {
+  final String uri;
   RegExp _ptn;
   Map<int, String> _groups;
   ///It could be a function, a string or a list of (string or _Var).
@@ -143,7 +209,7 @@ class _UriMapping {
   ///The method to match with
   String method;
 
-  _UriMapping(String uri, handler) {
+  _UriMapping(this.uri, handler) {
     _parseHandler(handler);
     _parseUri(uri);
   }

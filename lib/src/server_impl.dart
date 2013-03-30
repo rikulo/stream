@@ -309,4 +309,13 @@ class _StreamServer implements StreamServer {
     if (_server != null)
       throw new StateError("Already running");
   }
+
+  @override
+  void map(String uri, handler, {preceding: false}) {
+    _router.map(uri, handler, preceding: preceding);
+  }
+  @override
+  void filter(String uri, RequestFilter filter, {preceding: false}) {
+    _router.filter(uri, filter, preceding: preceding);
+  }
 }

@@ -1,5 +1,9 @@
 #CHANGES
 
+**0.6.2**
+
+* Issue 11: Allow URI and filter mapping to be added dynamically
+
 **0.6.1**
 
 * Issue 7: Allow URI mapping to be pluggable

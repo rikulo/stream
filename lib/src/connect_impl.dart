@@ -212,7 +212,7 @@ HttpResponse _wrapResponse(HttpResponse response, bool included)
 
 //Close and error stream (for implementing HttpConnect.onClose and onError)
 class _StreamTarget<T> implements StreamTarget<T> {
-  Queue<Function> _listeners;
+  List<Function> _listeners;
 
   _StreamTarget();
 
@@ -225,8 +225,8 @@ class _StreamTarget<T> implements StreamTarget<T> {
   @override
   void addEventListener(String type, void listener(T event)) {
     if (_listeners == null)
-      _listeners = new Queue();
-    _listeners.addFirst(listener);
+      _listeners = [];
+    _listeners.insert(0, listener);
   }
   @override
   void removeEventListener(String type, void listener(T event)) {

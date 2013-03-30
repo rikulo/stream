@@ -47,8 +47,10 @@ function d2j {
 				mv out.js ${f%.dart}.dart.js
 				if [ "$minify" = "--minify" ] ; then
 					rm out.js.map
+					rm out.js.deps
 				else
 					mv out.js.map ${f%.dart}.dart.js.map
+					mv out.js.deps ${f%.dart}.dart.js.deps
 				fi
 			else
 				exit 1

@@ -25,7 +25,7 @@ if (navigator.webkitStartDart) {
         // Remap foo.dart to foo.dart.js.
         if (scripts[i].src && scripts[i].src != '') {
           var script = document.createElement('script');
-          script.src = scripts[i].src + '.js';
+          script.src = scripts[i].src.replace(/\.dart(?=\?|$)/, '.dart.js');
           var parent = scripts[i].parentNode;
           parent.replaceChild(script, scripts[i]);
         }
@@ -161,24 +161,11 @@ function ReceivePortSync() {
     var stringified = JSON.stringify(serialize(port));
     var attrName = 'dart-port:' + name;
     document.documentElement.setAttribute(attrName, stringified);
-    // TODO(vsm): Phase out usage of localStorage and delete the
-    // below.  We're leaving it in temporarily for backwards
-    // compatibility.
-    try {
-      window.localStorage[attrName] = stringified;
-    } catch (e) {
-      // Swallow errors (e.g., Chrome apps disallow this access).
-    }
   };
 
   window.lookupPort = function(name) {
     var attrName = 'dart-port:' + name;
     var stringified = document.documentElement.getAttribute(attrName);
-    // TODO(vsm): Phase out usage of localStorage.  We're leaving it in
-    // temporarily for backwards compatibility.
-    if (!stringified) {
-      stringified = window.localStorage[attrName];
-    }
     return deserialize(JSON.parse(stringified));
   };
 

@@ -1,12 +1,12 @@
-[page args="foo, more, less"]
+[:page args="foo, more, less"]
 
-[var less]
+[:var less]
 less is more
 [/var]
 
-[include include foo="[=true]" less="[=less]"]
-  [var more]
+[:include include foo="[=true]" less="[=less]"]
+  [:var more]
   More information
-    [include include more="recursive"/]
+    [:include include more="recursive"/]
   [/var]
 [/include]

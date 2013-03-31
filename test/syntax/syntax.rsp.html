@@ -1,7 +1,7 @@
 [!-- Syntax Test --]
-[page contentType="[=foo.contentType]" args="foo, bool c:false"
+[:page contentType="[=foo.contentType]" args="foo, bool c:false"
 	import="dart:collection show LinkedHashMap, dart:async"/]
-[header age="129" accept-ranges="[=foo.acceptRanges]" ]
+[:header age="129" accept-ranges="[=foo.acceptRanges]" ]
 <!DOCTYPE html>
 <html>
   <head>
@@ -12,55 +12,55 @@
     <p>Another expresion: [= foo.description]
     <p>An empty expression: [=   
       ]
-    <p>This is not a tag: [foo ], [another and [/none].
+    <p>This is not a tag: [:foo ], [:another and [/none].
     <ul>
-    [for user in foo.friends]
+    [:for user in foo.friends]
       <li>[= user.name]
-      [if user.isCustomer]
+      [:if user.isCustomer]
       <i>!important!</i>
       [/if]
-      [while user.hasMore()]
+      [:while user.hasMore()]
         [= user.showMore()]
       [/while]
       </li>
     [/for]
     </ul>
 
-    [for fruit in ["apple", "orange"]]
+    [:for fruit in ["apple", "orange"]]
     [/for]
 
-    [if foo.isCustomer]
+    [:if foo.isCustomer]
       *Custmer*
-    [else if c]
-      [forward "/x/y/z"/]
-    [else if foo.isEmployee]
+    [:else if c]
+      [:forward "/x/y/z"/]
+    [:else if foo.isEmployee]
       *Employee*
-      [forward syntax c="[=true]" foo="abc"/]
-    [else]
+      [:forward syntax c="[=true]" foo="abc"/]
+    [:else]
       *Unknown* \[/if] [!-- escape a [/if] --]
     [/if]
 
-    [var whatever]
+    [:var whatever]
     define a variable
-      [for fruit in ["apple", "orange"]]
+      [:for fruit in ["apple", "orange"]]
         [=fruit]
       [/for]
 	[/var]
 
-    [include "/abc"/]
-    [include syntax c="[=true]"]
-      [var foo]
+    [:include "/abc"/]
+    [:include syntax c="[=true]"]
+      [:var foo]
       The content for foo
       [/var]
     [/include]
 
-    [if foo.isMeaningful]
+    [:if foo.isMeaningful]
     something is meaningful
     [/if]
   </body>
 </html>
 [!----]
-[dart/]
+[:dart/]
 [!---]
 -]
 --]

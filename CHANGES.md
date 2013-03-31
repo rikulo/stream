@@ -4,6 +4,11 @@
 
 * Issue 11: Allow URI and filter mapping to be added dynamically
 
+*Upgrade Note*
+
+* The syntax of a tag has been changed from [tag] to [:tag]. The old syntax still works
+but will be removed in the near future.
+
 **0.6.1**
 
 * Issue 7: Allow URI mapping to be pluggable

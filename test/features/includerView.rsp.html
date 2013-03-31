@@ -1,5 +1,5 @@
-[page partOf="features"]
-[dart]
+[:page partOf="features"]
+[:dart]
 final infos = {
   "fruits": ["apple", "orange", "lemon"],
   "cars": ["bmw", "audi", "honda"]
@@ -15,21 +15,21 @@ final infos = {
       <li>You shall see something inside the following two boxes.</li>
     </ul>
     <div style="border: 1px solid blue">
-      [include "/frag.html"/]
+      [:include "/frag.html"/]
     </div>
     <div style="border: 1px solid red">
-      [include fragView infos="[=infos]"/]
+      [:include fragView infos="[=infos]"/]
     </div>
     <div style="border: 1px solid red">
-      [include fragView infos="[=infos]"]
-        [var header]
+      [:include fragView infos="[=infos]"]
+        [:var header]
   <h1>This is a header</h1>
   <p>Passed from the includer for showing [=infos]</p>
         [/var]
-        [var footer]
+        [:var footer]
   <h2>This is a footer</h2>
   <p>It also includes another page:</p>
-          [include "/frag.html"/]
+          [:include "/frag.html"/]
         [/var]
       [/include]
     </div>

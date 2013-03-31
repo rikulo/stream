@@ -317,17 +317,22 @@ class Compiler {
           if (c2 == '=') { //[=exprssion]
             _pos = j + 1;
             return new _Expr();
-          } else if (c2 == '/') { //[/closing-tag]
+          } else if (c2 == ':' || c2 == '/') { //[:beginning-tag] or [/closing-tag]
             int k = j + 1;
             if (k < _len && StringUtil.isChar(source[k], lower:true)) {
               int m = _skipId(k);
               final tagnm = source.substring(k, m);
               final tag = tags[tagnm];
-              if (tag != null && m < _len && source[m] == ']') { //tag found
-                if (!tag.hasClosing)
-                  _error("[/$tagnm] not allowed. It doesn't need the closing tag.", _line);
-                _pos = m + 1;
-                return new _Closing(tagnm);
+              if (tag != null) {
+                if (c2 == ':') { //beginning of tag
+                  _pos = m;
+                  return tag;
+                } else if (m < _len && source[m] == ']') { //ending of tag found
+                  if (!tag.hasClosing)
+                    _error("[/$tagnm] not allowed. It doesn't need the closing tag.", _line);
+                  _pos = m + 1;
+                  return new _Closing(tagnm);
+                }
               }
             }
             //fall through
@@ -337,9 +342,11 @@ class Compiler {
               continue;
             }
           } else if (StringUtil.isChar(c2, lower:true)) { //[beginning-tag]
+          //deprecated (TODO: remove later)
             int k = _skipId(j);
-            final tag = tags[source.substring(j, k)];
+            final tn = source.substring(j, k), tag = tags[tn];
             if (tag != null) { //tag found
+              _warning("[$tn] is deprecated. Please use [:$tn] instead.", _line);
               _pos = k;
               return tag;
             }

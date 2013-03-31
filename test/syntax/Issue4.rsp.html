@@ -1,10 +1,10 @@
-[dart]
+[:dart]
 var foo = "test";
 void render(HttpConnect connect, {more, less}) {
 }
 [/dart]
 
 abc/[=foo]
-[include "[=foo]"/]
-[include "abc/[=foo]"/]
-[include render more="abc/[=foo]" less="[=foo]"/]
+[:include "[=foo]"/]
+[:include "abc/[=foo]"/]
+[:include render more="abc/[=foo]" less="[=foo]"/]

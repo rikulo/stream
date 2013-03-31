@@ -46,7 +46,7 @@ void syntax(HttpConnect connect, {foo, bool c:false}) { //5
 
   response.write("""
 
-    <p>This is not a tag: [foo ], [another and [/none].
+    <p>This is not a tag: [:foo ], [:another and [/none].
     <ul>
 """); //#14
 

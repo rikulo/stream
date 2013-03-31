@@ -1,5 +1,5 @@
 [!-- View of Hello MVC --]
-[page partOf="hello_mvc" args="String path, List<FileInfo> infos"]
+[:page partOf="hello_mvc" args="String path, List<FileInfo> infos"]
 <!DOCTYPE html>
 <html>
   <head>
@@ -14,7 +14,7 @@
         <th>Type</th>
         <th>Name</th>
       </tr>
-    [for info in infos]
+    [:for info in infos]
       <tr>
         <td><img src="[=info.isDirectory ? 'file.png': 'directory.png']"/></td>
         <td>[=info.name]</td>

@@ -133,10 +133,17 @@ class Compiler {
       if (sourceName == null || sourceName.isEmpty)
         _error("The page tag with the name attribute is required", line);
 
-      final i = sourceName.lastIndexOf('/') + 1,
-        j = sourceName.indexOf('.', i);
-      _name = StringUtil.camelize(
-        j >= 0 ? sourceName.substring(i, j): sourceName.substring(i));
+      _name = new Path(sourceName).filename;
+      var i = _name.indexOf('.');
+      _name = StringUtil.camelize(i < 0 ? _name: _name.substring(0, i));
+
+      for (i = _name.length; --i >= 0;) { //check if _name is legal
+        final cc = _name[i];
+        if (!StringUtil.isChar(cc, upper:true, lower: true, digit: true)
+            && cc != '\$' && cc != '_')
+          _error("Unable to generate a legal function name from $sourceName. "
+            "Please specify the name with the page tag.", line);
+      }
     }
 
     if (verbose) _info("Generate $_name from line $line");
@@ -159,11 +166,18 @@ class Compiler {
       imports.addAll(_import.split(','));
 
     if (_partOf == null || _partOf.isEmpty) { //independent library
-      final i = sourceName.lastIndexOf('.'),
-        j = sourceName.lastIndexOf('/'),
-        lib = i >= 0 && i > j ? sourceName.substring(j >= 0 ? j + 1: 0, i):
-            j >= 0 ? sourceName.substring(j + 1): sourceName;
-      _writeln("library ${lib.replaceAll('.', '_')};\n");
+      var lib = new Path(sourceName).filename;
+      var i = lib.lastIndexOf('.'); //remove only one extension
+      if (i >= 0) lib = lib.substring(0, i);
+
+      final sb = new StringBuffer(), len = lib.length;
+      for (i = 0; i < len; ++i) {
+        final cc = lib[i];
+        sb.write(StringUtil.isChar(cc, upper:true, lower: true, digit: true)
+            || cc == '\$' ? cc: '_');
+      }
+      _writeln("library $sb;\n");
+
       for (final impt in imports)
         _writeln("import ${_toImport(impt)};");
     } else if (_partOf.endsWith(".dart")) { //needs to maintain the given dart file

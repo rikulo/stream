@@ -4,7 +4,7 @@
 part of stream;
 
 class _StreamServer implements StreamServer {
-  final String version = "0.6.1";
+  final String version = "0.6.2";
   HttpServer _server;
   String _host = "127.0.0.1";
   int _port = 8080;

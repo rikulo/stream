@@ -125,8 +125,8 @@ class DefaultRouter implements Router {
    * In other words, if true, this mapping will be interpreted first.
    */
   void filter(String uri, RequestFilter filter, {preceding: false}) {
-//    if (filter is! Function)
-//      throw new ServerError("Filter mapping: function (filter) is required for $uri");
+    if (filter is! Function)
+      throw new ServerError("Filter mapping: function (filter) is required for $uri");
     _map(_filterMapping, uri, filter, preceding);
   }
   static void _map(List<_UriMapping> mapping, String uri, handler, bool preceding) {

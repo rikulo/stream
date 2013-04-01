@@ -345,11 +345,8 @@ class Compiler {
           //deprecated (TODO: remove later)
             int k = _skipId(j);
             final tn = source.substring(j, k), tag = tags[tn];
-            if (tag != null) { //tag found
-              _warning("[$tn] is deprecated. Please use [:$tn] instead.", _line);
-              _pos = k;
-              return tag;
-            }
+            if (tag != null) //tag found
+              _warning("[$tn] is deprecated and ignored. Please use [:$tn] instead.", _line);
             //fall through
           }
         }

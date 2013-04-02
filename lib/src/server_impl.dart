@@ -163,6 +163,11 @@ class _StreamServer implements StreamServer {
         return;
       }
 
+      if (error is SocketIOException) {
+        //connection is closed. we can't close or forward it.
+        logger.fine("${connect.request.uri}: $error");
+        return;
+      }
       if (error is! HttpStatusException) {
         _shout(error, stackTrace);
         error = new Http500(error);

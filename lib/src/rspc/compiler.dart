@@ -119,7 +119,7 @@ class Compiler {
         }
         _error("Unclosed tag(s): $sb");
       }
-      _writeln("\n$_extra  connect.close();");
+      _writeln("\n$_extra  return \$nnf();");
       while (!_incs.isEmpty) {
         _extra = _extra.substring(2);
         _writeln("$_extra  ${_incs.removeLast().invocation} //end-of-include");
@@ -161,9 +161,13 @@ class Compiler {
       }
     }
 
-    final imports = new LinkedHashSet.from(["dart:io", "package:stream/stream.dart"]);
-    if (_import != null && !_import.isEmpty)
-      imports.addAll(_import.split(','));
+    final imports = new LinkedHashSet.from(["dart:async", "dart:io", "package:stream/stream.dart"]);
+    if (_import != null)
+      for (String imp in _import.split(',')) {
+        imp = imp.trim();
+        if (!imp.isEmpty)
+          imports.add(imp);
+      }
 
     if (_partOf == null || _partOf.isEmpty) { //independent library
       var lib = new Path(sourceName).filename;
@@ -189,10 +193,10 @@ class Compiler {
     }
 
     _current.indent();
-    _write("\n/** $_desc */\nvoid $_name(HttpConnect connect");
+    _write("\n/** $_desc */\nFuture $_name(HttpConnect connect");
     if (_args != null)
       _write(", {$_args}");
-    _writeln(") { //$line\n"
+    _writeln(") { //#$line\n"
       "  var _cs_ = new List<HttpConnect>(), request = connect.request, response = connect.response;\n");
 
     if (_contentType != null) {
@@ -235,8 +239,8 @@ class Compiler {
       _error("Not supported: include URI with arguments", line); //TODO: handle arguments
     if (verbose) _info("Include $uri", line);
 
-    _writeln('\n${_current.pre}connect.include('
-      '${toEL(uri, direct: false)}, success: () { //#$line');
+    _writeln('\n${_current.pre}return connect.include('
+      '${toEL(uri, direct: false)}).then((_) { //#$line');
     _extra = "  $_extra";
     _incs.add(new _IncInfo("});"));
   }
@@ -245,15 +249,11 @@ class Compiler {
     _checkInclude(line);
     if (verbose) _info("Include $method", line);
 
-    _writeln("\n${_current.pre}$method(connect.server.connectForInclusion(connect, success: () { //#$line");
+    _write("\n${_current.pre}return \$nnf($method(new HttpConnect.chain(connect)");
+    _outArgs(args);
+    _writeln(")).then((_) { //include#$line");
     _extra = "  $_extra";
-
-    final sb = new StringBuffer("})");
-    if (args != null)
-      for (final arg in args.keys)
-        sb..write(", ")..write(arg)..write(": ")..write(toEL(args[arg]));
-    sb.write(");");
-    _incs.add(new _IncInfo(sb.toString()));
+    _incs.add(new _IncInfo("});"));
   }
   ///Check if the include tag is allowed.
   ///It can be not put inside while/for/if...
@@ -274,19 +274,25 @@ class Compiler {
       _error("Not supported: forward URI with arguments"); //TODO: handle arguments
     if (verbose) _info("Forward $uri", line);
 
-    _writeln("\n${_current.pre}connect.forward("
-      "${toEL(uri, direct: false)}); //#${line}\n"
-      "${_current.pre}return;");
+    _writeln("\n${_current.pre}return connect.forward("
+      "${toEL(uri, direct: false)}); //#${line}");
   }
   //Forward to the given renderer
   void forward(String method, [Map args, int line]) {
     if (verbose) _info("Forward $method", line);
 
-    _write("\n${_current.pre}${method}(connect");
+    _write("\n${_current.pre}return \$nnf(${method}(connect");
+    _outArgs(args);
+    _writeln(")); //forward#${line}");
+  }
+  void _outArgs(Map args) {
     if (args != null)
-      for (final arg in args.keys)
-        _write(", $arg: ${toEL(args[arg])}");
-    _writeln("); //#${line}\n${_current.pre}return;");
+      for (final arg in args.keys) {
+        _write(", ");
+        _write(arg);
+        _write(": ");
+        _write(toEL(args[arg]));
+      }
   }
 
   //Tokenizer//
@@ -530,7 +536,7 @@ class Compiler {
       //1) '/' is NOT a terminal, 2) no skip space for expression
     if (!expr.isEmpty) {
       final pre = _current.pre;
-      _writeln('\n${pre}response.write(nnstr($expr)); //#${line}\n');
+      _writeln('\n${pre}response.write(\$nns($expr)); //#${line}\n');
     }
   }
 

@@ -3,7 +3,7 @@
 part of hello_mvc;
 
 /** Template, listView, for rendering the view. */
-void listView(HttpConnect connect, {String path, List<FileInfo> infos}) { //2
+Future listView(HttpConnect connect, {String path, List<FileInfo> infos}) { //#2
   var _cs_ = new List<HttpConnect>(), request = connect.request, response = connect.response;
 
   if (!connect.isIncluded)
@@ -20,7 +20,7 @@ void listView(HttpConnect connect, {String path, List<FileInfo> infos}) { //2
   <body>
     <h1>Directory: """); //#2
 
-  response.write(nnstr(path)); //#10
+  response.write($nns(path)); //#10
 
 
   response.write("""
@@ -40,14 +40,14 @@ void listView(HttpConnect connect, {String path, List<FileInfo> infos}) { //2
       <tr>
         <td><img src=\""""); //#17
 
-    response.write(nnstr(info.isDirectory ? 'file.png': 'directory.png')); //#19
+    response.write($nns(info.isDirectory ? 'file.png': 'directory.png')); //#19
 
 
     response.write("""
 "/></td>
         <td>"""); //#19
 
-    response.write(nnstr(info.name)); //#20
+    response.write($nns(info.name)); //#20
 
 
     response.write("""
@@ -67,5 +67,5 @@ void listView(HttpConnect connect, {String path, List<FileInfo> infos}) { //2
 </html>
 """); //#22
 
-  connect.close();
+  return $nnf();
 }

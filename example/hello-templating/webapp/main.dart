@@ -1,6 +1,7 @@
 //Sample of Stream: Hello Templating
 library hello_templating;
 
+import "dart:async";
 import "dart:io";
 import "package:stream/stream.dart";
 

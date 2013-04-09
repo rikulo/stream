@@ -6,8 +6,16 @@ part of stream;
 /** Converts the given value to a non-null string.
  * If the given value is not null, `toString` is called.
  * If null, an empty string is returned.
+ *
+ * > It is used in the generated code of RSP pages.
  */
-String nnstr(v) => v != null ? v.toString(): "";
+String $nns([v]) => v != null ? v.toString(): "";
+
+/** Converts the given value to a non-null [Future].
+ *
+ * > It is used in the generated code of RSP pages.
+ */
+Future $nnf([v]) => v is Future ? v: new Future.immediate(v);
 
 /**
  * Stream server.
@@ -119,52 +127,48 @@ abstract class StreamServer {
   /** Forward the given [connect] to the given [uri].
    *
    * If [request] and/or [response] is ignored, [connect]'s request and/or response is assumed.
+   * If [uri] is null, `connect.uri` is assumed, i.e., forwarded to the same handler.
    *
-   * After calling this method, the caller shall not write the output stream, since the
-   * request handler for the given URI might handle it asynchronously. Rather, it
-   * shall make it a closure and pass it to the [success] argument. Then,
-   * it will be resumed once the forwarded handler has completed.
+   * After calling this method, the caller shall write the output stream in `then`, since
+   * the request handler for the given URI might handle it asynchronously. For example,
+   *
+   *     forward(connect, "another").then((_) {
+   *       connect.response.write("<p>More content</p>");
+   *       //...
+   *     });
    *
    * ##Difference between [forward] and [include]
    *
    * [forward] and [include] are almost the same, except
    *
-   * * The included request handler shall not generate any HTTP headers (it is the job of the caller).
-   *
-   * * The request handler that invokes [forward] shall not call `connect.close` (it is the job
-   * of the callee -- the forwarded request handler).
+   * * The included request handler won't be able to generate any HTTP headers
+   * (it is the job of the caller). Any updates to HTTP headers in the included
+   * request handler are simply ignored.
    */
-  void forward(HttpConnect connect, String uri, {VoidCallback success,
+  Future forward(HttpConnect connect, String uri, {
     HttpRequest request, HttpResponse response});
   /** Includes the given [uri].
-   * If you'd like to include a request handler (i.e., a function), use [connectForInclusion]
-   * instead.
    *
    * If [request] and/or [response] is ignored, [connect]'s request and/or response is assumed.
+   * If [uri] is null, `connect.uri` is assumed, i.e., includes the same handler.
    *
-   * After calling this method, the caller shall not write the output stream, since the
-   * request handler for the given URI might handle it asynchronously. Rather, it
-   * shall make it a closure and pass it to the [success] argument. Then,
-   * it will be resumed once the included handler has completed.
+   * After calling this method, the caller shall write the output stream in `then`, since
+   * the request handler for the given URI might handle it asynchronously. For example,
+   *
+   *     include(connect, "another").then((_) {
+   *       connect.response.write("<p>More content</p>");
+   *       //...
+   *     });
    *
    * ##Difference between [forward] and [include]
    *
    * [forward] and [include] are almost the same, except
    *
-   * * The included request handler shall not generate any HTTP headers (it is the job of the caller).
-   *
-   * * The request handler that invokes [forward] shall not call `connect.close` (it is the job
-   * of the callee -- the included request handler).
+   * * The included request handler won't be able to generate any HTTP headers
+   * (it is the job of the caller). Any updates to HTTP headers in the included
+   * request handler are simply ignored.
    */
-  void include(HttpConnect connect, String uri, {VoidCallback success,
-    HttpRequest request, HttpResponse response});
-  /** Gets the HTTP connect for inclusion.
-   * If you'd like to include from URI, use [include] instead.
-   * This method is used for including a request handler. For example
-   *
-   *     fooHandler(connectForInclusion(connect, success: () {continueToDo();}));
-   */
-  HttpConnect connectForInclusion(HttpConnect connect, {String uri, VoidCallback success,
+  Future include(HttpConnect connect, String uri, {
     HttpRequest request, HttpResponse response});
 
   /** The resource loader used to load the static resources.

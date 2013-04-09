@@ -3,6 +3,7 @@
 // Author: tomyeh
 library stream_plugin;
 
+import "dart:async";
 import "dart:io";
 import "dart:collection";
 import "dart:mirrors";

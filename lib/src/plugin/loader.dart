@@ -16,7 +16,7 @@ abstract class ResourceLoader {
 
   /** Loads the resource of the given URI to the given response.
    */
-  void load(HttpConnect connect, String uri);
+  Future load(HttpConnect connect, String uri);
 }
 
 /** A file-system-based resource loader.
@@ -28,65 +28,73 @@ class FileLoader implements ResourceLoader {
   final Path rootDir;
 
   @override
-  void load(HttpConnect connect, String uri) {
+  Future load(HttpConnect connect, String uri) {
     var path = uri.substring(1); //must start with '/'
     path = rootDir.append(path);
 
     var file = new File.fromPath(path);
-    file.exists().then((exists) {
+    return file.exists().then((exists) {
       if (!exists)
         return new Directory.fromPath(path).exists();
-      loadFile(connect, file);
-      //return null;
+      return loadFile(connect, file);
     }).then((exists) {
-      if (exists != null) //null means done
+      if (exists != null) { //null means done (i.e., returned by loadFile)
         if (exists)
-          _loadFileAt(connect, uri, path, connect.server.indexNames, 0);
-        else
-          throw new Http404(uri);
-    }).catchError(connect.error);
+          return _loadFileAt(connect, uri, path, connect.server.indexNames, 0);
+        throw new Http404(uri);
+      }
+    });
   }
 }
 
-bool _loadFileAt(HttpConnect connect, String uri, Path dir, List<String> names, int j) {
+Future _loadFileAt(HttpConnect connect, String uri, Path dir, List<String> names, int j) {
   if (j >= names.length)
     throw new Http404(uri);
 
   final file = new File.fromPath(dir.append(names[j]));
-  file.exists().then((exists) {
-    if (exists)
-      loadFile(connect, file);
-    else
+  return file.exists().then((exists) {
+    return exists ? loadFile(connect, file):
       _loadFileAt(connect, uri, dir, names, j + 1);
-  }).catchError(connect.error);
+  });
 }
 
 /** Loads a file into the given response.
  * Notice that this method assumes the file exists.
  */
-void loadFile(HttpConnect connect, File file) {
-  if (connect.isIncluded) {
-    _loadFile(connect, file);
-    return;
-  }
+Future loadFile(HttpConnect connect, File file) {
+  if (connect.isIncluded)
+    return _loadFile(connect, file);
 
   final headers = connect.response.headers;
   final ctype = contentTypes[new Path(file.path).extension];
   if (ctype != null)
     headers.contentType = ctype;
 
-  file.length().then((length) {
+  return file.length().then((length) {
     connect.response.contentLength = length;
     return file.lastModified();
   }).then((date) {
     headers.add(HttpHeaders.LAST_MODIFIED, date);
-    _loadFile(connect, file);
-  }).catchError(connect.error);
+    return _loadFile(connect, file);
+  });
 }
 
-void _loadFile(HttpConnect connect, File file) {
+Future _loadFile(HttpConnect connect, File file) {
+  final completer = new Completer();
   final res = connect.response;
   file.openRead().listen((data) {res.writeBytes(data);},
-    onDone: connect.close, onError: connect.error);
-  res.done.catchError(connect.error); //TODO: if Issue 9567 fixed, move it to beginning
+    onDone: () => completer.complete(), //null means done; see FileLoader.load()
+    onError: (err) => completer.completeError(err));
+  res.done.catchError((err) { //TODO: if Issue 9141 fixed, move it to beginning
+    if (_isHttpAborted(err))
+      connect.server.logger.fine("${connect.request.uri}: $err"); //nothing to do
+    else
+      connect.error(err);
+  });
+  return completer.future;
+}
+bool _isHttpAborted(error) {
+  while (error is AsyncError)
+    error = error.error;
+  return error is SocketIOException;
 }

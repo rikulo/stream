@@ -7,24 +7,9 @@ part of stream;
 abstract class _AbstractConnect implements HttpConnect {
   final ConnectErrorCallback _cxerrh;
   ErrorCallback _errh;
-  VoidCallback _close;
   Map<String, dynamic> _dataset;
-  final _StreamTarget<HttpConnect> _closeEvtTarget = new _StreamTarget<HttpConnect>();
-  _StreamTarget _errEvtTarget;
  
-  _AbstractConnect(this.request, this.response, this._cxerrh) {
-    _init();
-  }
-  void _init() {
-    _close = () {
-      _closeEvtTarget.send(this);
-    };
-    _errh = (e, [st]) {
-      if (_errEvtTarget != null)
-        _errEvtTarget.send(st != null ? new AsyncError(e, st): e);
-      _cxerrh(this, e, st);
-    };
-  }
+  _AbstractConnect(this.request, this.response, this._cxerrh);
 
   @override
   final HttpRequest request;
@@ -40,24 +25,20 @@ abstract class _AbstractConnect implements HttpConnect {
   bool get isForwarded => false;
 
   @override
-  void forward(String uri, {VoidCallback success, HttpRequest request, HttpResponse response}) {
-    server.forward(this, uri, success: success, request: request, response: response);
-  }
+  Future forward(String uri, {HttpRequest request, HttpResponse response})
+  => server.forward(this, uri, request: request, response: response);
   @override
-  void include(String uri, {VoidCallback success, HttpRequest request, HttpResponse response}) {
-    server.include(this, uri, success: success, request: request, response: response);
-  }
+  Future include(String uri, {HttpRequest request, HttpResponse response})
+  => server.include(this, uri, request: request, response: response);
 
   @override
-  VoidCallback get close => _close;
-  @override
-  ErrorCallback get error => _errh;
-  @override
-  Stream<HttpConnect> get onClose => _provider.forTarget(_closeEvtTarget);
-  @override
-  Stream get onError
-  => _provider.forTarget(_errEvtTarget != null ? _errEvtTarget:
-      (_errEvtTarget = new _StreamTarget()));
+  ErrorCallback get error { //rarely used; defer it
+    if (_errh == null)
+      _errh = (e, [st]) {
+        _cxerrh(this, e, st);
+      };
+    return _errh;
+  }
 }
 
 ///The default implementation of HttpConnect
@@ -210,28 +191,14 @@ HttpRequest _wrapRequest(HttpRequest request, String uri)
 HttpResponse _wrapResponse(HttpResponse response, bool included)
 => !included || response is _IncludedResponse ? response: new _IncludedResponse(response);
 
-//Close and error stream (for implementing HttpConnect.onClose and onError)
-class _StreamTarget<T> implements StreamTarget<T> {
-  List<Function> _listeners;
-
-  _StreamTarget();
-
-  void send(T event) {
-    if (_listeners != null)
-      for (final l in _listeners)
-        l(event);
+String _toAbsUri(HttpConnect connect, String uri) {
+  if (uri != null && !uri.startsWith('/')) {
+    final pre = connect.request.uri.path;
+    final i = pre.lastIndexOf('/');
+    if (i >= 0)
+      uri = "${pre.substring(0, i + 1)}$uri";
+    else
+      uri = "/$uri";
   }
-
-  @override
-  void addEventListener(String type, void listener(T event)) {
-    if (_listeners == null)
-      _listeners = [];
-    _listeners.insert(0, listener);
-  }
-  @override
-  void removeEventListener(String type, void listener(T event)) {
-    if (_listeners != null)
-      _listeners.remove(listener);
-  }
+  return uri;
 }
-const StreamProvider _provider = const StreamProvider('');

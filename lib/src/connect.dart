@@ -3,8 +3,6 @@
 // Author: tomyeh
 part of stream;
 
-/** The general handler. */
-typedef void VoidCallback();
 /** The error handler. */
 typedef void ErrorCallback(err, [stackTrace]);
 /** The error handler for HTTP connection. */
@@ -12,28 +10,71 @@ typedef void ConnectErrorCallback(HttpConnect connect, err, [stackTrace]);
 
 /** The request filter. It is used with the `filterMapping` parameter of [StreamServer].
  *
- * * [chain] - the callback to *resume* the request handling. If there is another filter,
- * it will be invoked when you call back [chain]. If you'd like to skip the handling (e.g., redirect to another page),
+ * * [chain] - the callback to *resume* the request handling. If there is another filter
+ * (including the default handling, such as URI mapping and resource loading),
+ * it will be invoked when you call back [chain].
+ * If you'd like to skip the handling (e.g., redirect to another page),
  * you don't have to call back [chain].
  *
  * Before calling back [chain], you can proxy the request and/or response, such as writing the
  * the response to a string buffer.
  */
-typedef void RequestFilter(HttpConnect connect, void chain(HttpConnect conn));
-/** The request filter.
+typedef Future RequestFilter(HttpConnect connect, Future chain(HttpConnect conn));
+/** The request handler.
  *
- * If it renders the response, it doesn't need to return anything (i.e., `void`).
- * If not, it shall return an URI (which is a non-empty string,
- * starting with * `/`) that the request shall be forwarded to.
+ * If the request handler finished immediately, it doesn't have to return anything.
+ * For example,
+ *
+ *     void serverInfo(HttpConnect connect) {
+ *       final info = {"name": "Rikulo Stream", "version": connect.server.version};
+ *       connect.response
+ *         ..headers.contentType = contentTypes["json"]
+ *         ..write(Json.stringify(info));
+ *     }
+ *
+ * On the other hand, if the request is handled asynchronously, it *must* return
+ * an instance of [Future] for indicating if the handling is completed. For example,
+ *
+ *     Future loadFile(HttpConnect connect) {
+ *       final completer = new Completer();
+ *       final res = connect.response;
+ *       new File("some_file").openRead().listen((data) {res.writeBytes(data);},
+ *         onDone: () => completer.complete(),
+ *         onError: (err) => completer.completeError(err));
+ *       return completer.future;
+ *     }
+ *
+ * As shown above, the error has to be *wired* to the Future object being returned.
+ *
+ * > The returned `Future` object can carry any type of objects. It is applications
+ * specific. Stream server simply ignores it.
+ *
+ * > Though not specified, the handler can have any number of named arguments.
+ * They are application specific. Stream server won't pass anything but the default
+ * values.
  */
-typedef RequestHandler(HttpConnect connect);
-
+typedef Future RequestHandler(HttpConnect connect);
 
 /** A HTTP request connection.
  */
 abstract class HttpConnect {
+  /** Instantiates a connection by redirecting the output to the given buffer.
+   */
   factory HttpConnect.buffer(HttpConnect origin, StringBuffer buffer)
   => new _BufferedConnect(origin, buffer);
+  /** Instantiates a connection that will be used to include or forward to
+   * another request handler.
+   *
+   * * [inclusion] - whether it is used for inclusion. If true,
+   * any modification to `connect.response.headers` is ignored.
+   */
+  factory HttpConnect.chain(HttpConnect connect, {bool inclusion: true,
+      String uri, HttpRequest request, HttpResponse response}) {
+    uri = _toAbsUri(connect, uri);
+    return inclusion ?
+      new _IncludedConnect(connect, request, response, uri):
+      new _ForwardedConnect(connect, request, response, uri);
+  }
 
   ///The Stream server
   StreamServer get server;
@@ -61,103 +102,80 @@ abstract class HttpConnect {
 
   /** Forward this connection to the given [uri].
    *
-   * If [request] or [response] is ignored, this connect's request or response is assumed.
+   * If [request] and/or [response] is ignored, [connect]'s request and/or response is assumed.
+   * If [uri] is null, `connect.uri` is assumed, i.e., forwarded to the same handler.
    *
-   * After calling this method, the caller shall not write the output stream, since the
-   * request handler for the given URI might handle it asynchronously. Rather, it
-   * shall make it a closure and pass it to the [success] argument. Then,
-   * it will be resumed once the forwarded handler has completed.
+   * After calling this method, the caller shall write the output stream in `then`, since
+   * the request handler for the given URI might handle it asynchronously. For example,
+   *
+   *     connect.forward(connect, "another").then((_) {
+   *       connect.response.write("<p>More content</p>");
+   *       //...
+   *     });
    *
    * ##Difference between [forward] and [include]
    *
    * [forward] and [include] are almost the same, except
    *
-   * * The included request handler shall not generate any HTTP headers (it is the job of the caller).
-   *
-   * * The request handler that invokes [forward] shall not call [close] (it is the job
-   * of the callee -- the forwarded request handler).
+   * * The included request handler won't be able to generate any HTTP headers
+   * (it is the job of the caller). Any updates to HTTP headers in the included
+   * request handler are simply ignored.
    *
    * Notice the default implementation is `connect.forward(connect, uri...)`.
    */
-  void forward(String uri, {VoidCallback success, HttpRequest request, HttpResponse response});
+  Future forward(String uri, {HttpRequest request, HttpResponse response});
   /** Includes the given [uri].
-   * If you'd like to include a request handler (i.e., a function), use [StreamServer]'s
-   * `connectForInclusion` instead.
    *
    * If [request] or [response] is ignored, this connect's request or response is assumed.
+   * If [uri] is null, `connect.uri` is assumed, i.e., includes the same handler.
    *
-   * After calling this method, the caller shall not write the output stream, since the
-   * request handler for the given URI might handle it asynchronously. Rather, it
-   * shall make it a closure and pass it to the [success] argument. Then,
-   * it will be resumed once the included handler has completed.
+   * After calling this method, the caller shall write the output stream in `then`, since
+   * the request handler for the given URI might handle it asynchronously. For example,
+   *
+   *     connect.include(connect, "another").then((_) {
+   *       connect.response.write("<p>More content</p>");
+   *       //...
+   *     });
    *
    * ##Difference between [forward] and [include]
    *
    * [forward] and [include] are almost the same, except
    *
-   * * The included request handler shall not generate any HTTP headers (it is the job of the caller).
-   *
-   * * The request handler that invokes [forward] shall not call [close] (it is the job
-   * of the callee -- the included request handler).
+   * * The included request handler won't be able to generate any HTTP headers
+   * (it is the job of the caller). Any updates to HTTP headers in the included
+   * request handler are simply ignored.
    *
    * Notice the default implementation is `connect.include(connect, uri...)`.
    */
-  void include(String uri, {VoidCallback success, HttpRequest request, HttpResponse response});
+  Future include(String uri, {HttpRequest request, HttpResponse response});
 
-  /** The close handler.
-   * After finishing the handling of a request, the request handler shall invoke this method
-   * to start the awaiting tasks and to close the connection if necessary
-   * (depending on if the request handler is included / forwarded).
-   *
-   * To register an awaiting task that shall be run after the request handling, you can invoke
-   * [onClose], i.e., `onClose.listen(...)`. To register an error handler, you can invoke [onError].
-   */
-  VoidCallback get close;
   /** The error handler.
    *
-   * Notice that it is important to invoke this method if an error occurs.
-   * Otherwise, the HTTP connection won't be closed, and, even worse, the server might stop from
-   * execution.
+   * By default, this error handler will be automatically assigned to the Future
+   * object returned by the request handler. Thus, all you have to do is to *wire*
+   * the error to the returned Future object. For example, if you're using
+   * [Completer], you can do:
    *
-   * ##Assign `onError` with the return value of this method
-   *
-   *     final res = connect.response;
+   *     final completer = new Completer();
    *     file.openRead().listen((data) {res.add(data);},
-   *       onDone: connect.close, onError: connect.error);
+   *       onDone: () => completer.complete(null),
+   *       onError: (err) => completer.completeError(err));
+   *     return completer.future;
    *
-   * ##Future.catchError with the return value of this method
+   * In short, you rarely need to invoke this error handler directly.
+   * On the other hand, it is OK if you'd like to pass the error handler to `onError`.
+   * It is harmless if it has been called multiple times -
+   * the following invocations will be ignored.
    *
-   *     file.exists().then((exists) {
-   *       if (exists) {
-   *         doSomething(); //any exception will be caught and handled
-   *         connect.close(); //close on completion
-   *         return;
-   *       }
-   *       throw new Http404();
-   *     }).catchError(connect.error); //forward to Stream's error handling
-   *
-   * To register an error handler, you can invoke [onError].
+   * > Notice that, if you don't wire the error handling property, the HTTP
+   * connection won't be closed, and, even worse, the server might stop from
+   * execution.
    */
   ErrorCallback get error;
   /** The error detailed information (which is the information when [error]
    * has been called), or null if no error.
    */
   ErrorDetail errorDetail;
-
-  /** The event stream for registering awating task. Each event is an instance of [HttpConnect].
-   * It is called when [close] was called.
-   *
-   * Notice: the first registred listener is the last called (FILO).
-   */
-  Stream<HttpConnect> get onClose;
-  /** The stream for registering the error handling. Each event is the error.
-   * It was called when an error occurs, including [error] is called explicitly.
-   *
-   * If a stack trace is available, the error will be wrapped as `AsyncError`.
-   *
-   * Notice: the first registred listener is the last called (FILO).
-   */
-  Stream get onError;
 
   /** A map of application-specific data.
    *
@@ -190,16 +208,12 @@ class HttpConnectWrapper implements HttpConnect {
   bool get isForwarded => origin.isForwarded;
 
   @override
-  void forward(String uri, {VoidCallback success, HttpRequest request, HttpResponse response}) {
-    origin.forward(uri, success: success, request: request, response: response);
-  }
+  Future forward(String uri, {HttpRequest request, HttpResponse response})
+  => origin.forward(uri, request: request, response: response);
   @override
-  void include(String uri, {VoidCallback success, HttpRequest request, HttpResponse response}) {
-    origin.include(uri, success: success, request: request, response: response);
-  }
+  Future include(String uri, {HttpRequest request, HttpResponse response})
+  => origin.include(uri, request: request, response: response);
 
-  @override
-  VoidCallback get close => origin.close;
   @override
   ErrorCallback get error => origin.error;
   @override
@@ -208,11 +222,6 @@ class HttpConnectWrapper implements HttpConnect {
   void set errorDetail(ErrorDetail errorDetail) {
     origin.errorDetail = errorDetail;
   }
-
-  @override
-  Stream<HttpConnect> get onClose => origin.onClose;
-  @override
-  Stream get onError => origin.onError;
 
   Map<String, dynamic> get dataset => origin.dataset;
 }

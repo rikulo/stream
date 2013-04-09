@@ -3,7 +3,7 @@
 part of hello_templating;
 
 /** Template, home, for rendering the view. */
-void home(HttpConnect connect) { //2
+Future home(HttpConnect connect) { //#2
   var _cs_ = new List<HttpConnect>(), request = connect.request, response = connect.response;
 
   if (!connect.isIncluded)
@@ -22,7 +22,7 @@ void home(HttpConnect connect) { //2
   var _0 = new StringBuffer(); _cs_.add(connect); //var#10
   connect = new HttpConnect.buffer(connect, _0); response = connect.response;
 
-  connect.include("""/header.html""", success: () { //#11
+  return connect.include("""/header.html""").then((_) { //#11
 
     connect = _cs_.removeLast(); response = connect.response;
 
@@ -33,7 +33,7 @@ void home(HttpConnect connect) { //2
     var _1 = new StringBuffer(); _cs_.add(connect); //var#14
     connect = new HttpConnect.buffer(connect, _1); response = connect.response;
 
-    sidebar(connect.server.connectForInclusion(connect, success: () { //#15
+    return $nnf(sidebar(new HttpConnect.chain(connect))).then((_) { //include#15
 
       connect = _cs_.removeLast(); response = connect.response;
 
@@ -44,7 +44,7 @@ void home(HttpConnect connect) { //2
       var _2 = new StringBuffer(); _cs_.add(connect); //var#18
       connect = new HttpConnect.buffer(connect, _2); response = connect.response;
 
-      connect.include("""/footer.html""", success: () { //#19
+      return connect.include("""/footer.html""").then((_) { //#19
 
         connect = _cs_.removeLast(); response = connect.response;
 
@@ -63,16 +63,16 @@ void home(HttpConnect connect) { //2
 
         connect = _cs_.removeLast(); response = connect.response;
 
-        classic(connect.server.connectForInclusion(connect, success: () { //#9
+        return $nnf(classic(new HttpConnect.chain(connect), header: _0.toString(), sidebar: _1.toString(), footer: _2.toString(), body: _3.toString())).then((_) { //include#9
 
           response.write("""
   </body>
 </html>
 """); //#28
 
-          connect.close();
-        }), header: _0.toString(), sidebar: _1.toString(), footer: _2.toString(), body: _3.toString()); //end-of-include
+          return $nnf();
+        }); //end-of-include
       }); //end-of-include
-    })); //end-of-include
+    }); //end-of-include
   }); //end-of-include
 }

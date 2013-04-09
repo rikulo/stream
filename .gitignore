@@ -19,3 +19,5 @@ out
 packages
 packages/
 pubspec.lock
+.settings/com.google.dart.tools.core.prefs
+.settings/org.eclipse.ltk.core.refactoring.prefs

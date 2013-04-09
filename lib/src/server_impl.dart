@@ -101,7 +101,7 @@ class _StreamServer implements StreamServer {
     return uri;
   }
   ///[iFilter] - the index of filter to start. It must be non-negative. Ignored if null.
-  Future _handle(HttpConnect connect, [int iFilter]) {
+  void _handle(HttpConnect connect, [int iFilter]) {
     try {
       String uri = connect.request.uri.path;
       if (!uri.startsWith('/'))
@@ -121,16 +121,8 @@ class _StreamServer implements StreamServer {
       if (handler != null) {
         if (handler is Function)
           handler = handler(connect);
-        if (handler is String) {
+        if (handler is String)
           forward(connect, handler);
-        } else {
-          if( handler is Future<String> ) {
-            handler.then( (ret) {
-              // TODO: forward should be handled here
-            });
-          }
-          return handler;
-        }
         return;
       }
 
@@ -171,16 +163,14 @@ class _StreamServer implements StreamServer {
         return;
       }
 
-      /* this test matches, for example, uncatched errors when connecting to a DB
       if (error is SocketIOException) {
         //connection is closed. we can't close or forward it.
         logger.fine("${connect.request.uri}: $error");
         return;
       }
-      */
       if (error is! HttpStatusException) {
         _shout(error, stackTrace);
-        error = new Http500(error.toString());
+        error = new Http500(error);
       }
 
       final code = error.statusCode;
@@ -205,7 +195,7 @@ class _StreamServer implements StreamServer {
       forward(connect, handler);
   }
   void _shout(err, st) {
-    logger.shout(st != null ? "$err:\n$st": err.toString());
+    logger.shout(st != null ? "$err:\n$st": err);
   }
   void _close(HttpConnect connect) {
     connect.response.close();
@@ -304,16 +294,11 @@ class _StreamServer implements StreamServer {
       req.response.headers
         ..add(HttpHeaders.SERVER, serverInfo)
         ..date = new DateTime.now();
-      var connect = new _HttpConnect(this, req, req.response);
-      new Future.of( () {
-        return _handle(
-          connect
-            ..onClose.listen((_) {
-              req.response.close();
-            }), 0); //process filter from beginning
-      }).catchError( (err) {
-        _handleErr(connect, err);
-      });
+      _handle(
+        new _HttpConnect(this, req, req.response)
+          ..onClose.listen((_) {
+            req.response.close();
+          }), 0); //process filter from beginning
     }, onError: (err) {
       _handleErr(null, err);
     });

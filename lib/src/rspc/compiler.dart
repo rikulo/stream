@@ -235,12 +235,18 @@ class Compiler {
   ///Include the given URI.
   void includeUri(String uri, [Map args, int line]) {
     _checkInclude(line);
-    if (args != null && !args.isEmpty)
-      _error("Not supported: include URI with arguments", line); //TODO: handle arguments
     if (verbose) _info("Include $uri", line);
 
-    _writeln('\n${_current.pre}return connect.include('
-      '${toEL(uri, direct: false)}).then((_) { //#$line');
+    _write("\n${_current.pre}return connect.include(");
+    final emptyArgs = args == null || args.isEmpty;
+    if (!emptyArgs)
+      _write("\$catUri(");
+    _write("${toEL(uri, direct: false)}");
+    if (!emptyArgs) {
+      _catArgs(args);
+      _write(')');
+    }
+    _writeln(").then((_) { //#$line");
     _extra = "  $_extra";
     _incs.add(new _IncInfo("});"));
   }
@@ -270,12 +276,18 @@ class Compiler {
 
   ///Forward to the given URI.
   void forwardUri(String uri, [Map args, int line]) {
-    if (args != null && !args.isEmpty)
-      _error("Not supported: forward URI with arguments"); //TODO: handle arguments
     if (verbose) _info("Forward $uri", line);
 
-    _writeln("\n${_current.pre}return connect.forward("
-      "${toEL(uri, direct: false)}); //#${line}");
+    _write("\n${_current.pre}return connect.forward(");
+    final emptyArgs = args == null || args.isEmpty;
+    if (!emptyArgs)
+      _write("\$catUri(");
+    _write("${toEL(uri, direct: false)}");
+    if (!emptyArgs) {
+      _catArgs(args);
+      _write(')');
+    }
+    _writeln("); //#${line}");
   }
   //Forward to the given renderer
   void forward(String method, [Map args, int line]) {
@@ -284,6 +296,23 @@ class Compiler {
     _write("\n${_current.pre}return \$nnf(${method}(connect");
     _outArgs(args);
     _writeln(")); //forward#${line}");
+  }
+  //Concatenates arguments
+  void _catArgs(Map args) {
+    if (args != null && !args.isEmpty) {
+      _write(", {");
+      bool first = true;
+      for (final arg in args.keys) {
+        if (first) first = false;
+        else _write(", ");
+
+        _write("'");
+        _write(arg);
+        _write("': ");
+        _write(toEL(args[arg], direct: false));
+      }
+      _write("}");
+    }
   }
   void _outArgs(Map args) {
     if (args != null)
@@ -347,13 +376,6 @@ class Compiler {
               _pos = _skipUntil("--]", j + 3) + 3;
               continue;
             }
-          } else if (StringUtil.isChar(c2, lower:true)) { //[beginning-tag]
-          //deprecated (TODO: remove later)
-            int k = _skipId(j);
-            final tn = source.substring(j, k), tag = tags[tn];
-            if (tag != null) //tag found
-              _warning("[$tn] is deprecated and ignored. Please use [:$tn] instead.", _line);
-            //fall through
           }
         }
       } else if (cc == '\\') { //escape

@@ -55,7 +55,8 @@
     [/include]
 
     [:if foo.isMeaningful]
-    something is meaningful
+      something is meaningful
+      [:forward "/foo?abc" first="1st" second="[=foo]"/]
     [/if]
   </body>
 </html>

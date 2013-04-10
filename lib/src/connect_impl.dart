@@ -58,7 +58,6 @@ class _HttpConnect extends _AbstractConnect {
 class _ProxyConnect extends _AbstractConnect {
   final HttpConnect _origin;
 
-  ///[uri]: if null, it means no need to change
   _ProxyConnect(HttpConnect origin, HttpRequest request, HttpResponse response):
       _origin = origin, super(request, response, origin.server.defaultErrorCallback);
 
@@ -118,9 +117,16 @@ class _ReUriRequest extends HttpRequestWrapper {
   _ReUriRequest(request, this._uri): super(request);
 
   final Uri _uri;
+  Map<String, String> _params;
 
   @override
   Uri get uri => _uri;
+  @override
+  Map<String, String> get queryParameters {
+    if (_params == null)
+      _params = HttpUtil.decodeQueryString(uri.query);
+    return _params;
+  }
 }
 
 ///Ignore any invocation alerting the headers
@@ -186,14 +192,31 @@ class _ReadOnlyHeaders extends HttpHeadersWrapper {
 }
 
 ///[uri]: if null, it means no need to change
-HttpRequest _wrapRequest(HttpRequest request, String uri)
-=> uri == null || request.uri == uri ? request: new _ReUriRequest(request, new Uri(uri));
+HttpRequest _wrapRequest(HttpRequest request, String uri) {
+  if (uri == null)
+    return request;
+
+  final org = request.uri;
+  final i = uri.indexOf('?');
+  String query = "";
+  if (i >= 0) {
+    query = uri.substring(i + 1);
+    uri = uri.substring(0, i);
+  }
+  uri = _toAbsUri(request, uri);
+  if (org.path == uri && org.query == query)
+    return request;
+
+  return new _ReUriRequest(request, new Uri.fromComponents(scheme: org.scheme,
+    userInfo: org.userInfo, port: org.port, path: uri, query: query,
+    fragment: org.fragment));
+}
 HttpResponse _wrapResponse(HttpResponse response, bool included)
 => !included || response is _IncludedResponse ? response: new _IncludedResponse(response);
 
-String _toAbsUri(HttpConnect connect, String uri) {
+String _toAbsUri(HttpRequest request, String uri) {
   if (uri != null && !uri.startsWith('/')) {
-    final pre = connect.request.uri.path;
+    final pre = request.uri.path;
     final i = pre.lastIndexOf('/');
     if (i >= 0)
       uri = "${pre.substring(0, i + 1)}$uri";

@@ -60,24 +60,15 @@ class _StreamServer implements StreamServer {
 
   @override
   Future forward(HttpConnect connect, String uri, {
-    HttpRequest request, HttpResponse response}) {
-    if (uri.indexOf('?') >= 0)
-      throw new UnsupportedError("Forward with query string"); //TODO
-
-    return _handle(new HttpConnect.chain(connect, inclusion: false,
-      uri: uri, request: request, response: response));
-      //no filter invocation
-  }
+    HttpRequest request, HttpResponse response})
+  => _handle(new HttpConnect.chain(connect, inclusion: false,
+      uri: uri, request: request, response: response)); //no filter invocation
   @override
   Future include(HttpConnect connect, String uri, {
-    HttpRequest request, HttpResponse response}) {
-    if (uri.indexOf('?') >= 0)
-      throw new UnsupportedError("Include with query string"); //TODO
+    HttpRequest request, HttpResponse response})
+  => _handle(new HttpConnect.chain(connect, inclusion: true,
+      uri: uri, request: request, response: response)); //no filter invocation
 
-    return _handle(new HttpConnect.chain(connect, inclusion: true,
-      uri: uri, request: request, response: response));
-      //no filter invocation
-  }
   ///[iFilter] - the index of filter to start. It must be non-negative. Ignored if null.
   Future _handle(HttpConnect connect, [int iFilter]) {
     try {

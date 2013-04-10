@@ -172,19 +172,21 @@ Future syntax(HttpConnect connect, {foo, bool c:false}) { //#5
       if (foo.isMeaningful) { //if#57
 
         response.write("""
-    something is meaningful
+      something is meaningful
 """); //#58
+
+        return connect.forward($catUri("""/foo?abc""", {'first': """1st""", 'second': """${$nns(foo)}"""})); //#59
       } //if
 
       response.write("""
   </body>
 </html>
 
-"""); //#60
+"""); //#61
 
       response.write("""
 
-"""); //#64
+"""); //#65
 
       return $nnf();
     }); //end-of-include

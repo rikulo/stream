@@ -17,6 +17,24 @@ String $nns([v]) => v != null ? v.toString(): "";
  */
 Future $nnf([v]) => v is Future ? v: new Future.immediate(v);
 
+/** Concatenates a path with a map of parameters.
+ *
+ * > It is used in the generated code of RSP pages.
+ */
+String $catUri(String uri, Map<String, String> parameters) {
+  if (parameters == null || parameters.isEmpty)
+    return uri;
+
+  int i = uri.indexOf('?');
+  String query;
+  if (i >= 0) {
+    query = uri.substring(i);
+    uri = uri.substring(0, i);
+  }
+  final query2 = HttpUtil.encodeQueryString(parameters);
+  return uri + (query == null ? "?query2": "$query&query2");
+}
+
 /**
  * Stream server.
  *
@@ -137,6 +155,9 @@ abstract class StreamServer {
    *       //...
    *     });
    *
+   * * [uri] - the URI to chain. If omitted, it is the same as [connect]'s.
+   * It can contain the query string too.
+   *
    * ##Difference between [forward] and [include]
    *
    * [forward] and [include] are almost the same, except
@@ -159,6 +180,9 @@ abstract class StreamServer {
    *       connect.response.write("<p>More content</p>");
    *       //...
    *     });
+   *
+   * * [uri] - the URI to chain. If omitted, it is the same as [connect]'s.
+   * It can contain the query string too.
    *
    * ##Difference between [forward] and [include]
    *

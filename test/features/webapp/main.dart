@@ -18,7 +18,8 @@ void main() {
 }
 
 //Forward//
-Future forward(HttpConnect connect) => connect.forward("/forwardee.html");
+Future forward(HttpConnect connect)
+	=> connect.forward("/forwardee.html?first=1st&second=2nd");
 
 //Recover from an error//
 class RecoverError {

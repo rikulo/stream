@@ -65,12 +65,13 @@ abstract class HttpConnect {
   /** Instantiates a connection that will be used to include or forward to
    * another request handler.
    *
+   * * [uri] - the URI to chain with. If omitted, it is the same as [connect]'s.
+   * It can contain the query string too.
    * * [inclusion] - whether it is used for inclusion. If true,
    * any modification to `connect.response.headers` is ignored.
    */
   factory HttpConnect.chain(HttpConnect connect, {bool inclusion: true,
       String uri, HttpRequest request, HttpResponse response}) {
-    uri = _toAbsUri(connect, uri);
     return inclusion ?
       new _IncludedConnect(connect, request, response, uri):
       new _ForwardedConnect(connect, request, response, uri);
@@ -113,6 +114,9 @@ abstract class HttpConnect {
    *       //...
    *     });
    *
+   * * [uri] - the URI to chain. If omitted, it is the same as [connect]'s.
+   * It can contain the query string too.
+   *
    * ##Difference between [forward] and [include]
    *
    * [forward] and [include] are almost the same, except
@@ -136,6 +140,9 @@ abstract class HttpConnect {
    *       connect.response.write("<p>More content</p>");
    *       //...
    *     });
+   *
+   * * [uri] - the URI to chain. If omitted, it is the same as [connect]'s.
+   * It can contain the query string too.
    *
    * ##Difference between [forward] and [include]
    *

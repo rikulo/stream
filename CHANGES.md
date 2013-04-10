@@ -3,8 +3,9 @@
 **0.7.0**
 
 * Issue 16: Make include, forward and handler to return Future if there is any async task
+* Issue 17: include and forward shall handle the query string
 
-*Upgrade Note*
+*Upgrade Notes*
 
 1. The request handler must return Future if it spawned an asynchronous task.
 2. The request handler can't return a forwarding URI. Rather, it shall invoke `connect.forward(uri)` instead.

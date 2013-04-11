@@ -70,7 +70,7 @@ abstract class StreamServer {
    *
    * * [uriMapping] - a map of URI mappings, `<String uri, RequestHandler handler>`
    * or `<String uri, String forwardURI>`.
-   * The key is a regular exception used to match the request URI.
+   * The key is a regular expression used to match the request URI.
    * The value can be the handler for handling the request, or another URI that this request
    * will be forwarded to. If the value is a URI and the key has named groups, the URI can
    * refer to the group with the $ expression.

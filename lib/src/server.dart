@@ -55,8 +55,8 @@ abstract class StreamServer {
    * The key is a regular expression used to match the request URI.
    * The value can be the handler for handling the request, or another URI that this request
    * will be forwarded to. If the value is a URI and the key has named groups, the URI can
-   * refer to the group with the $ expression.
-   * For example: `'/dead-link(info:.*)': '/new-link$info'`.
+   * refer to the group with the () expression.
+   * For example: `'/dead-link(info:.*)': '/new-link(info)'`.
    * * [filterMapping] - a map of filter mapping, `<String uri, RequestFilter filter>`.
    * The key is a regular exception used to match the request URI.
    * The signature of a filter is `void foo(HttpConnect connect, void chain(HttpConnect conn))`.

@@ -175,7 +175,7 @@ Future syntax(HttpConnect connect, {foo, bool c:false}) { //#5
       something is meaningful
 """); //#58
 
-        return connect.forward($catUri("""/foo?abc""", {'first': """1st""", 'second': """${$nns(foo)}"""})); //#59
+        return connect.forward($catUri("""/foo?abc""", {'first': """1st""", 'second': foo})); //#59
       } //if
 
       response.write("""

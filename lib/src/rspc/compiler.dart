@@ -309,7 +309,7 @@ class Compiler {
         _write("'");
         _write(arg);
         _write("': ");
-        _write(toEL(args[arg], direct: false));
+        _write(toEL(args[arg])); //$catUri can handle nob-string value
       }
       _write("}");
     }

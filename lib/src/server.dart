@@ -21,7 +21,7 @@ Future $nnf([v]) => v is Future ? v: new Future.immediate(v);
  *
  * > It is used in the generated code of RSP pages.
  */
-String $catUri(String uri, Map<String, String> parameters) {
+String $catUri(String uri, Map<String, dynamic> parameters) {
   if (parameters == null || parameters.isEmpty)
     return uri;
 

@@ -31,7 +31,7 @@ String $catUri(String uri, Map<String, dynamic> parameters) {
     query = uri.substring(i);
     uri = uri.substring(0, i);
   }
-  final query2 = HttpUtil.encodeQueryString(parameters);
+  final query2 = HttpUtil.encodeQuery(parameters);
   return uri + (query == null ? "?query2": "$query&query2");
 }
 
@@ -70,13 +70,14 @@ abstract class StreamServer {
    *
    * * [uriMapping] - a map of URI mappings, `<String uri, RequestHandler handler>`
    * or `<String uri, String forwardURI>`.
-   * The key is a regular exception used to match the request URI.
+   * The key is a regular expression used to match the request URI. If you can name
+   * a group by prefix with a name, such as `'/dead-link(info:.*)'`.
    * The value can be the handler for handling the request, or another URI that this request
    * will be forwarded to. If the value is a URI and the key has named groups, the URI can
-   * refer to the group with the $ expression.
-   * For example: `'/dead-link(info:.*)': '/new-link$info'`.
+   * refer to the group with `(the_group_name)`.
+   * For example: `'/dead-link(info:.*)': '/new-link(info)'`.
    * * [filterMapping] - a map of filter mapping, `<String uri, RequestFilter filter>`.
-   * The key is a regular exception used to match the request URI.
+   * The key is a regular expression used to match the request URI.
    * The signature of a filter is `void foo(HttpConnect connect, void chain(HttpConnect conn))`.
    * * [errorMapping] - a map of error mapping. The key can be a number, an instance of
    * exception, a string representing a number, or a string representing the exception class.
@@ -211,11 +212,12 @@ abstract class StreamServer {
 
   /** Maps the given URI to the given handler.
    *
-   * * [uri] - a regular exception used to match the request URI.
+   * * [uri] - a regular expression used to match the request URI.
+   * If you can name a group by prefix with a name, such as `'/dead-link(info:.*)'`.
    * * [handler] - the handler for handling the request, or another URI that this request
-   * will be forwarded to. If the value is a URI and the key has named groups, the URI can
-   * refer to the group with the $ expression.
-   * For example: `'/dead-link(info:.*)': '/new-link$info'`.
+   * will be forwarded to.  If the value is a URI and the key has named groups, the URI can
+   * refer to the group with `(the_group_name)`.
+   * For example: `'/dead-link(info:.*)': '/new-link(info)'`.
    * if [handler] is null, it means removal.
    * * [preceding] - whether to make the mapping preceding any previous mappings.
    * In other words, if true, this mapping will be interpreted first.
@@ -223,7 +225,7 @@ abstract class StreamServer {
   void map(String uri, handler, {preceding: false});
   /** Maps the given URI to the given filter.
    *
-   * * [uri]: a regular exception used to match the request URI.
+   * * [uri]: a regular expression used to match the request URI.
    * * [filter]: the filter. If null, it means removal.
    * * [preceding] - whether to make the mapping preceding any previous mappings.
    * In other words, if true, this mapping will be interpreted first.

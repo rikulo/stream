@@ -124,7 +124,7 @@ class _ReUriRequest extends HttpRequestWrapper {
   @override
   Map<String, String> get queryParameters {
     if (_params == null)
-      _params = HttpUtil.decodeQueryString(uri.query);
+      _params = HttpUtil.decodeQuery(uri.query);
     return _params;
   }
 }

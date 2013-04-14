@@ -7,7 +7,7 @@ import 'dart:io';
 import 'package:stream/stream.dart';
 
 /** Template, Issue4, for rendering the view. */
-Future Issue4(HttpConnect connect) { //#5
+Future Issue4(HttpConnect connect) { //#1
   var _cs_ = new List<HttpConnect>(), request = connect.request, response = connect.response;
 
   if (!connect.isIncluded)

@@ -3,7 +3,7 @@
 part of features;
 
 /** Template, includerView, for rendering the view. */
-Future includerView(HttpConnect connect) { //#7
+Future includerView(HttpConnect connect) { //#2
   var _cs_ = new List<HttpConnect>(), request = connect.request, response = connect.response;
 
   if (!connect.isIncluded)

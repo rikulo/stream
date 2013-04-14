@@ -4,6 +4,7 @@ part of features;
 //URI mapping
 var _uriMapping = {
   "/forward": forward,
+  "/forwardRsp": forwarderView, //generated from forwarderView.rsp.html
   "/include": includerView,  //generated from includerView.rsp.html
   "/search": search,
   "/(group:g[a-z]*p)/(matching:ma[a-z]*)": (HttpConnect connect) {

@@ -10,6 +10,7 @@ part "config.dart";
 part "includerView.rsp.dart";
 part "fragView.rsp.dart";
 part "searchResult.rsp.dart";
+part "forwarderView.rsp.dart";
 
 void main() {
   new StreamServer(

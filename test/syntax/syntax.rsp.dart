@@ -8,14 +8,14 @@ import 'package:stream/stream.dart';
 import 'dart:collection' show LinkedHashMap;
 
 /** Template, syntax, for rendering the view. */
-Future syntax(HttpConnect connect, {foo, bool c:false}) { //#5
+Future syntax(HttpConnect connect, {foo, bool c:false}) { //#4
   var _cs_ = new List<HttpConnect>(), request = connect.request, response = connect.response;
 
   response.headers.contentType = new ContentType.fromString("""${$nns(foo.contentType)}""");
 
-  response.headers.add("age", """129"""); //header#8
+  response.headers.add("age", """129"""); //header#4
 
-  response.headers.add("accept-ranges", foo.acceptRanges); //header#8
+  response.headers.add("accept-ranges", foo.acceptRanges); //header#4
 
   response.write("""
 <!DOCTYPE html>

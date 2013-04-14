@@ -11,8 +11,6 @@ Future fragView(HttpConnect connect, {Map infos: const {}, header, footer}) { //
 
   if (header != null) { //if#2
 
-    response.write("""  """); //#3
-
     response.write($nns(header)); //#3
 
 

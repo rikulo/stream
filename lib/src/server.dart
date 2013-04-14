@@ -166,6 +166,16 @@ abstract class StreamServer {
    * * The included request handler won't be able to generate any HTTP headers
    * (it is the job of the caller). Any updates to HTTP headers in the included
    * request handler are simply ignored.
+   *
+   * It also implies before calling [forward], no content shall be output.
+   * Otherwise, it will cause exception if the forwarded page updates the HTTP headers.
+   *
+   * Notice that the whitespaces at the beginning of a RSP file won't be output, so the
+   * following is correct:
+   *
+   *     [:if !isAuthenticated()]
+   *       [:forward "/login" /]
+   *     [:/if]
    */
   Future forward(HttpConnect connect, String uri, {
     HttpRequest request, HttpResponse response});
@@ -192,6 +202,9 @@ abstract class StreamServer {
    * * The included request handler won't be able to generate any HTTP headers
    * (it is the job of the caller). Any updates to HTTP headers in the included
    * request handler are simply ignored.
+   *
+   * It also implies before calling [forward], no content shall be output.
+   * Otherwise, it will cause exception if the forwarded page updates the HTTP headers.
    */
   Future include(HttpConnect connect, String uri, {
     HttpRequest request, HttpResponse response});

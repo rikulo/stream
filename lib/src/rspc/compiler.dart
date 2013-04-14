@@ -22,7 +22,6 @@ class Compiler {
   //Look-ahead tokens
   final List _lookAhead = [];
   final List<_IncInfo> _incs = []; //included
-  final List<_QuedTag> _quedTags = []; //queued tags (before _start is called)
   String _extra = ""; //extra whitespaces
   int _nextVar = 0; //used to implement TagContext.nextVar()
 
@@ -39,74 +38,66 @@ class Compiler {
     if (sourceName != null)
       _writeln("//Source: ${sourceName}");
 
-    bool pgFound = false, started = false;
+    bool pgFound = false, started = false, written = false;
     int prevln = 1;
     for (var token; (token = _nextToken()) != null; prevln = _line) {
       if (_current.args != null && token is! VarTag && token is! _Closing
       && (token is! String || !token.trim().isEmpty))
         _error("Only the var tag is allowed inside the ${_current.tag.name} tag, not $token");
 
-      if (token is String) {
-        String text = token;
-        if (!started) {
-          if (text.trim().isEmpty)
-            continue; //skip it
-          started = true;
-          _start(prevln); //use previous line number since it could be multiple lines
-        }
-        _outText(text, prevln);
-      } else if (token is _Expr) {
-        if (!started) {
-          started = true;
-          _start();
-        }
-        _outExpr();
-      } else if (token is PageTag) {
+      if (token is PageTag) {
         if (pgFound)
           _error("Only one page tag is allowed", _line);
         if (started)
-          _error("The page tag must be in front of any non-empty content", _line);
+          _error("The page tag must be in front of any non-whitespace content and tags", _line);
         pgFound = true;
 
         push(token);
         token.begin(_current, _tagData());
         token.end(_current);
         pop();
-      } else if (token is DartTag) {
-        if (!started) {
-          _quedTags.add(new _QuedTag(token, _dartData()));
-          continue;
+      } else if (token is String) {
+        String text = token;
+        if (!written) {
+          if (text.trim().isEmpty)
+            continue; //skip it
+          written = true;
         }
-
-        push(token);
-        token.begin(_current, _dartData());
-        token.end(_current);
-        pop();
-      } else if (token is Tag) {
         if (!started) {
-          if (token is HeaderTag) {
-          //note: token.hasClosing must be false
-            _quedTags.add(new _QuedTag(token, _tagData(tag: token)));
-            continue;
-          }
+          started = true;
+          _start(prevln); //use previous line number since it could be multiple lines
+        }
+        _outText(text, prevln);
+      } else {
+        if (!started) {
           started = true;
           _start();
         }
 
-        push(token);
-        token.begin(_current, _tagData(tag: token));
-        if (!token.hasClosing) {
+        if (token is _Expr) {
+          written = true;
+          _outExpr();
+        } else if (token is DartTag) {
+          push(token);
+          token.begin(_current, _dartData());
           token.end(_current);
           pop();
+        } else if (token is Tag) {
+          push(token);
+          token.begin(_current, _tagData(tag: token));
+          if (!token.hasClosing) {
+            token.end(_current);
+            pop();
+          }
+        } else if (token is _Closing) {
+          final _Closing closing = token;
+          if (_current.tag == null || _current.tag.name != closing.name)
+            _error("Unexpected [/${closing.name}] (no beginning tag found)", _line);
+          _current.tag.end(_current);
+          pop();
+        } else {
+          _error("Unknown token, $token", _line);
         }
-      } else if (token is _Closing) {
-        final _Closing closing = token;
-        if (_current.tag == null || _current.tag.name != closing.name)
-          _error("Unexpected [/${closing.name}] (no beginning tag found)", _line);
-        _current.tag.end(_current);
-        pop();
-      } else {
-        _error("Unknown token, $token", _line);
       }
     }
 
@@ -205,15 +196,6 @@ class Compiler {
       _writeln('  response.headers.contentType = new ContentType.fromString('
         '${toEL(_contentType, direct: false)});');
     }
-
-    //generated the tags found before _start() is called.
-    for (final ti in _quedTags) {
-      push(ti.tag);
-      ti.tag.begin(_current, ti.data);
-      ti.tag.end(_current);
-      pop();
-    }
-    _quedTags.clear();
   }
 
   ///Sets the page information.

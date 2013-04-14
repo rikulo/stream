@@ -83,6 +83,9 @@ class Compiler {
           token.end(_current);
           pop();
         } else if (token is Tag) {
+          if (!written)
+            written = token.hasContent;
+
           push(token);
           token.begin(_current, _tagData(tag: token));
           if (!token.hasClosing) {

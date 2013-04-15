@@ -94,8 +94,13 @@ class Compiler {
           }
         } else if (token is _Closing) {
           final _Closing closing = token;
-          if (_current.tag == null || _current.tag.name != closing.name)
-            _error("Unexpected [/${closing.name}] (no beginning tag found)", _line);
+          var tagnm;
+          if (_current.tag == null || (tagnm = _current.tag.name) != closing.name) {
+            String msg = "Unexpected [/${closing.name}]";
+            if (tagnm != null)
+              msg += "; expect [/$tagnm]";
+            _error(msg, _line);
+          }
           _current.tag.end(_current);
           pop();
         } else {
@@ -316,13 +321,13 @@ class Compiler {
 
     final sb = new StringBuffer();
     final token = _specialToken(sb);
-    if (token is _Closing)
+    if (token is _Closing) //if Tag, it is handled by _tagData()
       _skipFollowingSpaces();
-
-    final text = _rmSpacesBeforeTag(sb.toString(), token);
+    String text = sb.toString();
+    if (token is Tag || token is _Closing)
+      text = _rmTailingSpaces(text);
     if (text.isEmpty)
       return token;
-
     if (token != null)
       _lookAhead.add(token);
     return text;
@@ -391,16 +396,12 @@ class Compiler {
         break; //don't skip anything
     }
   }
-  ///(Optional but for better output) Removes the whitspaces before the given token,
-  ///if it is a tag. Notice: [text] is in front of [token]
-  String _rmSpacesBeforeTag(String text, token) {
-    if (token is! Tag && token is! _Closing)
-      return text;
-
+  ///(Optional but for better output) Removes the tailing whitspaces
+  static String _rmTailingSpaces(String text) {
     for (int i = text.length; --i >= 0;) {
       final cc = text[i];
       if (cc == '\n')
-        return text.substring(0, i + 1); //remove tailing spaces (excluding \n)
+        return text.substring(0, i + 1); //remove tailing spaces (excluding linefeed)
       if (cc != ' ' && cc != '\t')
         return text; //don't skip anything
     }
@@ -477,8 +478,6 @@ class Compiler {
     if (source[k] == '/') {
       if (tag != null && tag.hasClosing)
         _lookAhead.add(new _Closing(tag.name));
-
-      _skipFollowingSpaces();
       if (_pos >= _len || source[_pos] != ']')
         _error("Expect ']'");
       ++_pos;

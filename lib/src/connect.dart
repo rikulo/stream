@@ -22,7 +22,7 @@ typedef void ConnectErrorCallback(HttpConnect connect, err, [stackTrace]);
 typedef Future RequestFilter(HttpConnect connect, Future chain(HttpConnect conn));
 /** The request handler.
  *
- * If the request handler finished immediately, it doesn't have to return anything.
+ * If a request handler finishes immediately, it doesn't have to return anything.
  * For example,
  *
  *     void serverInfo(HttpConnect connect) {
@@ -32,7 +32,7 @@ typedef Future RequestFilter(HttpConnect connect, Future chain(HttpConnect conn)
  *         ..write(Json.stringify(info));
  *     }
  *
- * On the other hand, if the request is handled asynchronously, it *must* return
+ * On the other hand, if a request is handled asynchronously, it *must* return
  * an instance of [Future] for indicating if the handling is completed. For example,
  *
  *     Future loadFile(HttpConnect connect) {

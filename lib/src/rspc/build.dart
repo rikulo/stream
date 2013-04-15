@@ -33,6 +33,11 @@ void compileFile(String sourceName, {String destinationName, bool verbose : fals
     dest = new File(destinationName);
   }
 
+  if (FileSystemEntity.identicalSync(source.path, dest.path)) {
+    print("Source and destination are the same file, $source");
+    return;
+  }
+
   if (verbose) {
     final int i = dest.path.lastIndexOf('/') + 1;
     print("Compile ${source.path} to ${i > 0 ? dest.path.substring(i) : dest.path}");

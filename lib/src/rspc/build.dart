@@ -17,6 +17,7 @@ void compile(String source, IOSink out, {String sourceName, String destinationNa
  */
 void compileFile(String sourceName, {String destinationName, bool verbose : false, 
     Encoding encoding : Encoding.UTF_8}) {
+
   final source = new File(sourceName);
   if (!source.existsSync()) {
     print("File not found: ${sourceName}");
@@ -31,6 +32,7 @@ void compileFile(String sourceName, {String destinationName, bool verbose : fals
     dest = _locate(destinationName);
   } else {
     dest = new File(destinationName);
+    _createFileDirectoryIfNecessary(destinationName);
   }
 
   if (FileSystemEntity.identicalSync(source.path, dest.path)) {
@@ -55,6 +57,15 @@ void compileFile(String sourceName, {String destinationName, bool verbose : fals
       out.close();
     }
   });
+}
+
+/// This method is necessary since File.directorySync() throws exception if parent directory does not exist
+/// TODO: change this method when bug 9926 is fixed
+void _createFileDirectoryIfNecessary( String destinationName ) {
+  var path = destinationName;
+  var i = path.lastIndexOf("/");
+  path = path.substring(0, i);
+  new Directory(path).create(recursive:true);
 }
 
 ///Locates the right location under the webapp folder, if there is one
@@ -91,12 +102,28 @@ File _locate(String flnm) {
   return new File.fromPath(path.append(segs[0]));
 }
 
-/** Compile changed RSP files. This method shall be called within build.dart,
+/**
+ * A typedef for functions that receive a project relative file path and map
+ * it to its final destination. It is used by RSP compiler to decide where
+ * to generate its .rsp.dart files.
+ * 
+ * This type of functions receive the file name in [projectRelativePath] and
+ * must return a modified version of it ending with the same extension. Then
+ * that extension is changed by the compiler to .dart.
+ */
+typedef String FileNameMapper( String projectRelativeFilePath );
+
+/** 
+ * Compile changed RSP files. This method shall be called within build.dart,
  * with new Options().arguments as its [arguments].
+ *
+ * Optionally, you can provide a [FileNameMapper] function as a named argument
+ * [fileMapper] to be able to alter the location where rsp compiled files are
+ * written.
  *
  * Notice that it accepts files ending with `.rsp.whatever`.
  */
-void build(List<String> arguments) {
+void build(List<String> arguments, {FileNameMapper fileMapper}) {
   final ArgParser argParser = new ArgParser()
     ..addOption("changed", allowMultiple: true)
     ..addOption("removed", allowMultiple: true)
@@ -118,7 +145,7 @@ void build(List<String> arguments) {
   } else if (removed.isEmpty && changed.isEmpty) { // full build
     new Directory.current().list(recursive: true).listen((fse) {
       if (fse is File && _rspSource(fse.path) >= 0)
-          compileFile(fse.path);
+          compileFile(fse.path,destinationName:_mapFileName(fse.path,fileMapper));
     });
 
   } else {
@@ -133,10 +160,40 @@ void build(List<String> arguments) {
 
     for (String name in changed) {
       if (_rspSource(name) >= 0)
-          compileFile(name);
+          compileFile(name,destinationName:_mapFileName(name,fileMapper));
     }
   }
 }
+
+String _mapFileName(String name,FileNameMapper fileMapper) {
+  if( fileMapper!=null ) {
+    name = _convertToProjectPath(name);
+    name = fileMapper(name);
+    name = _convertRspSourceExtension(name);
+    return name;
+  }
+}
+
+String _convertRspSourceExtension( String path ) {
+  var i = path.lastIndexOf(".");
+  return path.substring(0,i)+".dart";
+}
+
+String __projectDir;
+String get _projectDir {
+  if( __projectDir==null ) {
+    __projectDir = new Directory.current().path; 
+  }
+  return __projectDir;
+}
+
+String _convertToProjectPath( String path ) {
+  if( path.startsWith( _projectDir ) ) {
+    path = path.substring( _projectDir.length+1 );
+  }
+  return path;
+}
+
 int _rspSource(String name) {
   if (!name.endsWith(".rsp.dart")) {
     var i = name.indexOf(".rsp.");

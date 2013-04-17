@@ -82,19 +82,8 @@ Future loadFile(HttpConnect connect, File file) {
 Future _loadFile(HttpConnect connect, File file) {
   final completer = new Completer();
   final res = connect.response;
-  file.openRead().listen((data) {res.writeBytes(data);},
+  file.openRead().listen((data) {res.add(data);},
     onDone: () => completer.complete(), //null means done; see FileLoader.load()
     onError: (err) => completer.completeError(err));
-  res.done.catchError((err) { //TODO: if Issue 9141 fixed, move it to beginning
-    if (_isHttpAborted(err))
-      connect.server.logger.fine("${connect.request.uri}: $err"); //nothing to do
-    else
-      connect.error(err);
-  });
   return completer.future;
-}
-bool _isHttpAborted(error) {
-  while (error is AsyncError)
-    error = error.error;
-  return error is SocketIOException;
 }

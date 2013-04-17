@@ -7,11 +7,12 @@
 
 *Upgrade Notes*
 
-1. The request handler must return Future if it spawned an asynchronous task.
-2. The request handler can't return a forwarding URI. Rather, it shall invoke `connect.forward(uri)` instead.
+1. The request handler must return `Future` if it spawned an asynchronous task.
+2. The request handler can't return a forwarding URI. Rather, it shall invoke and return `connect.forward(uri)` instead.
 3. The request handler needs not to close the connection. It is done automatically.
 4. RSP will import `dart:async` by default.
-5. The `close`, `onClose` and `onError` methods of `HttpConnect` are removed. Chaining request handlers is straightforward: it is the same as chaining `Future` events.
+5. The request filter must return `Future`.
+6. The `close`, `onClose` and `onError` methods of `HttpConnect` are removed. Chaining request handlers is straightforward: it is the same as chaining `Future` objects.
 
 **0.6.2**
 

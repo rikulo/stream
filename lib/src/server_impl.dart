@@ -97,14 +97,12 @@ class _StreamServer implements StreamServer {
 
       return resourceLoader.load(connect, uri);
     } catch (e, st) {
-      return new Future.immediateError(e, st);
+      return new Future.error(e, st);
     }
   }
   void _handleErr(HttpConnect connect, error, [stackTrace]) {
-    while (error is AsyncError) {
-      stackTrace = error.stackTrace;
-      error = error.error;
-    }
+    if (stackTrace == null)
+      stackTrace = getAttachedStackTrace(error);
 
     if (connect == null) {
       _shout(error, stackTrace);
@@ -250,7 +248,15 @@ class _StreamServer implements StreamServer {
         ..add(HttpHeaders.SERVER, serverInfo)
         ..date = new DateTime.now();
 
+      //protect from aborted connection
       final connect = new _HttpConnect(this, req, req.response);
+      req.response.done.catchError((err) {
+        if (err is SocketIOException)
+          logger.fine("${connect.request.uri}: $err"); //nothing to do
+        else
+          _handleErr(connect, err);
+      });
+
       _handle(connect, 0).then((_) { //0 means filter from beginning
         _close(connect);
       }).catchError((err) {
@@ -284,7 +290,7 @@ class _StreamServer implements StreamServer {
 
 Future _ensureFuture(value) {
   if (value == null) //immediate (no async task)
-    return new Future.immediate(null);
+    return new Future.value();
   if (value is Future)
     return value;
   throw new Http500("The handler must return null or Future, not $value");

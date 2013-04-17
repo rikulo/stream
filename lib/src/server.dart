@@ -15,7 +15,7 @@ String $nns([v]) => v != null ? v.toString(): "";
  *
  * > It is used in the generated code of RSP pages.
  */
-Future $nnf([v]) => v is Future ? v: new Future.immediate(v);
+Future $nnf([v]) => v is Future ? v: new Future.value(v);
 
 /** Concatenates a path with a map of parameters.
  *

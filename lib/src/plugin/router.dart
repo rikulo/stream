@@ -55,8 +55,19 @@ class DefaultRouter implements Router {
   final Map<int, dynamic> _codeMapping = new HashMap(); //mapping of status code to URI/Function
   final List<_ErrMapping> _errMapping = []; //exception to URI/Function
 
-  DefaultRouter(Map<String, dynamic> uriMapping,
-      Map errorMapping, Map<String, RequestFilter> filterMapping) {
+  final Map<String, dynamic> _uriCache = new LinkedHashMap();
+  int _cacheSize;
+
+  static final _NOT_FOUND = new Object();
+
+  /** The constructor.
+   *
+   * * [cacheSize] - the size of the cache for speeding up URI matching.
+   */
+  DefaultRouter(Map<String, dynamic> uriMapping, Map errorMapping,
+			Map<String, RequestFilter> filterMapping, {int cacheSize:1000}) {
+    _cacheSize = cacheSize;
+
     if (uriMapping != null)
       for (final uri in uriMapping.keys)
         map(uri, uriMapping[uri]);
@@ -102,11 +113,12 @@ class DefaultRouter implements Router {
 
   /** Maps the given URI to the given handler.
    *
-   * * [uri] - a regular exception used to match the request URI.
+   * * [uri] - a regular expression used to match the request URI.
+   * If you can name a group by prefix with a name, such as `'/dead-link(info:.*)'`.
    * * [handler] - the handler for handling the request, or another URI that this request
    * will be forwarded to. If the value is a URI and the key has named groups, the URI can
-   * refer to the group with the $ expression.
-   * For example: `'/dead-link(info:.*)': '/new-link$info'`.
+   * refer to the group with `(the_group_name)`.
+   * For example: `'/dead-link(info:.*)': '/new-link(info)'`.
    * If it is null, it means removal.
    * * [preceding] - whether to make the mapping preceding any previous mappings.
    * In other words, if true, this mapping will be interpreted first.
@@ -116,10 +128,11 @@ class DefaultRouter implements Router {
       throw new ServerError("URI mapping: function (renderer) or string (URI) is required for $uri");
 
     _map(_uriMapping, uri, handler, preceding);
+    _uriCache.clear();
   }
   /** Maps the given URI to the given filter.
    *
-   * * [uri]: a regular exception used to match the request URI.
+   * * [uri]: a regular expression used to match the request URI.
    * * [filter]: the filter. If it is null, it means removal.
    * * [preceding] - whether to make the mapping preceding any previous mappings.
    * In other words, if true, this mapping will be interpreted first.
@@ -155,24 +168,40 @@ class DefaultRouter implements Router {
 
   @override
   getHandler(HttpConnect connect, String uri) {
-    //TODO: cache the matched result for better performance
-    for (final mp in _uriMapping)
-      if (mp.match(connect, uri)) {
-        var handler = mp.handler;
-        if (handler is List) {
-          final sb = new StringBuffer();
-          for (var seg in handler) {
-            if (seg is _Var) {
-              seg = connect.dataset[seg.name];
-              if (seg == null)
-                continue; //skip
-            }
-            sb.write(seg);
-          }
-          return sb.toString();
+    var handler = _uriCache[uri];
+    if (handler == null) {
+      _UriMapping mp;
+      for (mp in _uriMapping)
+        if (mp.match(connect, uri)) {
+          handler = mp.handler;
+          break;
         }
-        return handler;
+
+      //store to cache
+      _uriCache[uri] = handler == null ? _NOT_FOUND:
+        mp.hasGroup() ? mp: handler; //store _UriMapping if mp.hasGroup()
+      if (_uriCache.length > _cacheSize)
+        _uriCache.remove(_uriCache.keys.first);
+    } else if (identical(handler, _NOT_FOUND)) {
+      return;
+    } else if (handler is _UriMapping) { //hasGroup
+      handler.match(connect, uri); //prepare connect.dataset
+      handler = handler.handler;
+    }
+
+    if (handler is List) {
+      final sb = new StringBuffer();
+      for (var seg in handler) {
+        if (seg is _Var) {
+          seg = connect.dataset[seg.name];
+          if (seg == null)
+            continue; //skip
+        }
+        sb.write(seg);
       }
+      return sb.toString();
+    }
+    return handler;
   }
   @override
   int getFilterIndex(HttpConnect connect, String uri, int iFilter) {
@@ -346,6 +375,7 @@ class _UriMapping {
       _groups = null;
     _ptn = new RegExp(_groups != null ? sb.toString(): uri);
   }
+  bool hasGroup() => _groups != null;
   bool match(HttpConnect connect, String uri) {
     if (method != null && method != connect.request.method)
       return false; //not matched

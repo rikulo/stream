@@ -19,4 +19,4 @@ part "src/rspc/compiler.dart";
 part "src/rspc/tag.dart";
 part "src/rspc/tagutil.dart";
 
-const VERSION = "0.6.2";
+const VERSION = "0.7.0";

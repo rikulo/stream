@@ -2,11 +2,12 @@
 //Source: test/syntax/include.rsp.html
 library include_rsp;
 
+import 'dart:async';
 import 'dart:io';
 import 'package:stream/stream.dart';
 
 /** Template, include, for rendering the view. */
-void include(HttpConnect connect, {foo, more, less}) { //3
+Future include(HttpConnect connect, {foo, more, less}) { //#3
   var _cs_ = new List<HttpConnect>(), request = connect.request, response = connect.response;
 
   if (!connect.isIncluded)
@@ -33,13 +34,13 @@ less is more
   More information
 """); //#9
 
-  include(connect.server.connectForInclusion(connect, success: () { //#10
+  return $nnf(include(new HttpConnect.chain(connect), more: """recursive""")).then((_) { //include#10
 
     connect = _cs_.removeLast(); response = connect.response;
 
-    include(connect.server.connectForInclusion(connect, success: () { //#7
+    return $nnf(include(new HttpConnect.chain(connect), foo: true, less: less, more: _0.toString())).then((_) { //include#7
 
-      connect.close();
-    }), foo: true, less: less, more: _0.toString()); //end-of-include
-  }), more: """recursive"""); //end-of-include
+      return $nnf();
+    }); //end-of-include
+  }); //end-of-include
 }

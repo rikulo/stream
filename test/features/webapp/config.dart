@@ -4,20 +4,19 @@ part of features;
 //URI mapping
 var _uriMapping = {
   "/forward": forward,
+  "/forwardRsp": forwarderView, //generated from forwarderView.rsp.html
   "/include": includerView,  //generated from includerView.rsp.html
   "/search": search,
   "/(group:g[a-z]*p)/(matching:ma[a-z]*)": (HttpConnect connect) {
     connect.response
       ..headers.contentType = contentTypes["text/plain"]
       ..write("Group Matching: ${connect.dataset['group']} and ${connect.dataset['matching']}");
-    connect.close();
   },
   "/old-link(extra:.*)": "/new-link(extra)/more",
   "/new-link.*": (HttpConnect connect) {
     connect.response
       ..headers.contentType = contentTypes["text/plain"]
       ..write("old-link forwarded to ${connect.request.uri}");
-    connect.close();
   },
   "/500": (HttpConnect connect) {
     throw new Exception("something wrong");
@@ -29,7 +28,15 @@ var _uriMapping = {
     connect.response
       ..headers.contentType = contentTypes["text/plain"]
       ..write("You see two logs shown on the console");
-    connect.close();
+  },
+  "/longop": (HttpConnect connect) {
+    connect.response
+      ..headers.contentType = contentTypes["text/html"]
+      ..write("<html><body><p>This is used to test if client aborts the connection</p>"
+        "<p>Close the browser tab as soon as possible (in 10 secs)</p>");
+    return new Future.delayed(const Duration(seconds: 10), () {
+      connect.response.write("<p>You shall close the browser tab before seeing this</p></body></html>");
+    });
   }
 };
 
@@ -48,25 +55,23 @@ var _errMapping = {
 </body>
 </html>
         """);
-    connect.close();
   },
   "features.RecoverError": (HttpConnect connect) {
     connect.errorDetail = null; //clear error
     connect.response
       ..headers.contentType = contentTypes["text/plain"]
       ..write("Recovered from an error");
-    connect.close();
   }
 };
 
 //Filtering
 var _filterMapping = {
-  "/log.*": (HttpConnect connect, void chain(HttpConnect conn)) {
+  "/log.*": (HttpConnect connect, Future chain(HttpConnect conn)) {
     connect.server.logger.info("Filter 1: ${connect.request.uri}");
-    chain(connect);
+    return chain(connect);
   },
-  "/log[0-9]*": (HttpConnect connect, void chain(HttpConnect conn)) {
+  "/log[0-9]*": (HttpConnect connect, Future chain(HttpConnect conn)) {
     connect.server.logger.info("Filter 2: ${connect.request.uri}");
-    chain(connect);
+    return chain(connect);
   }
 };

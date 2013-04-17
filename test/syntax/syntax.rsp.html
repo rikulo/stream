@@ -1,6 +1,6 @@
 [!-- Syntax Test --]
 [:page contentType="[=foo.contentType]" args="foo, bool c:false"
-	import="dart:collection show LinkedHashMap, dart:async"/]
+	import="dart:collection show LinkedHashMap"/]
 [:header age="129" accept-ranges="[=foo.acceptRanges]" ]
 <!DOCTYPE html>
 <html>
@@ -55,7 +55,8 @@
     [/include]
 
     [:if foo.isMeaningful]
-    something is meaningful
+      something is meaningful
+      [:forward "/foo?abc" first="1st" second="[=foo]"/]
     [/if]
   </body>
 </html>

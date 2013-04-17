@@ -2,17 +2,18 @@
 //Source: test/syntax/Issue4.rsp.html
 library Issue4_rsp;
 
+import 'dart:async';
 import 'dart:io';
 import 'package:stream/stream.dart';
 
 /** Template, Issue4, for rendering the view. */
-void Issue4(HttpConnect connect) { //5
+Future Issue4(HttpConnect connect) { //#1
   var _cs_ = new List<HttpConnect>(), request = connect.request, response = connect.response;
 
   if (!connect.isIncluded)
     response.headers.contentType = new ContentType.fromString("""text/html; charset=utf-8""");
 var foo = "test";
-void render(HttpConnect connect, {more, less}) {
+render(HttpConnect connect, {more, less}) {
 }
 
   response.write("""
@@ -20,21 +21,21 @@ void render(HttpConnect connect, {more, less}) {
 
 abc/"""); //#5
 
-  response.write(nnstr(foo)); //#7
+  response.write($nns(foo)); //#7
 
 
   response.write("""
 
 """); //#7
 
-  connect.include("""${nnstr(foo)}""", success: () { //#8
+  return connect.include("""${$nns(foo)}""").then((_) { //#8
 
-    connect.include("""abc/${nnstr(foo)}""", success: () { //#9
+    return connect.include("""abc/${$nns(foo)}""").then((_) { //#9
 
-      render(connect.server.connectForInclusion(connect, success: () { //#10
+      return $nnf(render(new HttpConnect.chain(connect), more: """abc/${$nns(foo)}""", less: foo)).then((_) { //include#10
 
-        connect.close();
-      }), more: """abc/${nnstr(foo)}""", less: foo); //end-of-include
+        return $nnf();
+      }); //end-of-include
     }); //end-of-include
   }); //end-of-include
 }

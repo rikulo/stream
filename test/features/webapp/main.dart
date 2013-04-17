@@ -2,6 +2,7 @@
 library features;
 
 import "dart:io";
+import "dart:async";
 import "package:stream/stream.dart";
 import "package:rikulo_commons/mirrors.dart" show ObjectUtil;
 
@@ -9,6 +10,7 @@ part "config.dart";
 part "includerView.rsp.dart";
 part "fragView.rsp.dart";
 part "searchResult.rsp.dart";
+part "forwarderView.rsp.dart";
 
 void main() {
   new StreamServer(
@@ -17,7 +19,8 @@ void main() {
 }
 
 //Forward//
-String forward(HttpConnect connect) => "/forwardee.html";
+Future forward(HttpConnect connect)
+	=> connect.forward("/forwardee.html?first=1st&second=2nd");
 
 //Recover from an error//
 class RecoverError {
@@ -30,10 +33,9 @@ class Criteria {
   int within;
   bool hasAttachment = false;
 }
-void search(HttpConnect connect) {
-  ObjectUtil.inject(new Criteria(), connect.request.queryParameters, silent: true)
+Future search(HttpConnect connect) {
+  return ObjectUtil.inject(new Criteria(), connect.request.queryParameters, silent: true)
     .then((criteria) {
-      searchResult(connect, criteria: criteria); //generated from searchResult.rsp.html
-    })
-    .catchError(connect.error);
+      return searchResult(connect, criteria: criteria); //generated from searchResult.rsp.html
+    });
 }

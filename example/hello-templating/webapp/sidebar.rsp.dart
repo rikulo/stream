@@ -3,7 +3,7 @@
 part of hello_templating;
 
 /** Template, sidebar, for rendering the view. */
-void sidebar(HttpConnect connect) { //2
+Future sidebar(HttpConnect connect) { //#2
   var _cs_ = new List<HttpConnect>(), request = connect.request, response = connect.response;
 
   if (!connect.isIncluded)
@@ -14,7 +14,7 @@ void sidebar(HttpConnect connect) { //2
   <li>This is a sidebar.</li>
   <li>"""); //#2
 
-  response.write(nnstr(new DateTime.now())); //#4
+  response.write($nns(new DateTime.now())); //#4
 
 
   response.write("""
@@ -22,5 +22,5 @@ void sidebar(HttpConnect connect) { //2
 </ul>
 """); //#4
 
-  connect.close();
+  return $nnf();
 }

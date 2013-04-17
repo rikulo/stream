@@ -3,7 +3,7 @@
 part of features;
 
 /** Template, fragView, for rendering the view. */
-void fragView(HttpConnect connect, {Map infos: const {}, header, footer}) { //2
+Future fragView(HttpConnect connect, {Map infos: const {}, header, footer}) { //#2
   var _cs_ = new List<HttpConnect>(), request = connect.request, response = connect.response;
 
   if (!connect.isIncluded)
@@ -11,9 +11,7 @@ void fragView(HttpConnect connect, {Map infos: const {}, header, footer}) { //2
 
   if (header != null) { //if#2
 
-    response.write("""  """); //#3
-
-    response.write(nnstr(header)); //#3
+    response.write($nns(header)); //#3
 
 
     response.write("""
@@ -30,7 +28,7 @@ void fragView(HttpConnect connect, {Map infos: const {}, header, footer}) { //2
 
     response.write("""    <li>"""); //#8
 
-    response.write(nnstr(type)); //#8
+    response.write($nns(type)); //#8
 
 
     response.write("""
@@ -42,7 +40,7 @@ void fragView(HttpConnect connect, {Map infos: const {}, header, footer}) { //2
 
       response.write("""        <li>"""); //#11
 
-      response.write(nnstr(name)); //#11
+      response.write($nns(name)); //#11
 
 
       response.write("""
@@ -64,7 +62,7 @@ void fragView(HttpConnect connect, {Map infos: const {}, header, footer}) { //2
 
     response.write("""  """); //#18
 
-    response.write(nnstr(footer)); //#18
+    response.write($nns(footer)); //#18
 
 
     response.write("""
@@ -72,5 +70,5 @@ void fragView(HttpConnect connect, {Map infos: const {}, header, footer}) { //2
 """); //#18
   } //if
 
-  connect.close();
+  return $nnf();
 }

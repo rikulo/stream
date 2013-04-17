@@ -6,8 +6,34 @@ part of stream;
 /** Converts the given value to a non-null string.
  * If the given value is not null, `toString` is called.
  * If null, an empty string is returned.
+ *
+ * > It is used in the generated code of RSP pages.
  */
-String nnstr(v) => v != null ? v.toString(): "";
+String $nns([v]) => v != null ? v.toString(): "";
+
+/** Converts the given value to a non-null [Future].
+ *
+ * > It is used in the generated code of RSP pages.
+ */
+Future $nnf([v]) => v is Future ? v: new Future.value(v);
+
+/** Concatenates a path with a map of parameters.
+ *
+ * > It is used in the generated code of RSP pages.
+ */
+String $catUri(String uri, Map<String, dynamic> parameters) {
+  if (parameters == null || parameters.isEmpty)
+    return uri;
+
+  int i = uri.indexOf('?');
+  String query;
+  if (i >= 0) {
+    query = uri.substring(i);
+    uri = uri.substring(0, i);
+  }
+  final query2 = HttpUtil.encodeQuery(parameters);
+  return uri + (query == null ? "?query2": "$query&query2");
+}
 
 /**
  * Stream server.
@@ -44,13 +70,14 @@ abstract class StreamServer {
    *
    * * [uriMapping] - a map of URI mappings, `<String uri, RequestHandler handler>`
    * or `<String uri, String forwardURI>`.
-   * The key is a regular exception used to match the request URI.
+   * The key is a regular expression used to match the request URI. If you can name
+   * a group by prefix with a name, such as `'/dead-link(info:.*)'`.
    * The value can be the handler for handling the request, or another URI that this request
    * will be forwarded to. If the value is a URI and the key has named groups, the URI can
-   * refer to the group with the $ expression.
-   * For example: `'/dead-link(info:.*)': '/new-link$info'`.
+   * refer to the group with `(the_group_name)`.
+   * For example: `'/dead-link(info:.*)': '/new-link(info)'`.
    * * [filterMapping] - a map of filter mapping, `<String uri, RequestFilter filter>`.
-   * The key is a regular exception used to match the request URI.
+   * The key is a regular expression used to match the request URI.
    * The signature of a filter is `void foo(HttpConnect connect, void chain(HttpConnect conn))`.
    * * [errorMapping] - a map of error mapping. The key can be a number, an instance of
    * exception, a string representing a number, or a string representing the exception class.
@@ -119,52 +146,67 @@ abstract class StreamServer {
   /** Forward the given [connect] to the given [uri].
    *
    * If [request] and/or [response] is ignored, [connect]'s request and/or response is assumed.
+   * If [uri] is null, `connect.uri` is assumed, i.e., forwarded to the same handler.
    *
-   * After calling this method, the caller shall not write the output stream, since the
-   * request handler for the given URI might handle it asynchronously. Rather, it
-   * shall make it a closure and pass it to the [success] argument. Then,
-   * it will be resumed once the forwarded handler has completed.
+   * After calling this method, the caller shall write the output stream in `then`, since
+   * the request handler for the given URI might handle it asynchronously. For example,
+   *
+   *     forward(connect, "another").then((_) {
+   *       connect.response.write("<p>More content</p>");
+   *       //...
+   *     });
+   *
+   * * [uri] - the URI to chain. If omitted, it is the same as [connect]'s.
+   * It can contain the query string too.
    *
    * ##Difference between [forward] and [include]
    *
    * [forward] and [include] are almost the same, except
    *
-   * * The included request handler shall not generate any HTTP headers (it is the job of the caller).
+   * * The included request handler won't be able to generate any HTTP headers
+   * (it is the job of the caller). Any updates to HTTP headers in the included
+   * request handler are simply ignored.
    *
-   * * The request handler that invokes [forward] shall not call `connect.close` (it is the job
-   * of the callee -- the forwarded request handler).
+   * It also implies before calling [forward], no content shall be output.
+   * Otherwise, it will cause exception if the forwarded page updates the HTTP headers.
+   *
+   * Notice that the whitespaces at the beginning of a RSP file won't be output, so the
+   * following is correct:
+   *
+   *     [:if !isAuthenticated()]
+   *       [:forward "/login" /]
+   *     [:/if]
    */
-  void forward(HttpConnect connect, String uri, {VoidCallback success,
+  Future forward(HttpConnect connect, String uri, {
     HttpRequest request, HttpResponse response});
   /** Includes the given [uri].
-   * If you'd like to include a request handler (i.e., a function), use [connectForInclusion]
-   * instead.
    *
    * If [request] and/or [response] is ignored, [connect]'s request and/or response is assumed.
+   * If [uri] is null, `connect.uri` is assumed, i.e., includes the same handler.
    *
-   * After calling this method, the caller shall not write the output stream, since the
-   * request handler for the given URI might handle it asynchronously. Rather, it
-   * shall make it a closure and pass it to the [success] argument. Then,
-   * it will be resumed once the included handler has completed.
+   * After calling this method, the caller shall write the output stream in `then`, since
+   * the request handler for the given URI might handle it asynchronously. For example,
+   *
+   *     include(connect, "another").then((_) {
+   *       connect.response.write("<p>More content</p>");
+   *       //...
+   *     });
+   *
+   * * [uri] - the URI to chain. If omitted, it is the same as [connect]'s.
+   * It can contain the query string too.
    *
    * ##Difference between [forward] and [include]
    *
    * [forward] and [include] are almost the same, except
    *
-   * * The included request handler shall not generate any HTTP headers (it is the job of the caller).
+   * * The included request handler won't be able to generate any HTTP headers
+   * (it is the job of the caller). Any updates to HTTP headers in the included
+   * request handler are simply ignored.
    *
-   * * The request handler that invokes [forward] shall not call `connect.close` (it is the job
-   * of the callee -- the included request handler).
+   * It also implies before calling [forward], no content shall be output.
+   * Otherwise, it will cause exception if the forwarded page updates the HTTP headers.
    */
-  void include(HttpConnect connect, String uri, {VoidCallback success,
-    HttpRequest request, HttpResponse response});
-  /** Gets the HTTP connect for inclusion.
-   * If you'd like to include from URI, use [include] instead.
-   * This method is used for including a request handler. For example
-   *
-   *     fooHandler(connectForInclusion(connect, success: () {continueToDo();}));
-   */
-  HttpConnect connectForInclusion(HttpConnect connect, {String uri, VoidCallback success,
+  Future include(HttpConnect connect, String uri, {
     HttpRequest request, HttpResponse response});
 
   /** The resource loader used to load the static resources.
@@ -183,11 +225,12 @@ abstract class StreamServer {
 
   /** Maps the given URI to the given handler.
    *
-   * * [uri] - a regular exception used to match the request URI.
+   * * [uri] - a regular expression used to match the request URI.
+   * If you can name a group by prefix with a name, such as `'/dead-link(info:.*)'`.
    * * [handler] - the handler for handling the request, or another URI that this request
-   * will be forwarded to. If the value is a URI and the key has named groups, the URI can
-   * refer to the group with the $ expression.
-   * For example: `'/dead-link(info:.*)': '/new-link$info'`.
+   * will be forwarded to.  If the value is a URI and the key has named groups, the URI can
+   * refer to the group with `(the_group_name)`.
+   * For example: `'/dead-link(info:.*)': '/new-link(info)'`.
    * if [handler] is null, it means removal.
    * * [preceding] - whether to make the mapping preceding any previous mappings.
    * In other words, if true, this mapping will be interpreted first.
@@ -195,7 +238,7 @@ abstract class StreamServer {
   void map(String uri, handler, {preceding: false});
   /** Maps the given URI to the given filter.
    *
-   * * [uri]: a regular exception used to match the request URI.
+   * * [uri]: a regular expression used to match the request URI.
    * * [filter]: the filter. If null, it means removal.
    * * [preceding] - whether to make the mapping preceding any previous mappings.
    * In other words, if true, this mapping will be interpreted first.

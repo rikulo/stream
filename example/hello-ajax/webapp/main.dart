@@ -11,7 +11,6 @@ void serverInfo(HttpConnect connect) {
   connect.response
     ..headers.contentType = contentTypes["json"]
     ..write(Json.stringify(info));
-  connect.close();
 }
 
 void main() {

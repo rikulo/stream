@@ -4,7 +4,7 @@
 part of stream;
 
 class _StreamServer implements StreamServer {
-  final String version = "0.6.2";
+  final String version = "0.7.0";
   HttpServer _server;
   String _host = "127.0.0.1";
   int _port = 8080;
@@ -59,49 +59,18 @@ class _StreamServer implements StreamServer {
   }
 
   @override
-  void forward(HttpConnect connect, String uri, {VoidCallback success,
-    HttpRequest request, HttpResponse response}) {
-    if (uri.indexOf('?') >= 0)
-      throw new UnsupportedError("Forward with query string"); //TODO
+  Future forward(HttpConnect connect, String uri, {
+    HttpRequest request, HttpResponse response})
+  => _handle(new HttpConnect.chain(connect, inclusion: false,
+      uri: uri, request: request, response: response)); //no filter invocation
+  @override
+  Future include(HttpConnect connect, String uri, {
+    HttpRequest request, HttpResponse response})
+  => _handle(new HttpConnect.chain(connect, inclusion: true,
+      uri: uri, request: request, response: response)); //no filter invocation
 
-    _handle(new _ForwardedConnect(connect, request, response, _toAbsUri(connect, uri))
-      ..onClose.listen((_){
-          if (success != null)
-            success();
-          connect.close(); //spec: it is the forwarded handler's job to close
-        })); //no filter invocation
-  }
-  @override
-  void include(HttpConnect connect, String uri, {VoidCallback success,
-    HttpRequest request, HttpResponse response}) {
-    if (uri.indexOf('?') >= 0)
-      throw new UnsupportedError("Include with query string"); //TODO
-    _handle(connectForInclusion(
-      connect, uri: uri, success: success, request: request, response: response));
-      //no filter invocation
-  }
-  @override
-  HttpConnect connectForInclusion(HttpConnect connect, {String uri, VoidCallback success,
-    HttpRequest request, HttpResponse response}) {
-    final inc = new _IncludedConnect(connect, request, response,
-        uri != null ? _toAbsUri(connect, uri): null);
-    if (success != null)
-      inc.onClose.listen((_) {success();});
-    return inc;
-  }
-  String _toAbsUri(HttpConnect connect, String uri) {
-    if (!uri.startsWith('/')) {
-      final pre = connect.request.uri.path;
-      final i = pre.lastIndexOf('/');
-      if (i >= 0)
-        uri = "${pre.substring(0, i + 1)}$uri";
-      else
-        uri = "/$uri";
-    }
-    return uri;
-  }
   ///[iFilter] - the index of filter to start. It must be non-negative. Ignored if null.
-  void _handle(HttpConnect connect, [int iFilter]) {
+  Future _handle(HttpConnect connect, [int iFilter]) {
     try {
       String uri = connect.request.uri.path;
       if (!uri.startsWith('/'))
@@ -109,21 +78,16 @@ class _StreamServer implements StreamServer {
 
       if (iFilter != null) { //null means ignore filters
         iFilter = _router.getFilterIndex(connect, uri, iFilter);
-        if (iFilter != null) { //found
-          _router.getFilterAt(iFilter)(connect, (HttpConnect conn) {
-              _handle(conn, iFilter + 1);
-            });
-          return;
-        }
+        if (iFilter != null) //found
+          return _ensureFuture(_router.getFilterAt(iFilter)(connect,
+            (HttpConnect conn) => _handle(conn, iFilter + 1)));
       }
 
       var handler = _router.getHandler(connect, uri);
       if (handler != null) {
         if (handler is Function)
-          handler = handler(connect);
-        if (handler is String)
-          forward(connect, handler);
-        return;
+          return _ensureFuture(handler(connect));
+        return forward(connect, handler); //must be a string
       }
 
       //protect from access
@@ -131,16 +95,14 @@ class _StreamServer implements StreamServer {
       (uri.startsWith("/webapp/") || uri == "/webapp"))
         throw new Http403(uri);
 
-      resourceLoader.load(connect, uri);
+      return resourceLoader.load(connect, uri);
     } catch (e, st) {
-      _handleErr(connect, e, st);
+      return new Future.error(e, st);
     }
   }
   void _handleErr(HttpConnect connect, error, [stackTrace]) {
-    while (error is AsyncError) {
-      stackTrace = error.stackTrace;
-      error = error.error;
-    }
+    if (stackTrace == null)
+      stackTrace = getAttachedStackTrace(error);
 
     if (connect == null) {
       _shout(error, stackTrace);
@@ -150,52 +112,43 @@ class _StreamServer implements StreamServer {
     try {
       if (_onError != null)
         _onError(connect, error, stackTrace);
-      if (connect.errorDetail != null) {
+      if (connect.errorDetail != null) { //called twice; ignore 2nd one
         _shout(error, stackTrace);
-        _close(connect);
         return; //done
       }
 
       connect.errorDetail = new ErrorDetail(error, stackTrace);
       var handler = _router.getErrorHandler(error);
-      if (handler != null) {
-        _forwardDyna(connect, handler);
-        return;
+      if (handler == null) {
+        if (error is! HttpStatusException) {
+          _shout(error, stackTrace);
+          error = new Http500(error);
+        }
+
+        final code = error.statusCode;
+        connect.response.statusCode = code;
+          //spec: not to update reasonPhrase (it is up to error handler if any)
+        handler = _router.getErrorHandlerByCode(code);
+        if (handler == null) {
+          //TODO: render a page
+          _close(connect);
+          return;
+        }
       }
 
-      if (error is SocketIOException) {
-        //connection is closed. we can't close or forward it.
-        logger.fine("${connect.request.uri}: $error");
-        return;
-      }
-      if (error is! HttpStatusException) {
-        _shout(error, stackTrace);
-        error = new Http500(error);
-      }
-
-      final code = error.statusCode;
-      connect.response.statusCode = code;
-        //spec: not to update reasonPhrase (it is up to error handler if any)
-      handler = _router.getErrorHandlerByCode(code);
-      if (handler != null) {
-        _forwardDyna(connect, handler);
-      } else {
-        //TODO: render a page
+      (handler is Function ? _ensureFuture(handler(connect)):
+        forward(connect, handler)).then((_) {
         _close(connect);
-      }
+      }).catchError((err) {
+        _shout("Unable to handle the error. Reason: $err");
+        _close(connect);
+      });
     } catch (e) {
       _close(connect);
     }
   }
-  ///forward to URI or a render function
-  void _forwardDyna(HttpConnect connect, handler) {
-    if (handler is Function)
-      handler(connect);
-    else
-      forward(connect, handler);
-  }
-  void _shout(err, st) {
-    logger.shout(st != null ? "$err:\n$st": err);
+  void _shout(err, [st]) {
+    logger.shout(st != null ? "$err:\n$st": "$err");
   }
   void _close(HttpConnect connect) {
     connect.response.close();
@@ -294,11 +247,21 @@ class _StreamServer implements StreamServer {
       req.response.headers
         ..add(HttpHeaders.SERVER, serverInfo)
         ..date = new DateTime.now();
-      _handle(
-        new _HttpConnect(this, req, req.response)
-          ..onClose.listen((_) {
-            req.response.close();
-          }), 0); //process filter from beginning
+
+      //protect from aborted connection
+      final connect = new _HttpConnect(this, req, req.response);
+      req.response.done.catchError((err) {
+        if (err is SocketIOException)
+          logger.fine("${connect.request.uri}: $err"); //nothing to do
+        else
+          _handleErr(connect, err);
+      });
+
+      _handle(connect, 0).then((_) { //0 means filter from beginning
+        _close(connect);
+      }).catchError((err) {
+        _handleErr(connect, err);
+      });
     }, onError: (err) {
       _handleErr(null, err);
     });
@@ -323,4 +286,12 @@ class _StreamServer implements StreamServer {
   void filter(String uri, RequestFilter filter, {preceding: false}) {
     _router.filter(uri, filter, preceding: preceding);
   }
+}
+
+Future _ensureFuture(value) {
+  if (value == null) //immediate (no async task)
+    return new Future.value();
+  if (value is Future)
+    return value;
+  throw new Http500("The handler must return null or Future, not $value");
 }

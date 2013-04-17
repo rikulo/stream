@@ -22,7 +22,6 @@ class Compiler {
   //Look-ahead tokens
   final List _lookAhead = [];
   final List<_IncInfo> _incs = []; //included
-  final List<_QuedTag> _quedTags = []; //queued tags (before _start is called)
   String _extra = ""; //extra whitespaces
   int _nextVar = 0; //used to implement TagContext.nextVar()
 
@@ -39,74 +38,74 @@ class Compiler {
     if (sourceName != null)
       _writeln("//Source: ${sourceName}");
 
-    bool pgFound = false, started = false;
+    bool pgFound = false, started = false, written = false;
     int prevln = 1;
     for (var token; (token = _nextToken()) != null; prevln = _line) {
       if (_current.args != null && token is! VarTag && token is! _Closing
       && (token is! String || !token.trim().isEmpty))
         _error("Only the var tag is allowed inside the ${_current.tag.name} tag, not $token");
 
-      if (token is String) {
-        String text = token;
-        if (!started) {
-          if (text.trim().isEmpty)
-            continue; //skip it
-          started = true;
-          _start(prevln); //use previous line number since it could be multiple lines
-        }
-        _outText(text, prevln);
-      } else if (token is _Expr) {
-        if (!started) {
-          started = true;
-          _start();
-        }
-        _outExpr();
-      } else if (token is PageTag) {
+      if (token is PageTag) {
         if (pgFound)
           _error("Only one page tag is allowed", _line);
         if (started)
-          _error("The page tag must be in front of any non-empty content", _line);
+          _error("The page tag must be in front of any non-whitespace content and tags", _line);
         pgFound = true;
 
         push(token);
         token.begin(_current, _tagData());
         token.end(_current);
         pop();
-      } else if (token is DartTag) {
-        if (!started) {
-          _quedTags.add(new _QuedTag(token, _dartData()));
-          continue;
+      } else if (token is String) {
+        String text = token;
+        if (!written) {
+          if (text.trim().isEmpty)
+            continue; //skip it
+          written = true;
         }
-
-        push(token);
-        token.begin(_current, _dartData());
-        token.end(_current);
-        pop();
-      } else if (token is Tag) {
         if (!started) {
-          if (token is HeaderTag) {
-          //note: token.hasClosing must be false
-            _quedTags.add(new _QuedTag(token, _tagData(tag: token)));
-            continue;
-          }
+          started = true;
+          _start(prevln); //use previous line number since it could be multiple lines
+        }
+        _outText(text, prevln);
+      } else {
+        if (!started) {
           started = true;
           _start();
         }
 
-        push(token);
-        token.begin(_current, _tagData(tag: token));
-        if (!token.hasClosing) {
+        if (token is _Expr) {
+          written = true;
+          _outExpr();
+        } else if (token is DartTag) {
+          push(token);
+          token.begin(_current, _dartData());
           token.end(_current);
           pop();
+        } else if (token is Tag) {
+          if (!written)
+            written = token.hasContent;
+
+          push(token);
+          token.begin(_current, _tagData(tag: token));
+          if (!token.hasClosing) {
+            token.end(_current);
+            pop();
+          }
+        } else if (token is _Closing) {
+          final _Closing closing = token;
+          var tagnm;
+          if (_current.tag == null || (tagnm = _current.tag.name) != closing.name) {
+            String msg = "Unexpected [/${closing.name}]";
+            if (tagnm != null)
+              msg += "; expect [/$tagnm]";
+            _error(msg, _line);
+          }
+          _current.tag.end(_current);
+          pop();
+        } else {
+          _error("Unknown token, $token", _line);
         }
-      } else if (token is _Closing) {
-        final _Closing closing = token;
-        if (_current.tag == null || _current.tag.name != closing.name)
-          _error("Unexpected [/${closing.name}] (no beginning tag found)", _line);
-        _current.tag.end(_current);
-        pop();
-      } else {
-        _error("Unknown token, $token", _line);
       }
     }
 
@@ -119,7 +118,7 @@ class Compiler {
         }
         _error("Unclosed tag(s): $sb");
       }
-      _writeln("\n$_extra  connect.close();");
+      _writeln("\n$_extra  return \$nnf();");
       while (!_incs.isEmpty) {
         _extra = _extra.substring(2);
         _writeln("$_extra  ${_incs.removeLast().invocation} //end-of-include");
@@ -161,9 +160,13 @@ class Compiler {
       }
     }
 
-    final imports = new LinkedHashSet.from(["dart:io", "package:stream/stream.dart"]);
-    if (_import != null && !_import.isEmpty)
-      imports.addAll(_import.split(','));
+    final imports = new LinkedHashSet.from(["dart:async", "dart:io", "package:stream/stream.dart"]);
+    if (_import != null)
+      for (String imp in _import.split(',')) {
+        imp = imp.trim();
+        if (!imp.isEmpty)
+          imports.add(imp);
+      }
 
     if (_partOf == null || _partOf.isEmpty) { //independent library
       var lib = new Path(sourceName).filename;
@@ -189,10 +192,10 @@ class Compiler {
     }
 
     _current.indent();
-    _write("\n/** $_desc */\nvoid $_name(HttpConnect connect");
+    _write("\n/** $_desc */\nFuture $_name(HttpConnect connect");
     if (_args != null)
       _write(", {$_args}");
-    _writeln(") { //$line\n"
+    _writeln(") { //#$line\n"
       "  var _cs_ = new List<HttpConnect>(), request = connect.request, response = connect.response;\n");
 
     if (_contentType != null) {
@@ -201,15 +204,6 @@ class Compiler {
       _writeln('  response.headers.contentType = new ContentType.fromString('
         '${toEL(_contentType, direct: false)});');
     }
-
-    //generated the tags found before _start() is called.
-    for (final ti in _quedTags) {
-      push(ti.tag);
-      ti.tag.begin(_current, ti.data);
-      ti.tag.end(_current);
-      pop();
-    }
-    _quedTags.clear();
   }
 
   ///Sets the page information.
@@ -231,12 +225,18 @@ class Compiler {
   ///Include the given URI.
   void includeUri(String uri, [Map args, int line]) {
     _checkInclude(line);
-    if (args != null && !args.isEmpty)
-      _error("Not supported: include URI with arguments", line); //TODO: handle arguments
     if (verbose) _info("Include $uri", line);
 
-    _writeln('\n${_current.pre}connect.include('
-      '${toEL(uri, direct: false)}, success: () { //#$line');
+    _write("\n${_current.pre}return connect.include(");
+    final emptyArgs = args == null || args.isEmpty;
+    if (!emptyArgs)
+      _write("\$catUri(");
+    _write("${toEL(uri, direct: false)}");
+    if (!emptyArgs) {
+      _catArgs(args);
+      _write(')');
+    }
+    _writeln(").then((_) { //#$line");
     _extra = "  $_extra";
     _incs.add(new _IncInfo("});"));
   }
@@ -245,15 +245,11 @@ class Compiler {
     _checkInclude(line);
     if (verbose) _info("Include $method", line);
 
-    _writeln("\n${_current.pre}$method(connect.server.connectForInclusion(connect, success: () { //#$line");
+    _write("\n${_current.pre}return \$nnf($method(new HttpConnect.chain(connect)");
+    _outArgs(args);
+    _writeln(")).then((_) { //include#$line");
     _extra = "  $_extra";
-
-    final sb = new StringBuffer("})");
-    if (args != null)
-      for (final arg in args.keys)
-        sb..write(", ")..write(arg)..write(": ")..write(toEL(args[arg]));
-    sb.write(");");
-    _incs.add(new _IncInfo(sb.toString()));
+    _incs.add(new _IncInfo("});"));
   }
   ///Check if the include tag is allowed.
   ///It can be not put inside while/for/if...
@@ -270,23 +266,52 @@ class Compiler {
 
   ///Forward to the given URI.
   void forwardUri(String uri, [Map args, int line]) {
-    if (args != null && !args.isEmpty)
-      _error("Not supported: forward URI with arguments"); //TODO: handle arguments
     if (verbose) _info("Forward $uri", line);
 
-    _writeln("\n${_current.pre}connect.forward("
-      "${toEL(uri, direct: false)}); //#${line}\n"
-      "${_current.pre}return;");
+    _write("\n${_current.pre}return connect.forward(");
+    final emptyArgs = args == null || args.isEmpty;
+    if (!emptyArgs)
+      _write("\$catUri(");
+    _write("${toEL(uri, direct: false)}");
+    if (!emptyArgs) {
+      _catArgs(args);
+      _write(')');
+    }
+    _writeln("); //#${line}");
   }
   //Forward to the given renderer
   void forward(String method, [Map args, int line]) {
     if (verbose) _info("Forward $method", line);
 
-    _write("\n${_current.pre}${method}(connect");
+    _write("\n${_current.pre}return \$nnf(${method}(connect");
+    _outArgs(args);
+    _writeln(")); //forward#${line}");
+  }
+  //Concatenates arguments
+  void _catArgs(Map args) {
+    if (args != null && !args.isEmpty) {
+      _write(", {");
+      bool first = true;
+      for (final arg in args.keys) {
+        if (first) first = false;
+        else _write(", ");
+
+        _write("'");
+        _write(arg);
+        _write("': ");
+        _write(toEL(args[arg])); //$catUri can handle nob-string value
+      }
+      _write("}");
+    }
+  }
+  void _outArgs(Map args) {
     if (args != null)
-      for (final arg in args.keys)
-        _write(", $arg: ${toEL(args[arg])}");
-    _writeln("); //#${line}\n${_current.pre}return;");
+      for (final arg in args.keys) {
+        _write(", ");
+        _write(arg);
+        _write(": ");
+        _write(toEL(args[arg]));
+      }
   }
 
   //Tokenizer//
@@ -296,13 +321,13 @@ class Compiler {
 
     final sb = new StringBuffer();
     final token = _specialToken(sb);
-    if (token is _Closing)
+    if (token is _Closing) //if Tag, it is handled by _tagData()
       _skipFollowingSpaces();
-
-    final text = _rmSpacesBeforeTag(sb.toString(), token);
+    String text = sb.toString();
+    if (token is Tag || token is _Closing)
+      text = _rmTailingSpaces(text);
     if (text.isEmpty)
       return token;
-
     if (token != null)
       _lookAhead.add(token);
     return text;
@@ -341,13 +366,6 @@ class Compiler {
               _pos = _skipUntil("--]", j + 3) + 3;
               continue;
             }
-          } else if (StringUtil.isChar(c2, lower:true)) { //[beginning-tag]
-          //deprecated (TODO: remove later)
-            int k = _skipId(j);
-            final tn = source.substring(j, k), tag = tags[tn];
-            if (tag != null) //tag found
-              _warning("[$tn] is deprecated and ignored. Please use [:$tn] instead.", _line);
-            //fall through
           }
         }
       } else if (cc == '\\') { //escape
@@ -378,16 +396,12 @@ class Compiler {
         break; //don't skip anything
     }
   }
-  ///(Optional but for better output) Removes the whitspaces before the given token,
-  ///if it is a tag. Notice: [text] is in front of [token]
-  String _rmSpacesBeforeTag(String text, token) {
-    if (token is! Tag && token is! _Closing)
-      return text;
-
+  ///(Optional but for better output) Removes the tailing whitspaces
+  static String _rmTailingSpaces(String text) {
     for (int i = text.length; --i >= 0;) {
       final cc = text[i];
       if (cc == '\n')
-        return text.substring(0, i + 1); //remove tailing spaces (excluding \n)
+        return text.substring(0, i + 1); //remove tailing spaces (excluding linefeed)
       if (cc != ' ' && cc != '\t')
         return text; //don't skip anything
     }
@@ -464,8 +478,6 @@ class Compiler {
     if (source[k] == '/') {
       if (tag != null && tag.hasClosing)
         _lookAhead.add(new _Closing(tag.name));
-
-      _skipFollowingSpaces();
       if (_pos >= _len || source[_pos] != ']')
         _error("Expect ']'");
       ++_pos;
@@ -530,7 +542,7 @@ class Compiler {
       //1) '/' is NOT a terminal, 2) no skip space for expression
     if (!expr.isEmpty) {
       final pre = _current.pre;
-      _writeln('\n${pre}response.write(nnstr($expr)); //#${line}\n');
+      _writeln('\n${pre}response.write(\$nns($expr)); //#${line}\n');
     }
   }
 

@@ -3,7 +3,7 @@
 part of features;
 
 /** Template, includerView, for rendering the view. */
-void includerView(HttpConnect connect) { //7
+Future includerView(HttpConnect connect) { //#2
   var _cs_ = new List<HttpConnect>(), request = connect.request, response = connect.response;
 
   if (!connect.isIncluded)
@@ -27,14 +27,14 @@ final infos = {
     <div style="border: 1px solid blue">
 """); //#7
 
-  connect.include("""/frag.html""", success: () { //#18
+  return connect.include("""/frag.html""").then((_) { //#18
 
     response.write("""
     </div>
     <div style="border: 1px solid red">
 """); //#19
 
-    fragView(connect.server.connectForInclusion(connect, success: () { //#21
+    return $nnf(fragView(new HttpConnect.chain(connect), infos: infos)).then((_) { //include#21
 
       response.write("""
     </div>
@@ -48,7 +48,7 @@ final infos = {
   <h1>This is a header</h1>
   <p>Passed from the includer for showing """); //#26
 
-      response.write(nnstr(infos)); //#27
+      response.write($nns(infos)); //#27
 
 
       response.write("""
@@ -65,11 +65,11 @@ final infos = {
   <p>It also includes another page:</p>
 """); //#30
 
-      connect.include("""/frag.html""", success: () { //#32
+      return connect.include("""/frag.html""").then((_) { //#32
 
         connect = _cs_.removeLast(); response = connect.response;
 
-        fragView(connect.server.connectForInclusion(connect, success: () { //#24
+        return $nnf(fragView(new HttpConnect.chain(connect), infos: infos, header: _0.toString(), footer: _1.toString())).then((_) { //include#24
 
           response.write("""
     </div>
@@ -77,9 +77,9 @@ final infos = {
 </html>
 """); //#35
 
-          connect.close();
-        }), infos: infos, header: _0.toString(), footer: _1.toString()); //end-of-include
+          return $nnf();
+        }); //end-of-include
       }); //end-of-include
-    }), infos: infos); //end-of-include
+    }); //end-of-include
   }); //end-of-include
 }

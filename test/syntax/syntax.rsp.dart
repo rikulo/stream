@@ -2,20 +2,20 @@
 //Source: test/syntax/syntax.rsp.html
 library syntax_rsp;
 
+import 'dart:async';
 import 'dart:io';
 import 'package:stream/stream.dart';
 import 'dart:collection' show LinkedHashMap;
-import 'dart:async';
 
 /** Template, syntax, for rendering the view. */
-void syntax(HttpConnect connect, {foo, bool c:false}) { //5
+Future syntax(HttpConnect connect, {foo, bool c:false}) { //#4
   var _cs_ = new List<HttpConnect>(), request = connect.request, response = connect.response;
 
-  response.headers.contentType = new ContentType.fromString("""${nnstr(foo.contentType)}""");
+  response.headers.contentType = new ContentType.fromString("""${$nns(foo.contentType)}""");
 
-  response.headers.add("age", """129"""); //header#8
+  response.headers.add("age", """129"""); //header#4
 
-  response.headers.add("accept-ranges", foo.acceptRanges); //header#8
+  response.headers.add("accept-ranges", foo.acceptRanges); //header#4
 
   response.write("""
 <!DOCTYPE html>
@@ -23,7 +23,7 @@ void syntax(HttpConnect connect, {foo, bool c:false}) { //5
   <head>
     <title>"""); //#5
 
-  response.write(nnstr("$foo.name [${foo.title}]")); //#8
+  response.write($nns("$foo.name [${foo.title}]")); //#8
 
 
   //#8
@@ -37,7 +37,7 @@ void syntax(HttpConnect connect, {foo, bool c:false}) { //5
 .
     <p>Another expresion: """);
 
-  response.write(nnstr(foo.description)); //#12
+  response.write($nns(foo.description)); //#12
 
 
   response.write("""
@@ -54,7 +54,7 @@ void syntax(HttpConnect connect, {foo, bool c:false}) { //5
 
     response.write("""      <li>"""); //#18
 
-    response.write(nnstr(user.name)); //#18
+    response.write($nns(user.name)); //#18
 
 
     response.write("""
@@ -72,7 +72,7 @@ void syntax(HttpConnect connect, {foo, bool c:false}) { //5
 
       response.write("""        """); //#23
 
-      response.write(nnstr(user.showMore())); //#23
+      response.write($nns(user.showMore())); //#23
 
 
       response.write("""
@@ -105,8 +105,7 @@ void syntax(HttpConnect connect, {foo, bool c:false}) { //5
 
   } else if (c) { //else#34
 
-    connect.forward("""/x/y/z"""); //#35
-    return;
+    return connect.forward("""/x/y/z"""); //#35
 
   } else if (foo.isEmployee) { //else#36
 
@@ -114,8 +113,7 @@ void syntax(HttpConnect connect, {foo, bool c:false}) { //5
       *Employee*
 """); //#37
 
-    syntax(connect, c: true, foo: """abc"""); //#38
-    return;
+    return $nnf(syntax(connect, c: true, foo: """abc""")); //forward#38
 
   } else { //else#39
 
@@ -139,7 +137,7 @@ void syntax(HttpConnect connect, {foo, bool c:false}) { //5
 
     response.write("""        """); //#46
 
-    response.write(nnstr(fruit)); //#46
+    response.write($nns(fruit)); //#46
 
 
     response.write("""
@@ -154,7 +152,7 @@ void syntax(HttpConnect connect, {foo, bool c:false}) { //5
 
 """); //#49
 
-  connect.include("""/abc""", success: () { //#50
+  return connect.include("""/abc""").then((_) { //#50
 
     var _0 = new StringBuffer(); _cs_.add(connect); //var#52
     connect = new HttpConnect.buffer(connect, _0); response = connect.response;
@@ -165,7 +163,7 @@ void syntax(HttpConnect connect, {foo, bool c:false}) { //5
 
     connect = _cs_.removeLast(); response = connect.response;
 
-    syntax(connect.server.connectForInclusion(connect, success: () { //#51
+    return $nnf(syntax(new HttpConnect.chain(connect), c: true, foo: _0.toString())).then((_) { //include#51
 
       response.write("""
 
@@ -174,21 +172,23 @@ void syntax(HttpConnect connect, {foo, bool c:false}) { //5
       if (foo.isMeaningful) { //if#57
 
         response.write("""
-    something is meaningful
+      something is meaningful
 """); //#58
+
+        return connect.forward($catUri("""/foo?abc""", {'first': """1st""", 'second': foo})); //#59
       } //if
 
       response.write("""
   </body>
 </html>
 
-"""); //#60
+"""); //#61
 
       response.write("""
 
-"""); //#64
+"""); //#65
 
-      connect.close();
-    }), c: true, foo: _0.toString()); //end-of-include
+      return $nnf();
+    }); //end-of-include
   }); //end-of-include
 }

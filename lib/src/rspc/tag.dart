@@ -69,6 +69,12 @@ abstract class Tag {
   /** Whether this tag requires a closing tag, such as  `[/if]`.
    */
   bool get hasClosing;
+  /** Whether this tag generates any content to the response's output.
+   * Notice that it is not about the generated Dart file.
+   * Most tags don't need to override this (return false), since they
+   * don't generate something like `response.write(...)` to the Dart file.
+   */
+  bool get hasContent => false;
   /** The tag name.
    */
   String get name;

@@ -3,7 +3,7 @@
 part of hello_templating;
 
 /** Template, classic, for rendering the view. */
-void classic(HttpConnect connect, {header, sidebar, body, footer}) { //2
+Future classic(HttpConnect connect, {header, sidebar, body, footer}) { //#2
   var _cs_ = new List<HttpConnect>(), request = connect.request, response = connect.response;
 
   if (!connect.isIncluded)
@@ -14,7 +14,7 @@ void classic(HttpConnect connect, {header, sidebar, body, footer}) { //2
   <div class="header">
     """); //#2
 
-  response.write(nnstr(header)); //#4
+  response.write($nns(header)); //#4
 
 
   response.write("""
@@ -23,7 +23,7 @@ void classic(HttpConnect connect, {header, sidebar, body, footer}) { //2
   <div class="sidebar">
     """); //#4
 
-  response.write(nnstr(sidebar)); //#7
+  response.write($nns(sidebar)); //#7
 
 
   response.write("""
@@ -32,7 +32,7 @@ void classic(HttpConnect connect, {header, sidebar, body, footer}) { //2
   <div class="body">
     """); //#7
 
-  response.write(nnstr(body)); //#10
+  response.write($nns(body)); //#10
 
 
   response.write("""
@@ -41,7 +41,7 @@ void classic(HttpConnect connect, {header, sidebar, body, footer}) { //2
   <div class="footer">
     """); //#10
 
-  response.write(nnstr(footer)); //#13
+  response.write($nns(footer)); //#13
 
 
   response.write("""
@@ -50,5 +50,5 @@ void classic(HttpConnect connect, {header, sidebar, body, footer}) { //2
 </div>
 """); //#13
 
-  connect.close();
+  return $nnf();
 }

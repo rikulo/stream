@@ -320,7 +320,7 @@ final Map<String, ContentType> contentTypes = {
 Map<int, String> get statusMessages {
   if (_stmsgs == null) {
     _stmsgs = new HashMap();
-    for (List<dynamic> inf in [
+    for (List inf in [
   //http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
   [100, "Continue"],
   [101, "Switching Protocols"],

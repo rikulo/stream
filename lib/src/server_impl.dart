@@ -109,11 +109,10 @@ class _StreamServer implements StreamServer {
     }
 
     try {
-      final uri = connect.request.uri;
       if (_onError != null)
         _onError(connect, error, stackTrace);
       if (connect.errorDetail != null) { //called twice; ignore 2nd one
-        _shout(uri, error, stackTrace);
+        _shout(connect, error, stackTrace);
         return; //done
       }
 
@@ -122,7 +121,7 @@ class _StreamServer implements StreamServer {
       var handler = _router.getErrorHandler(error);
       if (handler == null) {
         if (error is! HttpStatusException) {
-          _shout(uri, error, stackTrace);
+          _shout(connect, error, stackTrace);
           shouted = true;
           error = new Http500(error);
         }
@@ -143,24 +142,22 @@ class _StreamServer implements StreamServer {
         _close(connect);
       }).catchError((err) {
         if (!shouted)
-          _shout(uri, error, stackTrace);
-        _shout(uri, "Unable to handle the error with $handler. Reason: $err");
+          _shout(connect, error, stackTrace);
+        _shout(connect, "Unable to handle the error with $handler. Reason: $err");
         _close(connect);
       });
     } catch (e) {
       _close(connect);
     }
   }
-  void _shout(String uri, err, [st]) {
-    new Future(() { //for better scalability, log later
-      final buf = new StringBuffer();
-      if (uri != null)
-        buf..write("(")..write(uri)..write(") ");
-      buf.write(err);
-      if (st != null)
-        buf..write("\n")..write(st);
-      logger.shout(buf.toString());
-    });
+  void _shout(HttpConnect connect, err, [st]) {
+    final buf = new StringBuffer();
+    if (connect != null)
+      buf..write("(")..write(connect.request.uri)..write(") ");
+    buf.write(err);
+    if (st != null)
+      buf..write("\n")..write(st);
+    logger.shout(buf.toString());
   }
   void _close(HttpConnect connect) {
     connect.response.close();

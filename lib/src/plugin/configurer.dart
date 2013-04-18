@@ -19,10 +19,12 @@ class _LoggingConfigurer implements LoggingConfigurer {
   void configure(Logger logger) {
     Logger.root..level = Level.INFO;
     logger.onRecord.listen((record) {
-      print("${record.time}:${record.sequenceNumber}\n"
-        "${record.level}: ${record.message}");
-      if (record.exceptionText != null)
-        print("Exception: ${record.exceptionText}");
+      new Future(() { //for better scalability, do it async (since logger is sync)
+        print("${record.time}:${record.sequenceNumber}\n"
+          "${record.level}: ${record.message}");
+        if (record.exceptionText != null)
+          print("Exception: ${record.exceptionText}");
+      });
     });
   }
 }

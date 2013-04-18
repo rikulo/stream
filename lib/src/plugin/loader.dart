@@ -38,7 +38,7 @@ class FileLoader implements ResourceLoader {
         return new Directory.fromPath(path).exists();
       return loadFile(connect, file);
     }).then((exists) {
-      if (exists != null) { //null means done (i.e., returned by loadFile)
+      if (exists is bool) { //null or other value means done (i.e., returned by loadFile)
         if (exists)
           return _loadFileAt(connect, uri, path, connect.server.indexNames, 0);
         throw new Http404(uri);
@@ -79,11 +79,5 @@ Future loadFile(HttpConnect connect, File file) {
   });
 }
 
-Future _loadFile(HttpConnect connect, File file) {
-  final completer = new Completer();
-  final res = connect.response;
-  file.openRead().listen((data) {res.add(data);},
-    onDone: () => completer.complete(), //null means done; see FileLoader.load()
-    onError: (err) => completer.completeError(err));
-  return completer.future;
-}
+Future _loadFile(HttpConnect connect, File file)
+=> connect.response.addStream(file.openRead()); //returns Future<HttpResponse>

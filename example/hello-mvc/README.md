@@ -39,21 +39,14 @@ The view is implemented as a RSP page: [listView.rsp.html](https://github.com/ri
 
 The role of the control, `helloMVC`, is to prepare the model for rendering. As shown [here](https://github.com/rikulo/stream/blob/master/example/hello-mvc/webapp/main.dart), the preparation is done asynchronously. It is very important for scalability.
 
-    void helloMVC(HttpConnect connect) {
+    Future helloMVC(HttpConnect connect) {
       //1. prepare the model
       final curdir = new Directory.current();
       List<FileInfo> list = [];
-
-      curdir.list()
-        ..onDir = (String dir) {
-            list.add(new FileInfo(dir, true));
-          }
-        ..onFile = (String file) {
-            list.add(new FileInfo(file, false));
-          }
-        ..onError = connect.error
-        ..onDone = (completed) {
-            //2. forward to the view
-            listView(connect, path: curdir.path, infos: list);
-          };
+      return curdir.list().listen((fse) {
+        list.add(new FileInfo(fse.path, fse is Directory));
+      }).asFuture().then((_) {
+        //2. forward to the view
+        return listView(connect, path: curdir.path, infos: list);
+      });
     }

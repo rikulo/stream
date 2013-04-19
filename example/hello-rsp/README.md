@@ -2,14 +2,12 @@
 
 This sample demonstrates how to use HTML-like templates to generate dynamic contents in your web application.
 
-The template technology is called RSP (Rikulo Stream Page). It allows developers to create dynamically generated web pages based on HTML, XML or other document types.
+The template engine is called RSP (Rikulo Stream Page). It allows developers to create dynamically generated web pages based on HTML, XML or other document types.
 
 Here is an example:
 
     [!-- View of Hello RSP --]
-    [dart]
-    part of hello_rsp;
-    [/dart]
+    [:page partOf="hello_rsp"]
     <!DOCTYPE html>
     <html>
       <head>

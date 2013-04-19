@@ -95,8 +95,13 @@ File _locate(String flnm) {
  * with new Options().arguments as its [arguments].
  *
  * Notice that it accepts files ending with `.rsp.whatever`.
+ *
+ * * [filenameMapper] - returns the filename of the destination file, which
+ * must end with `.dart`. If omitted, it will be generated under the `webapp`
+ * folder with the same path structure.
  */
-void build(List<String> arguments) {
+void build(List<String> arguments, {String filenameMapper(String source),
+    Encoding encoding: Encoding.UTF_8}) {
   final ArgParser argParser = new ArgParser()
     ..addOption("changed", allowMultiple: true)
     ..addOption("removed", allowMultiple: true)
@@ -118,7 +123,8 @@ void build(List<String> arguments) {
   } else if (removed.isEmpty && changed.isEmpty) { // full build
     new Directory.current().list(recursive: true).listen((fse) {
       if (fse is File && _rspSource(fse.path) >= 0)
-          compileFile(fse.path);
+        compileFile(fse.path, encoding: encoding,
+          destinationName: filenameMapper != null ? filenameMapper(fse.path): null);
     });
 
   } else {
@@ -133,7 +139,8 @@ void build(List<String> arguments) {
 
     for (String name in changed) {
       if (_rspSource(name) >= 0)
-          compileFile(name);
+        compileFile(name, encoding: encoding,
+          destinationName: filenameMapper != null ? filenameMapper(name): null);
     }
   }
 }

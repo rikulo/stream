@@ -4,6 +4,7 @@
 
 * Issue 16: Make include, forward and handler to return Future if there is any async task
 * Issue 17: include and forward shall handle the query string
+* Issue 24: llow RSP compiler receive a FilenameMapper function to map output files
 
 *Upgrade Notes*
 

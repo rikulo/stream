@@ -3,6 +3,17 @@
 // Author: tomyeh
 part of stream_rspc;
 
+/**
+ * Getter for project directory. Initializes lazily.
+ */
+Directory __projectDir;
+Directory get _projectDir {
+  if (__projectDir == null) {
+    __projectDir = new Directory.current(); 
+  }
+  return __projectDir;
+}
+
 /** Compiles the given [source] RSP document to the given output stream [out].
  * Notice that the caller has to close the output stream by himself.
  */
@@ -31,9 +42,10 @@ void compileFile(String sourceName, {String destinationName, bool verbose : fals
     dest = _locate(destinationName);
   } else {
     dest = new File(destinationName);
+    _createFileDirectoryIfNecessary(dest.path);
   }
-
-  if (FileSystemEntity.identicalSync(source.path, dest.path)) {
+  
+  if (dest.existsSync() && FileSystemEntity.identicalSync(source.path, dest.path)) {
     print("Source and destination are the same file, $source");
     return;
   }
@@ -57,12 +69,21 @@ void compileFile(String sourceName, {String destinationName, bool verbose : fals
   });
 }
 
+/// This method is necessary since File.directorySync() throws exception if parent directory does not exist
+/// TODO: change this method when bug 9926 is fixed
+void _createFileDirectoryIfNecessary( String destinationName ) {
+  var path = destinationName;
+  var i = path.lastIndexOf("/");
+  path = path.substring(0, i);
+  new Directory(path).create(recursive:true);
+}
+
 ///Locates the right location under the webapp folder, if there is one
 File _locate(String flnm) {
   final List<String> segs = [];
   Path path = new Path(flnm).canonicalize();
   if (!path.isAbsolute)
-    path = new Path(new Directory.current().path).join(path);
+    path = new Path(_projectDir.path).join(path);
 
   for (;;) {
     segs.add(path.filename);
@@ -87,16 +108,32 @@ File _locate(String flnm) {
   final dir = new Directory.fromPath(path);
   if (!dir.existsSync())
     dir.create(recursive: true);
-  path = path.relativeTo(new Path(new Directory.current().path));
+  path = path.relativeTo(new Path(_projectDir.path));
   return new File.fromPath(path.append(segs[0]));
 }
 
-/** Compile changed RSP files. This method shall be called within build.dart,
+/**
+ * A typedef for functions that receive a project relative file path and map
+ * it to its final destination. It is used by RSP compiler to decide where
+ * to generate its .rsp.dart files.
+ * 
+ * This type of functions receive the file name in [projectRelativePath] and
+ * must return a modified version of it ending with the same extension. Then
+ * that extension is changed by the compiler to .dart.
+ */
+typedef String FilenameMapper( String projectRelativeFilePath );
+
+/** 
+ * Compile changed RSP files. This method shall be called within build.dart,
  * with new Options().arguments as its [arguments].
+ *
+ * Optionally, you can provide a [FilenameMapper] function as a named argument
+ * [filenameMapper] to be able to alter the location where rsp compiled files 
+ * are written.
  *
  * Notice that it accepts files ending with `.rsp.whatever`.
  */
-void build(List<String> arguments) {
+void build(List<String> arguments, {FilenameMapper filenameMapper}) {
   final ArgParser argParser = new ArgParser()
     ..addOption("changed", allowMultiple: true)
     ..addOption("removed", allowMultiple: true)
@@ -118,7 +155,7 @@ void build(List<String> arguments) {
   } else if (removed.isEmpty && changed.isEmpty) { // full build
     new Directory.current().list(recursive: true).listen((fse) {
       if (fse is File && _rspSource(fse.path) >= 0)
-          compileFile(fse.path);
+          compileFile(fse.path,destinationName:_mapFileName(fse.path,filenameMapper));
     });
 
   } else {
@@ -133,10 +170,32 @@ void build(List<String> arguments) {
 
     for (String name in changed) {
       if (_rspSource(name) >= 0)
-          compileFile(name);
+          compileFile(name,destinationName:_mapFileName(name,filenameMapper));
     }
   }
 }
+
+String _mapFileName(String name, FilenameMapper filenameMapper) {
+  if (filenameMapper != null) {
+    name = _convertToProjectPath(name);
+    name = filenameMapper(name);
+    name = _convertRspSourceExtension(name);
+    return name;
+  }
+}
+
+String _convertToProjectPath(String path) {
+  if (path.startsWith(_projectDir.path)) {
+    path = path.substring(_projectDir.path.length+1);
+  }
+  return path;
+}
+
+String _convertRspSourceExtension(String path) {
+  var i = path.lastIndexOf(".");
+  return path.substring(0,i)+".dart";
+}
+
 int _rspSource(String name) {
   if (!name.endsWith(".rsp.dart")) {
     var i = name.indexOf(".rsp.");

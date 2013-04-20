@@ -33,7 +33,8 @@ void compileFile(String sourceName, {String destinationName, bool verbose : fals
     dest = new File(destinationName);
   }
 
-  if (FileSystemEntity.identicalSync(source.path, dest.path)) {
+  if (new Path(source.path).canonicalize().toNativePath() ==
+      new Path(dest.path).canonicalize().toNativePath()) {
     print("Source and destination are the same file, $source");
     return;
   }

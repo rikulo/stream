@@ -9,6 +9,7 @@ DIR=$( cd $( dirname "${BASH_SOURCE[0]}" ) && pwd )
 # canonicalization.
 pushd $DIR/..
 echo Compile RSP files
+find -name *.rsp.dart | xargs rm -rf
 dart bin/rspc.dart */*/*.rsp.html
 
 echo Analyzing library for warnings or type errors

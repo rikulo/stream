@@ -23,7 +23,7 @@ else
   homedir=${homedir%/*}
 fi
 if [ "$TERM" = "cygwin" ] || [ "$OSTYPE" = "cygwin" ] ; then
-  homedir=$(cygpath -m $homedir)
+  homedir=$(cygpath -u $homedir)
   dartdoc=dartdoc.bat
 else
   dartdoc=dartdoc
@@ -44,7 +44,8 @@ ver=${ver#version: }
 
 PATH=$PATH:$SDK/bin
 echo Compiling $libdir $ver
-$dartdoc --package-root $homedir/packages --exclude-lib args,args.src.parser,args.src.usage,logging,meta,rikulo_async,rikulo_io,rikulo_mirrors,rikulo_util --out $outdir $libdir/*.dart
+exclude_list=$(cat $homedir/tool/lib/exclude.lst | tr '\n' ',')
+$dartdoc --package-root $homedir/packages --exclude-lib $exclude_list --out $outdir $libdir/*.dart
 if [ ! -f $outdir/index.html ] ; then
 	echo $outdir/index.html not found. Failed?
 	exit 1
@@ -53,7 +54,6 @@ fi
 cd $outdir
 echo Process HTML files at $(pwd)
 tooldir=../../tool/lib
-
 function doHtml {
 	sedfl=$1
 	if [ ! -f $sedfl ] ; then

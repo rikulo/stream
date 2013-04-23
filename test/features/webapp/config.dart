@@ -37,6 +37,9 @@ var _uriMapping = {
     return new Future.delayed(const Duration(seconds: 10), () {
       connect.response.write("<p>You shall close the browser tab before seeing this</p></body></html>");
     });
+  },
+  "/redirect": (HttpConnect connect) {
+    connect.redirect(connect.request.queryParameters["uri"]);
   }
 };
 

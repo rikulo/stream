@@ -1,5 +1,9 @@
 #CHANGES
 
+**0.7.1**
+
+* Issue 26: Support HttoConnect.redirect(uri) to redirect to another URI
+
 **0.7.0**
 
 * Issue 16: Make include, forward and handler to return Future if there is any async task

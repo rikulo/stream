@@ -25,6 +25,11 @@ abstract class _AbstractConnect implements HttpConnect {
   bool get isForwarded => false;
 
   @override
+  void redirect(String uri) {
+    response.statusCode = HttpStatus.FOUND;
+    response.headers.set("Location", _toCompleteUrl(request, uri));
+  }
+  @override
   Future forward(String uri, {HttpRequest request, HttpResponse response})
   => server.forward(this, uri, request: request, response: response);
   @override
@@ -225,3 +230,7 @@ String _toAbsUri(HttpRequest request, String uri) {
   }
   return uri;
 }
+String _toCompleteUrl(HttpRequest request, String uri)
+=> _completeUriRegex.hasMatch(uri) ? uri:
+  request.uri.resolve(_toAbsUri(request, uri)).toString();
+final RegExp _completeUriRegex = new RegExp(r"^[a-zA-Z]+://");

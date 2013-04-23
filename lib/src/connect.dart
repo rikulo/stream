@@ -101,6 +101,13 @@ abstract class HttpConnect {
    */
   bool get isForwarded;
 
+  /** Send a temporary redirect to the specified redirect URL.
+   *
+   * * [url] - the location to redirect to. It can be an URI or URL, such as
+   * `/login?whatever` and `http://rikulo.org/project/stream`.
+   */
+  void redirect(String url);
+
   /** Forward this connection to the given [uri].
    *
    * If [request] and/or [response] is ignored, [connect]'s request and/or response is assumed.
@@ -215,11 +222,17 @@ class HttpConnectWrapper implements HttpConnect {
   bool get isForwarded => origin.isForwarded;
 
   @override
+  void redirect(String uri) {
+    origin.redirect(_toCompleteUrl(request, uri));
+  }
+  @override
   Future forward(String uri, {HttpRequest request, HttpResponse response})
-  => origin.forward(uri, request: request, response: response);
+  => origin.forward(uri, request: request != null ? request: this.request,
+    response: response != null ? response: this.response);
   @override
   Future include(String uri, {HttpRequest request, HttpResponse response})
-  => origin.include(uri, request: request, response: response);
+  => origin.include(uri, request: request != null ? request: this.request,
+    response: response != null ? response: this.response);
 
   @override
   ErrorCallback get error => origin.error;

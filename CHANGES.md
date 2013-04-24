@@ -1,14 +1,11 @@
 #CHANGES
 
-**0.7.1**
-
-* Issue 26: Support HttoConnect.redirect(uri) to redirect to another URI
-
 **0.7.0**
 
 * Issue 16: Make include, forward and handler to return Future if there is any async task
 * Issue 17: include and forward shall handle the query string
 * Issue 24: llow RSP compiler receive a FilenameMapper function to map output files
+* Issue 26: Support HttoConnect.redirect(uri) to redirect to another URI
 
 *Upgrade Notes*
 

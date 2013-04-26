@@ -34,8 +34,6 @@ class Criteria {
   bool hasAttachment = false;
 }
 Future search(HttpConnect connect) {
-  return ObjectUtil.inject(new Criteria(), connect.request.queryParameters, silent: true)
-    .then((criteria) {
-      return searchResult(connect, criteria: criteria); //generated from searchResult.rsp.html
-    });
+  final criteria = ObjectUtil.inject(new Criteria(), connect.request.queryParameters, silent: true);
+  return searchResult(connect, criteria: criteria); //generated from searchResult.rsp.html
 }

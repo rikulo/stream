@@ -16,8 +16,7 @@ echo Analyzing library for warnings or type errors
 dart_analyzer --fatal-warnings --fatal-type-errors lib/*.dart \
   || echo -e "Ignoring analyzer errors"
 
-echo Analyzing test cases
-for fn in `grep -l 'main[(][)]' */*/*/*.dart`; do
+for fn in `grep -l 'main[(][)]' */*/*/*.dart|grep -v packages/`; do
 	echo Analyzing $fn
 	dart_analyzer --fatal-warnings --fatal-type-errors lib/*.dart \
 	  || echo -e "Ignoring analyzer errors"

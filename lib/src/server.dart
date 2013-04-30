@@ -108,7 +108,7 @@ abstract class StreamServer {
   /** A list of names that will be used to locate the resource if
    * the given path is a directory.
    *
-   * Default: `[index.html]`
+   * Default: `index.html`
    */
   List<String> get indexNames;
 

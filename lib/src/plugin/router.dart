@@ -48,7 +48,7 @@ abstract class Router {
 }
 
 /**
- * The default implementation of [Rounter]
+ * The default implementation of [Router].
  */
 class DefaultRouter implements Router {
   final List<_UriMapping> _uriMapping = [], _filterMapping = [];

@@ -83,9 +83,8 @@ abstract class HttpConnect {
   HttpRequest get request;
   /** The HTTP response.
    *
-   * Notice that it is suggested to invoke [close] instead of `response.close()` when finishing
-   * a serving, because the request handler might be included or forwarded by another, which
-   * might have further task to do (and will register the task by use `on.close.add()`).
+   * Notice that you shall *NOT* invoke `response.close()`, since it was
+   * called automatically when the serving of a request is finished.
    */
   HttpResponse get response;
   ///The source connection that forwards to this connection, or null if not forwarded.
@@ -110,7 +109,8 @@ abstract class HttpConnect {
 
   /** Forward this connection to the given [uri].
    *
-   * If [request] and/or [response] is ignored, [connect]'s request and/or response is assumed.
+   * If [request] and/or [response] is ignored, the request and/or response
+   * of this connection is assumed.
    * If [uri] is null, `connect.uri` is assumed, i.e., forwarded to the same handler.
    *
    * After calling this method, the caller shall write the output stream in `then`, since
@@ -121,7 +121,7 @@ abstract class HttpConnect {
    *       //...
    *     });
    *
-   * * [uri] - the URI to chain. If omitted, it is the same as [connect]'s.
+   * * [uri] - the URI to chain. If omitted, it is the same as this connection.
    * It can contain the query string too.
    *
    * ##Difference between [forward] and [include]
@@ -148,7 +148,7 @@ abstract class HttpConnect {
    *       //...
    *     });
    *
-   * * [uri] - the URI to chain. If omitted, it is the same as [connect]'s.
+   * * [uri] - the URI to chain. If omitted, it is the same as this connection.
    * It can contain the query string too.
    *
    * ##Difference between [forward] and [include]

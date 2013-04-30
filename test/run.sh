@@ -17,8 +17,12 @@ dart_analyzer --fatal-warnings --fatal-type-errors lib/*.dart \
   || echo -e "Ignoring analyzer errors"
 
 echo Analyzing test cases
-dart_analyzer --fatal-warnings --fatal-type-errors */*/*/main.dart \
-  || echo -e "Ignoring analyzer errors"
+for fn in `grep -l 'main[(][)]' */*/*/*.dart`; do
+	echo Analyzing $fn
+	dart_analyzer --fatal-warnings --fatal-type-errors lib/*.dart \
+	  || echo -e "Ignoring analyzer errors"
+done
+
 rm -rf out/*
 popd
 

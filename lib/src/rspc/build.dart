@@ -63,7 +63,7 @@ File _locate(String flnm) {
   final List<String> segs = [];
   Path path = new Path(flnm).canonicalize();
   if (!path.isAbsolute)
-    path = new Path(new Directory.current().path).join(path);
+    path = new Path(Directory.current.path).join(path);
 
   for (;;) {
     segs.add(path.filename);
@@ -88,7 +88,7 @@ File _locate(String flnm) {
   final dir = new Directory.fromPath(path);
   if (!dir.existsSync())
     dir.create(recursive: true);
-  path = path.relativeTo(new Path(new Directory.current().path));
+  path = path.relativeTo(new Path(Directory.current.path));
   return new File.fromPath(path.append(segs[0]));
 }
 
@@ -116,13 +116,13 @@ void build(List<String> arguments, {String filenameMapper(String source),
   final bool clean = args["clean"];
   
   if (clean) { // clean only
-    new Directory.current().list(recursive: true).listen((fse) {
+    Directory.current.list(recursive: true).listen((fse) {
       if (fse is File && fse.path.endsWith(".rsp.dart"))
         fse.delete();
     });
 
   } else if (removed.isEmpty && changed.isEmpty) { // full build
-    new Directory.current().list(recursive: true).listen((fse) {
+    Directory.current.list(recursive: true).listen((fse) {
       if (fse is File && _rspSource(fse.path) >= 0)
         compileFile(fse.path, encoding: encoding,
           destinationName: filenameMapper != null ? filenameMapper(fse.path): null);

@@ -19,7 +19,7 @@ class FileInfo {
 ///Controller: prepare the model and then invoke the view, listView
 Future helloMVC(HttpConnect connect) {
   //1. prepare the model
-  final curdir = new Directory.current();
+  final curdir = Directory.current;
   List<FileInfo> list = [];
   return curdir.list().listen((fse) {
     list.add(new FileInfo(fse.path, fse is Directory));

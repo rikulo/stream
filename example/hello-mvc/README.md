@@ -41,7 +41,7 @@ The role of the control, `helloMVC`, is to prepare the model for rendering. As s
 
     Future helloMVC(HttpConnect connect) {
       //1. prepare the model
-      final curdir = new Directory.current();
+      final curdir = Directory.current;
       List<FileInfo> list = [];
       return curdir.list().listen((fse) {
         list.add(new FileInfo(fse.path, fse is Directory));

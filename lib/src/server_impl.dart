@@ -38,7 +38,7 @@ class _StreamServer implements StreamServer {
     }
 
     if (!path.isAbsolute)
-      path = new Path(new Directory.current().path).join(path);
+      path = new Path(Directory.current.path).join(path);
 
     //look for webapp
     for (final orgpath = path;;) {

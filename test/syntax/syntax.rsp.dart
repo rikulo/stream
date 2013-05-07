@@ -11,7 +11,7 @@ import 'dart:collection' show LinkedHashMap;
 Future syntax(HttpConnect connect, {foo, bool c:false}) { //#4
   var _cs_ = new List<HttpConnect>(), request = connect.request, response = connect.response;
 
-  response.headers.contentType = new ContentType.fromString("""${$nns(foo.contentType)}""");
+  response.headers.contentType = ContentType.parse("""${$nns(foo.contentType)}""");
 
   response.headers.add("age", """129"""); //header#4
 

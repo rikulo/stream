@@ -212,7 +212,7 @@ class _StreamServer implements StreamServer {
   @override
   Future<StreamServer> start({int backlog: 0}) {
     _assertIdle();
-    return HttpServer.bind(host, port, backlog)
+    return HttpServer.bind(host, port, backlog: backlog)
     .catchError((err) {
       _handleErr(null, err);
     })

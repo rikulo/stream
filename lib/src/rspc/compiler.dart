@@ -201,7 +201,7 @@ class Compiler {
     if (_contentType != null) {
       if (!ctypeSpecified) //if not specified, it is set only if not included
         _write('  if (!connect.isIncluded)\n  ');
-      _writeln('  response.headers.contentType = new ContentType.fromString('
+      _writeln('  response.headers.contentType = ContentType.parse('
         '${toEL(_contentType, direct: false)});');
     }
   }

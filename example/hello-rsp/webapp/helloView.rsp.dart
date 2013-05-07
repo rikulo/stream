@@ -7,7 +7,7 @@ Future helloView(HttpConnect connect) { //#2
   var _cs_ = new List<HttpConnect>(), request = connect.request, response = connect.response;
 
   if (!connect.isIncluded)
-    response.headers.contentType = new ContentType.fromString("""text/html; charset=utf-8""");
+    response.headers.contentType = ContentType.parse("""text/html; charset=utf-8""");
 
   response.write("""
 

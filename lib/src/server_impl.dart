@@ -4,7 +4,7 @@
 part of stream;
 
 class _StreamServer implements StreamServer {
-  final String version = "0.7.0";
+  final String version = "0.7.1";
   HttpServer _server;
   String _host = "127.0.0.1";
   int _port = 8080;
@@ -14,9 +14,10 @@ class _StreamServer implements StreamServer {
   ResourceLoader _resLoader;
   final Router _router;
   ConnectErrorCallback _defaultErrorCallback, _onError;
+  final bool _futureMandated;
 
-  _StreamServer(Router router, String homeDir, LoggingConfigurer loggingConfigurer):
-      _router = router, logger = new Logger("stream") {
+  _StreamServer(this._router, String homeDir, LoggingConfigurer loggingConfigurer,
+    this._futureMandated): logger = new Logger("stream") {
     (loggingConfigurer != null ? loggingConfigurer: new LoggingConfigurer())
       .configure(logger);
     _init();
@@ -137,7 +138,7 @@ class _StreamServer implements StreamServer {
         }
       }
 
-      (handler is Function ? _ensureFuture(handler(connect)):
+      (handler is Function ? _ensureFuture(handler(connect), true):
         forward(connect, handler)).then((_) {
         _close(connect);
       }).catchError((err) {
@@ -295,12 +296,16 @@ class _StreamServer implements StreamServer {
   void filter(String uri, RequestFilter filter, {preceding: false}) {
     _router.filter(uri, filter, preceding: preceding);
   }
-}
 
-Future _ensureFuture(value) {
-  if (value == null) //immediate (no async task)
-    return new Future.value();
-  if (value is Future)
-    return value;
-  throw new Http500("The handler must return null or Future, not $value");
+  Future _ensureFuture(value, [bool ignoreFutureMandated=false]) {
+    //Note: we can't use Http500. otherwise, the error won't be logged
+    if (value == null) { //immediate (no async task)
+      if (_futureMandated && !ignoreFutureMandated)
+        throw new ServerError("Handler/filter must return Future");
+      return new Future.value();
+    }
+    if (value is Future)
+      return value;
+    throw new ServerError("Handler/filter must return null or Future, not $value");
+  }
 }

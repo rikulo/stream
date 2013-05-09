@@ -1,5 +1,9 @@
 #CHANGES
 
+**0.7.1**
+
+* Issue 27: Able to configure Stream server to enforce the return of Future in every handler.
+
 **0.7.0**
 
 * Issue 16: Make include, forward and handler to return Future if there is any async task

@@ -3,38 +3,6 @@
 // Author: tomyeh
 part of stream;
 
-/** Converts the given value to a non-null string.
- * If the given value is not null, `toString` is called.
- * If null, an empty string is returned.
- *
- * > It is used in the generated code of RSP pages.
- */
-String $nns([v]) => v != null ? v.toString(): "";
-
-/** Converts the given value to a non-null [Future].
- *
- * > It is used in the generated code of RSP pages.
- */
-Future $nnf([v]) => v is Future ? v: new Future.value(v);
-
-/** Concatenates a path with a map of parameters.
- *
- * > It is used in the generated code of RSP pages.
- */
-String $catUri(String uri, Map<String, dynamic> parameters) {
-  if (parameters == null || parameters.isEmpty)
-    return uri;
-
-  int i = uri.indexOf('?');
-  String query;
-  if (i >= 0) {
-    query = uri.substring(i);
-    uri = uri.substring(0, i);
-  }
-  final query2 = HttpUtil.encodeQuery(parameters);
-  return uri + (query == null ? "?query2": "$query&query2");
-}
-
 /**
  * Stream server.
  *
@@ -85,12 +53,18 @@ abstract class StreamServer {
    * such as 404 and 500. The exception is used for matching the caught exception.
    * Notice that, if you specify the name of the exception to handle,
    * it must include the library name and the class name, such as `"stream.ServerError"`.
+   * * [futureMandated] - whether to force every request handler to return a Future instance.
+   * If false (default), a request handler can return null (or nothing) to indicate
+   * the request has been served immediately. However, it is also a common error -- forget
+   * to return a Future object. To avoid this problem, you can return a Future object
+   * in each your handler, and then specify this argument to true to have Stream server
+   * to ensure it.
    */
   factory StreamServer({Map<String, dynamic> uriMapping,
       Map errorMapping, Map<String, RequestFilter> filterMapping,
-      String homeDir, LoggingConfigurer loggingConfigurer})
+      String homeDir, LoggingConfigurer loggingConfigurer, bool futureMandated: false})
   => new _StreamServer(new DefaultRouter(uriMapping, errorMapping, filterMapping),
-      homeDir, loggingConfigurer);
+      homeDir, loggingConfigurer, futureMandated);
 
   /** Constructs a server with the given router.
    * It is used if you'd like to use your own router, rather than the default one.

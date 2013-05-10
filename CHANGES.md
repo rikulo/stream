@@ -2,6 +2,7 @@
 
 **0.7.1**
 
+* The type of StreamServer.host is changed to InternetAddress
 * Issue 27: Able to configure Stream server to enforce the return of Future in every handler.
 
 **0.7.0**

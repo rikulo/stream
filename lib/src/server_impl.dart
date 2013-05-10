@@ -6,7 +6,7 @@ part of stream;
 class _StreamServer implements StreamServer {
   final String version = "0.7.1";
   HttpServer _server;
-  String _host = "127.0.0.1";
+  InternetAddress _host = InternetAddress.ANY_IP_V4;
   int _port = 8080;
   int _sessTimeout = 20 * 60; //20 minutes
   final Logger logger;
@@ -178,9 +178,9 @@ class _StreamServer implements StreamServer {
     _port = port;
   }
   @override
-  String get host => _host;
+  InternetAddress get host => _host;
   @override
-  void set host(String host) {
+  void set host(InternetAddress host) {
     _assertIdle();
     _host = host;
   }
@@ -220,7 +220,7 @@ class _StreamServer implements StreamServer {
     .then((server) {
       _server = server;
       _startServer();
-      logger.info("Rikulo Stream Server $version starting on $host:$port\n"
+      logger.info("Rikulo Stream Server $version starting on ${host.host}:$port\n"
         "Home: ${homeDir}");
       return this;
     });
@@ -237,7 +237,7 @@ class _StreamServer implements StreamServer {
     .then((server) {
       _server = server;
       _startServer();
-      logger.info("Rikulo Stream Server $version starting on $host:$port for HTTPS\n"
+      logger.info("Rikulo Stream Server $version starting on ${host.host}:$port for HTTPS\n"
         "Home: ${homeDir}");
       return this;
     });

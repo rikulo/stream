@@ -89,11 +89,13 @@ abstract class StreamServer {
   /** The port. Default: 8080.
    */
   int port;
-  /** The host. Default: InternetAddress.ANY_IP_V4 (i.e., "0.0.0.0").
-   * In other words, it causes Stream server to listen all adapters
+  /** The host. It can either be a [String] or an [InternetAddress].
+   *
+   * Default: InternetAddress.ANY_IP_V4 (i.e., "0.0.0.0").
+   * It will cause Stream server to listen all adapters
    * IP addresses using IPv4.
    */
-  InternetAddress host;
+  var host;
 
   /** The timeout, in seconds, for sessions of this server.
    * Default: 1200 (unit: seconds)

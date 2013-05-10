@@ -2,7 +2,7 @@
 
 **0.7.1**
 
-* The type of StreamServer.host is changed to InternetAddress
+* StreamServer.host can be String or InternetAddress, and the default is ANY_IP_V4.
 * Issue 27: Able to configure Stream server to enforce the return of Future in every handler.
 
 **0.7.0**

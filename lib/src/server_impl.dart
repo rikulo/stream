@@ -6,7 +6,7 @@ part of stream;
 class _StreamServer implements StreamServer {
   final String version = "0.7.1";
   HttpServer _server;
-  InternetAddress _host = InternetAddress.ANY_IP_V4;
+  var _host = InternetAddress.ANY_IP_V4;
   int _port = 8080;
   int _sessTimeout = 20 * 60; //20 minutes
   final Logger logger;
@@ -178,10 +178,12 @@ class _StreamServer implements StreamServer {
     _port = port;
   }
   @override
-  InternetAddress get host => _host;
+  get host => _host;
   @override
-  void set host(InternetAddress host) {
+  void set host(host) {
     _assertIdle();
+    if (host is! String && host is! InternetAddress)
+      throw new ArgumentError("host must be String or InternetAddress, not $host");
     _host = host;
   }
   @override
@@ -220,8 +222,7 @@ class _StreamServer implements StreamServer {
     .then((server) {
       _server = server;
       _startServer();
-      logger.info("Rikulo Stream Server $version starting on ${host.host}:$port\n"
-        "Home: ${homeDir}");
+      _logStarted();
       return this;
     });
   }
@@ -237,10 +238,14 @@ class _StreamServer implements StreamServer {
     .then((server) {
       _server = server;
       _startServer();
-      logger.info("Rikulo Stream Server $version starting on ${host.host}:$port for HTTPS\n"
-        "Home: ${homeDir}");
+      _logStarted(" HTTPS");
       return this;
     });
+  }
+  void _logStarted([String protocol=""]) {
+    logger.info("Rikulo Stream Server $version starting$protocol on "
+      "${host is InternetAddress ? (host as InternetAddress).host: host}:$port\n"
+      "Home: ${homeDir}");
   }
   @override
   void startOn(ServerSocket socket) {

@@ -3,11 +3,6 @@
 // Author: tomyeh
 part of stream;
 
-/** The error handler. */
-typedef void ErrorCallback(err, [stackTrace]);
-/** The error handler for HTTP connection. */
-typedef void ConnectErrorCallback(HttpConnect connect, err, [stackTrace]);
-
 /** The request filter. It is used with the `filterMapping` parameter of [StreamServer].
  *
  * * [chain] - the callback to *resume* the request handling. If there is another filter
@@ -163,29 +158,6 @@ abstract class HttpConnect {
    */
   Future include(String uri, {HttpRequest request, HttpResponse response});
 
-  /** The error handler.
-   *
-   * By default, this error handler will be automatically assigned to the Future
-   * object returned by the request handler. Thus, all you have to do is to *wire*
-   * the error to the returned Future object. For example, if you're using
-   * [Completer], you can do:
-   *
-   *     final completer = new Completer();
-   *     file.openRead().listen((data) {res.add(data);},
-   *       onDone: () => completer.complete(null),
-   *       onError: (err) => completer.completeError(err));
-   *     return completer.future;
-   *
-   * In short, you rarely need to invoke this error handler directly.
-   * On the other hand, it is OK if you'd like to pass the error handler to `onError`.
-   * It is harmless if it has been called multiple times -
-   * the following invocations will be ignored.
-   *
-   * > Notice that, if you don't wire the error handling property, the HTTP
-   * connection won't be closed, and, even worse, the server might stop from
-   * execution.
-   */
-  ErrorCallback get error;
   /** The error detailed information (which is the information when [error]
    * has been called), or null if no error.
    */
@@ -234,8 +206,6 @@ class HttpConnectWrapper implements HttpConnect {
   => origin.include(uri, request: request != null ? request: this.request,
     response: response != null ? response: this.response);
 
-  @override
-  ErrorCallback get error => origin.error;
   @override
   ErrorDetail get errorDetail => origin.errorDetail;
   @override

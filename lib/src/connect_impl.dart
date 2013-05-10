@@ -5,11 +5,9 @@ part of stream;
 
 ///Skeletal implementation
 abstract class _AbstractConnect implements HttpConnect {
-  final ConnectErrorCallback _cxerrh;
-  ErrorCallback _errh;
   Map<String, dynamic> _dataset;
  
-  _AbstractConnect(this.request, this.response, this._cxerrh);
+  _AbstractConnect(this.request, this.response);
 
   @override
   final HttpRequest request;
@@ -35,21 +33,12 @@ abstract class _AbstractConnect implements HttpConnect {
   @override
   Future include(String uri, {HttpRequest request, HttpResponse response})
   => server.include(this, uri, request: request, response: response);
-
-  @override
-  ErrorCallback get error { //rarely used; defer it
-    if (_errh == null)
-      _errh = (e, [st]) {
-        _cxerrh(this, e, st);
-      };
-    return _errh;
-  }
 }
 
 ///The default implementation of HttpConnect
 class _HttpConnect extends _AbstractConnect {
   _HttpConnect(StreamServer server, HttpRequest request, HttpResponse response):
-      this.server = server, super(request, response, server.defaultErrorCallback);
+      this.server = server, super(request, response);
 
   @override
   final StreamServer server;
@@ -64,7 +53,7 @@ class _ProxyConnect extends _AbstractConnect {
   final HttpConnect _origin;
 
   _ProxyConnect(HttpConnect origin, HttpRequest request, HttpResponse response):
-      _origin = origin, super(request, response, origin.server.defaultErrorCallback);
+      _origin = origin, super(request, response);
 
   @override
   StreamServer get server => _origin.server;

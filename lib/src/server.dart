@@ -193,13 +193,13 @@ abstract class StreamServer {
    */
   ResourceLoader resourceLoader;
 
-  /** The application-specific error handler. Default: null.
+  /** The application-specific error handler to listen all errors that
+   * ever happens in this server.
+   *
+   * If the connect argument is null, it means it is a server error.
+   * If not null, it means it is caused by an event handler or filter.
    */
-  void onError(ConnectErrorCallback handler);
-  /** The default content handler. It is invoked after the handler assigned
-   * to [onError], if any.
-   */
-  ConnectErrorCallback get defaultErrorCallback;
+  void onError(void handler(HttpConnect connect, err, [stackTrace]));
 
   /** Maps the given URI to the given handler.
    *

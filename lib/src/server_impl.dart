@@ -3,6 +3,9 @@
 // Author: tomyeh
 part of stream;
 
+/** The error handler for HTTP connection. */
+typedef void _ConnectErrorCallback(HttpConnect connect, err, [stackTrace]);
+
 class _StreamServer implements StreamServer {
   final String version = "0.7.1";
   HttpServer _server;
@@ -13,22 +16,16 @@ class _StreamServer implements StreamServer {
   Path _homeDir;
   ResourceLoader _resLoader;
   final Router _router;
-  ConnectErrorCallback _defaultErrorCallback, _onError;
+  _ConnectErrorCallback _onError;
   final bool _futureOnly;
 
   _StreamServer(this._router, String homeDir, LoggingConfigurer loggingConfigurer,
     this._futureOnly): logger = new Logger("stream") {
     (loggingConfigurer != null ? loggingConfigurer: new LoggingConfigurer())
       .configure(logger);
-    _init();
     _initDir(homeDir);
   }
 
-  void _init() {
-    _defaultErrorCallback = (HttpConnect cnn, err, [st]) {
-      _handleErr(cnn, err, st);
-    };
-  }
   void _initDir(String homeDir) {
     var path;
     if (homeDir != null) {
@@ -204,11 +201,9 @@ class _StreamServer implements StreamServer {
   }
 
   @override
-  void onError(ConnectErrorCallback onError) {
-    _onError = onError;
+  void onError(void handler(HttpConnect connect, err, [stackTrace])) {
+    _onError = handler;
   }
-  @override
-  ConnectErrorCallback get defaultErrorCallback => _defaultErrorCallback;
 
   @override
   bool get isRunning => _server != null;

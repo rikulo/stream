@@ -2,6 +2,7 @@
 
 **0.7.1**
 
+* HttpConnect.error has been removed. All errors shall be wired back Future.
 * StreamServer.host can be String or InternetAddress, and the default is ANY_IP_V4.
 * Issue 27: Able to configure Stream server to enforce the return of Future in every handler.
 

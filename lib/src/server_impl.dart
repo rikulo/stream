@@ -297,6 +297,10 @@ class _StreamServer implements StreamServer {
     _router.filter(uri, filter, preceding: preceding);
   }
 
+  @override
+  HttpConnectionsInfo get connectionsInfo
+  => _server != null ? _server.connectionsInfo: new HttpConnectionsInfo();
+
   Future _ensureFuture(value, [bool ignoreFutureOnly=false]) {
     //Note: we can't use Http500. otherwise, the error won't be logged
     if (value == null) { //immediate (no async task)

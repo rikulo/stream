@@ -227,6 +227,11 @@ abstract class StreamServer {
    * The default level is `INFO`.
    */
   Logger get logger;
+
+  /** Returns the information summarizing the number of current connections
+   * handled by the server.
+   */
+  HttpConnectionsInfo get connectionsInfo;
 }
 
 /** A generic server error.

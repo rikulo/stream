@@ -158,8 +158,7 @@ abstract class HttpConnect {
    */
   Future include(String uri, {HttpRequest request, HttpResponse response});
 
-  /** The error detailed information (which is the information when [error]
-   * has been called), or null if no error.
+  /** The error detailed information, or null if no error occurs.
    */
   ErrorDetail errorDetail;
 

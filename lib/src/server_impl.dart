@@ -14,10 +14,10 @@ class _StreamServer implements StreamServer {
   ResourceLoader _resLoader;
   final Router _router;
   ConnectErrorCallback _defaultErrorCallback, _onError;
-  final bool _futureMandated;
+  final bool _futureOnly;
 
   _StreamServer(this._router, String homeDir, LoggingConfigurer loggingConfigurer,
-    this._futureMandated): logger = new Logger("stream") {
+    this._futureOnly): logger = new Logger("stream") {
     (loggingConfigurer != null ? loggingConfigurer: new LoggingConfigurer())
       .configure(logger);
     _init();
@@ -297,10 +297,10 @@ class _StreamServer implements StreamServer {
     _router.filter(uri, filter, preceding: preceding);
   }
 
-  Future _ensureFuture(value, [bool ignoreFutureMandated=false]) {
+  Future _ensureFuture(value, [bool ignoreFutureOnly=false]) {
     //Note: we can't use Http500. otherwise, the error won't be logged
     if (value == null) { //immediate (no async task)
-      if (_futureMandated && !ignoreFutureMandated)
+      if (_futureOnly && !ignoreFutureOnly)
         throw new ServerError("Handler/filter must return Future");
       return new Future.value();
     }

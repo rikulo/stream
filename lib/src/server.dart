@@ -53,7 +53,7 @@ abstract class StreamServer {
    * such as 404 and 500. The exception is used for matching the caught exception.
    * Notice that, if you specify the name of the exception to handle,
    * it must include the library name and the class name, such as `"stream.ServerError"`.
-   * * [futureMandated] - whether to force every request handler to return a Future instance.
+   * * [futureOnly] - whether every request handler shall return a Future instance.
    * If false (default), a request handler can return null (or nothing) to indicate
    * the request has been served immediately. However, it is also a common error -- forget
    * to return a Future object. To avoid this problem, you can return a Future object
@@ -62,16 +62,16 @@ abstract class StreamServer {
    */
   factory StreamServer({Map<String, dynamic> uriMapping,
       Map errorMapping, Map<String, RequestFilter> filterMapping,
-      String homeDir, LoggingConfigurer loggingConfigurer, bool futureMandated: false})
+      String homeDir, LoggingConfigurer loggingConfigurer, bool futureOnly: false})
   => new _StreamServer(new DefaultRouter(uriMapping, errorMapping, filterMapping),
-      homeDir, loggingConfigurer, futureMandated);
+      homeDir, loggingConfigurer, futureOnly);
 
   /** Constructs a server with the given router.
    * It is used if you'd like to use your own router, rather than the default one.
    */
   factory StreamServer.router(Router router, {String homeDir,
-      LoggingConfigurer loggingConfigurer})
-  => new _StreamServer(router, homeDir, loggingConfigurer);
+      LoggingConfigurer loggingConfigurer, bool futureOnly: false})
+  => new _StreamServer(router, homeDir, loggingConfigurer, futureOnly);
 
   /** The version.
    */

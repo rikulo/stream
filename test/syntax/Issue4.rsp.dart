@@ -21,20 +21,20 @@ render(HttpConnect connect, {more, less}) {
 
 abc/"""); //#5
 
-  response.write($nns(foo)); //#7
+  response.write(RSP.nns(foo)); //#7
 
 
   response.write("""
 
 """); //#7
 
-  return connect.include("""${$nns(foo)}""").then((_) { //#8
+  return connect.include("""${RSP.nns(foo)}""").then((_) { //#8
 
-    return connect.include("""abc/${$nns(foo)}""").then((_) { //#9
+    return connect.include("""abc/${RSP.nns(foo)}""").then((_) { //#9
 
-      return $nnf(render(new HttpConnect.chain(connect), more: """abc/${$nns(foo)}""", less: foo)).then((_) { //include#10
+      return RSP.nnf(render(new HttpConnect.chain(connect), more: """abc/${RSP.nns(foo)}""", less: foo)).then((_) { //include#10
 
-        return $nnf();
+        return RSP.nnf();
       }); //end-of-include
     }); //end-of-include
   }); //end-of-include

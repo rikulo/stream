@@ -14,7 +14,7 @@ Future sidebar(HttpConnect connect) { //#2
   <li>This is a sidebar.</li>
   <li>"""); //#2
 
-  response.write($nns(new DateTime.now())); //#4
+  response.write(RSP.nns(new DateTime.now())); //#4
 
 
   response.write("""
@@ -22,5 +22,5 @@ Future sidebar(HttpConnect connect) { //#2
 </ul>
 """); //#4
 
-  return $nnf();
+  return RSP.nnf();
 }

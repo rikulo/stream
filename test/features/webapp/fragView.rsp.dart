@@ -11,7 +11,7 @@ Future fragView(HttpConnect connect, {Map infos: const {}, header, footer}) { //
 
   if (header != null) { //if#2
 
-    response.write($nns(header)); //#3
+    response.write(RSP.nns(header)); //#3
 
 
     response.write("""
@@ -28,7 +28,7 @@ Future fragView(HttpConnect connect, {Map infos: const {}, header, footer}) { //
 
     response.write("""    <li>"""); //#8
 
-    response.write($nns(type)); //#8
+    response.write(RSP.nns(type)); //#8
 
 
     response.write("""
@@ -40,7 +40,7 @@ Future fragView(HttpConnect connect, {Map infos: const {}, header, footer}) { //
 
       response.write("""        <li>"""); //#11
 
-      response.write($nns(name)); //#11
+      response.write(RSP.nns(name)); //#11
 
 
       response.write("""
@@ -62,7 +62,7 @@ Future fragView(HttpConnect connect, {Map infos: const {}, header, footer}) { //
 
     response.write("""  """); //#18
 
-    response.write($nns(footer)); //#18
+    response.write(RSP.nns(footer)); //#18
 
 
     response.write("""
@@ -70,5 +70,5 @@ Future fragView(HttpConnect connect, {Map infos: const {}, header, footer}) { //
 """); //#18
   } //if
 
-  return $nnf();
+  return RSP.nnf();
 }

@@ -5,8 +5,12 @@ import "dart:async";
 import "dart:io";
 import "package:stream/stream.dart";
 
-part "config.dart";
 part "listView.rsp.dart"; //generated from listView.rsp.html
+
+//URI mapping
+var _mapping = {
+  "/": helloMVC
+};
 
 ///The model: the information of a file.
 class FileInfo {

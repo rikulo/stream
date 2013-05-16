@@ -4,7 +4,10 @@ library hello_dynamic;
 import "dart:json" as Json;
 import "package:stream/stream.dart";
 
-part "config.dart";
+//URI mapping
+var _mapping = {
+  "/server-info": serverInfo,
+};
 
 void serverInfo(HttpConnect connect) {
   final info = {"name": "Rikulo Stream", "version": connect.server.version};

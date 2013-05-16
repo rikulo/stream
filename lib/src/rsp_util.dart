@@ -35,6 +35,8 @@ class RSP {
     return uri + (query == null ? "?query2": "$query&query2");
   }
 
-  ///JSON strigify the given Dart object
+  /** Serializes the given object into a JSON string by use of
+   * [stringify](http://api.dartlang.org/docs/releases/latest/dart_json.html#stringify).
+   */
   static String json(data) => Json.stringify(data);
 }

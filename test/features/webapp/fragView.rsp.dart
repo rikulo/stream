@@ -4,7 +4,8 @@ part of features;
 
 /** Template, fragView, for rendering the view. */
 Future fragView(HttpConnect connect, {Map infos: const {}, header, footer}) { //#2
-  var _cs_ = new List<HttpConnect>(), request = connect.request, response = connect.response;
+  var _t0_, _cs_ = new List<HttpConnect>(),
+  request = connect.request, response = connect.response;
 
   if (!connect.isIncluded)
     response.headers.contentType = ContentType.parse("""text/html; charset=utf-8""");

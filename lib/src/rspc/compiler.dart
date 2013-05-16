@@ -138,8 +138,7 @@ class Compiler {
 
       for (i = _name.length; --i >= 0;) { //check if _name is legal
         final cc = _name[i];
-        if (!StringUtil.isChar(cc, upper:true, lower: true, digit: true)
-            && cc != '\$' && cc != '_')
+        if (!isValidVarChar(cc, i == 0))
           _error("Unable to generate a legal function name from $sourceName. "
             "Please specify the name with the page tag.", line);
       }
@@ -176,8 +175,7 @@ class Compiler {
       final sb = new StringBuffer(), len = lib.length;
       for (i = 0; i < len; ++i) {
         final cc = lib[i];
-        sb.write(StringUtil.isChar(cc, upper:true, lower: true, digit: true)
-            || cc == '\$' ? cc: '_');
+        sb.write(isValidVarChar(cc, i == 0) ? cc: '_');
       }
       _writeln("library $sb;\n");
 
@@ -196,7 +194,9 @@ class Compiler {
     if (_args != null)
       _write(", {$_args}");
     _writeln(") { //#$line\n"
-      "  var _cs_ = new List<HttpConnect>(), request = connect.request, response = connect.response;\n");
+      "  var _t0_, _cs_ = new List<HttpConnect>(),\n"
+      "  request = connect.request, response = connect.response;\n");
+      //_t0_ is reserved for tags
 
     if (_contentType != null) {
       if (!ctypeSpecified) //if not specified, it is set only if not included
@@ -443,7 +443,7 @@ class Compiler {
     return from;
   }
   ///Skip arguments (of a tag)
-  int _skipTagArgs(int from, bool ignoreSlash) {
+  int _skipTagArgs(int from) {
     final line = _line;
     String sep;
     int nbkt = 0;
@@ -457,7 +457,9 @@ class Compiler {
       } else if (sep == null) {
         if (cc == '"' || cc == "'") {
           sep = cc;
-        } else if (nbkt == 0 && ((!ignoreSlash && cc == '/') || cc == ']')) {
+        } else if (cc == '/' && from + 1 < _len && source[from + 1] == ']') {
+          return from;
+        } else if (nbkt == 0 && cc == ']') {
           return from;
         } else if (cc == '[') {
           ++nbkt;
@@ -471,8 +473,8 @@ class Compiler {
     _error("Expect ']'", line);
   }
   ///Note: [tag] is required if `tag.hasClosing` is 
-  String _tagData({Tag tag, skipFollowingSpaces: true, ignoreSlash: false}) {
-    int k = _skipTagArgs(_pos, ignoreSlash);
+  String _tagData({Tag tag, skipFollowingSpaces: true}) {
+    int k = _skipTagArgs(_pos);
     final data = source.substring(_pos, k).trim();
     _pos = k + 1;
     if (source[k] == '/') {
@@ -538,7 +540,7 @@ class Compiler {
   void _outExpr() {
     //it doesn't push, so we have to use _line instead of _current.line
     final line = _line; //_tagData might have multiple lines
-    final expr = _tagData(ignoreSlash: true, skipFollowingSpaces: false);
+    final expr = _tagData(skipFollowingSpaces: false);
       //1) '/' is NOT a terminal, 2) no skip space for expression
     if (!expr.isEmpty) {
       final pre = _current.pre;

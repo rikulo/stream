@@ -34,4 +34,7 @@ class RSP {
     final query2 = HttpUtil.encodeQuery(parameters);
     return uri + (query == null ? "?query2": "$query&query2");
   }
+
+  ///JSON strigify the given Dart object
+  static String json(data) => Json.stringify(data);
 }

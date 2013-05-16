@@ -1,5 +1,9 @@
 #CHANGES
 
+**0.7.2**
+
+* Issue 28: Support the JSON tag for simplifying the rendering of a Dart object
+
 **0.7.1**
 
 * HttpConnect.error has been removed. All errors shall be wired back Future.

@@ -91,7 +91,7 @@ Map<String, Tag> get tags {
   if (_tags == null) {
     _tags = new HashMap();
     for (Tag tag in [new PageTag(), new DartTag(), new HeaderTag(),
-      new IncludeTag(), new ForwardTag(), new VarTag(),
+      new IncludeTag(), new ForwardTag(), new VarTag(), new JsonTag(),
       new ForTag(), new WhileTag(), new IfTag(), new ElseTag()])
       _tags[tag.name] = tag;
   }
@@ -275,6 +275,43 @@ class VarTag extends Tag {
   String get name => "var";
 }
 
+/** The json tag. It generates a JavaScript object by converting
+ * the given Dart expression into a JSON object.
+ *
+ *     [:json name=expression /]
+ */
+class JsonTag extends Tag {
+  @override
+  void begin(TagContext tc, String data) {
+    if (data.isEmpty)
+      tc.error("Expect a variable name");
+
+    final len = data.length;
+    int i = 0;
+    for (; i < len && isValidVarChar(data[i], i == 0); ++i)
+      ;
+    if (i == 0)
+      tc.error("Expect a variable name, not '${data[0]}'");
+
+    final nm = data.substring(0, i);
+    for (; i < len && StringUtil.isChar(data[i], whitespace: true); ++i)
+      ;
+    if (i >= len || data[i] != '=')
+      tc.error("Expect '=', not '${data[i]}");
+
+    final val = data.substring(i + 1).trim();
+    if (val.isEmpty)
+      tc.error("Expect an expression");
+
+    tc.writeln("\n${tc.pre}_t0_ = RSP.json($val);"
+      '\n${tc.pre}response.write("<script>$nm = \$_t0_;</script>\\n");');
+  }
+  @override
+  bool get hasClosing => false;
+  @override
+  String get name => "json";
+}
+
 ///A skeletal class for implementing control tags, such as [IfTag] and [WhileTag].
 abstract class ControlTag extends Tag {
   @override
@@ -286,7 +323,7 @@ abstract class ControlTag extends Tag {
     if (data.startsWith('(') && data.endsWith(')')) {
       beg = end = "";
     } else {
-      beg = needsVar ? "(var ": "(";
+      beg = needsVar_ ? "(var ": "(";
       end = ")";
     }
     tc.writeln("\n${tc.pre}$control $beg$data$end { //$name#${tc.line}");
@@ -303,8 +340,7 @@ abstract class ControlTag extends Tag {
   @override
   String get control => name;
   ///Whether `var` is required in front of the condition
-  @override
-  bool get needsVar => false;
+  bool get needsVar_ => false;
 }
 
 /** The for tag. There are two formats:
@@ -319,7 +355,7 @@ class ForTag extends ControlTag {
   @override
   String get name => "for";
   @override
-  bool get needsVar => true;
+  bool get needsVar_ => true;
 }
 
 /** The while tag.

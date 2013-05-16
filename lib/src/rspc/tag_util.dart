@@ -3,6 +3,10 @@
 // Author: tomyeh
 part of stream_rspc;
 
+///Test if the given character can be used in a variable name.
+bool isValidVarChar(String cc, bool firstChar)
+ => StringUtil.isChar(cc, lower: true, upper: true, digit: !firstChar, match:"_\$");
+
 /** Test if the given value is enclosed with `[= ]`.
  * If null, false is returned.
  */
@@ -118,8 +122,7 @@ class ArgInfo {
           }
         } else if (idFirst) {
           int i = 0;
-          for (; i < len && StringUtil.isChar(
-              data[i], lower:true,upper:true, match:"_\$"); ++i)
+          for (; i < len && isValidVarChar(data[i], i == 0); ++i)
             ;
           if (i > 0) {
             first = data.substring(0, i);

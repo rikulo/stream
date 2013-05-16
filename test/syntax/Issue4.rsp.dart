@@ -8,7 +8,8 @@ import 'package:stream/stream.dart';
 
 /** Template, Issue4, for rendering the view. */
 Future Issue4(HttpConnect connect) { //#1
-  var _cs_ = new List<HttpConnect>(), request = connect.request, response = connect.response;
+  var _t0_, _cs_ = new List<HttpConnect>(),
+  request = connect.request, response = connect.response;
 
   if (!connect.isIncluded)
     response.headers.contentType = ContentType.parse("""text/html; charset=utf-8""");

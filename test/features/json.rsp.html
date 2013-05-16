@@ -1,0 +1,23 @@
+[:page partOf="main.dart"]
+[:dart]
+var map = {
+  "first": [123, "abc"],
+  "second": true
+};
+[/dart]
+<html>
+  <head>
+    <title>Test of Json</title>
+  </head>
+  <body>
+    [:json foo=[map, "another"]]
+    <div id="show"></div>
+    <script>
+var tests = ["foo[1]", "foo[0].first[0]", "foo[0].second"];
+var out = "";
+for (var i = 0; i < tests.length; ++i)
+  out += tests[i] + ": " + eval(tests[i]) + "<br/>";
+document.getElementById("show").innerHTML = out;
+    </script>
+  </body>
+</html>

@@ -9,7 +9,8 @@ import 'dart:collection' show LinkedHashMap;
 
 /** Template, syntax, for rendering the view. */
 Future syntax(HttpConnect connect, {foo, bool c:false}) { //#4
-  var _cs_ = new List<HttpConnect>(), request = connect.request, response = connect.response;
+  var _t0_, _cs_ = new List<HttpConnect>(),
+  request = connect.request, response = connect.response;
 
   response.headers.contentType = ContentType.parse("""${RSP.nns(foo.contentType)}""");
 
@@ -181,12 +182,21 @@ Future syntax(HttpConnect connect, {foo, bool c:false}) { //#4
       response.write("""
   </body>
 </html>
-
 """); //#61
+
+      _t0_ = RSP.json(foo.name.length ~/ 2);
+      response.write("<script>foo1 = $_t0_;</script>\n");
+
+      _t0_ = RSP.json(foo.name.length ~/ 2 * "/]".length);
+      response.write("<script>foo2 = $_t0_;</script>\n");
 
       response.write("""
 
 """); //#65
+
+      response.write("""
+
+"""); //#67
 
       return RSP.nnf();
     }); //end-of-include

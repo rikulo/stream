@@ -36,6 +36,11 @@ abstract class StreamServer {
    * (i.e., `void`). If not, it shall return an URI (which is a non-empty string,
    * starting with * `/`) that the request shall be forwarded to.
    *
+   * * [homeDir] - the home directory for holding static resources. If not specified,
+   * it is the root directory of the application (i.e., the parent directory of
+   * the `webapp` directory). You can specify a relative path relative to the root
+   * directory. For example, you can create a directory called `static` to hold
+   * the static resources, and then specify `static` as the home directory.
    * * [uriMapping] - a map of URI mappings, `<String uri, RequestHandler handler>`
    * or `<String uri, String forwardURI>`.
    * The key is a regular expression used to match the request URI. If you can name
@@ -76,7 +81,8 @@ abstract class StreamServer {
   /** The version.
    */
   String get version;
-  /** The path of the home directory.
+  /** The path of the home directory. It is the directory that static resources
+   * are loaded from.
    */
   Path get homeDir;
   /** A list of names that will be used to locate the resource if

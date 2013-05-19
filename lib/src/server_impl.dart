@@ -27,13 +27,19 @@ class _StreamServer implements StreamServer {
   }
 
   void _initDir(String homeDir) {
-    var path;
+    _homeDir = _getRootPath();
     if (homeDir != null) {
-      path = new Path(homeDir);
-    } else {
-      homeDir = new Options().script;
-      path = homeDir != null ? new Path(homeDir).directoryPath: new Path("");
+      Path path = new Path(homeDir);
+      _homeDir = path.isAbsolute ? path: _homeDir.join(path);
     }
+
+    if (!new Directory.fromPath(_homeDir).existsSync())
+      throw new ServerError("$homeDir doesn't exist.");
+    _resLoader = new ResourceLoader(_homeDir);
+  }
+  static Path _getRootPath() {
+    var path = new Options().script;
+    path = path != null ? new Path(path).directoryPath: new Path("");
 
     if (!path.isAbsolute)
       path = new Path(Directory.current.path).join(path);
@@ -43,17 +49,13 @@ class _StreamServer implements StreamServer {
       final nm = path.filename;
       path = path.directoryPath;
       if (nm == "webapp")
-        break; //found and we use its parent as homeDir
+        break; //found and we use its parent as the root
       final ps = path.toString();
       if (ps.isEmpty || ps == "/")
         throw new ServerError(
           "The application must be under the webapp directory, not ${orgpath.toNativePath()}");
     }
-
-    _homeDir = path;
-    if (!new Directory.fromPath(_homeDir).existsSync())
-      throw new ServerError("$homeDir doesn't exist.");
-    _resLoader = new ResourceLoader(_homeDir);
+    return path;
   }
 
   @override

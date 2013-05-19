@@ -3,6 +3,7 @@
 **0.7.2**
 
 * Issue 28: Support the JSON tag for simplifying the rendering of a Dart object
+* Issue 29: The homDir argument shall interpret the relative path against the root directory of the application
 
 **0.7.1**
 

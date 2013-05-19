@@ -27,10 +27,11 @@ class _StreamServer implements StreamServer {
   }
 
   void _initDir(String homeDir) {
-    _homeDir = _getRootPath();
-    if (homeDir != null) {
+    if (homeDir == null) {
+      _homeDir = _getRootPath();
+    } else {
       Path path = new Path(homeDir);
-      _homeDir = path.isAbsolute ? path: _homeDir.join(path);
+      _homeDir = path.isAbsolute ? path: _getRootPath().join(path);
     }
 
     if (!new Directory.fromPath(_homeDir).existsSync())

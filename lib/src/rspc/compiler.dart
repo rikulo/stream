@@ -694,7 +694,10 @@ class Compiler {
   }
   ///Throws an exception (and stops execution).
   void _error(String message, [int line]) {
-    throw new SyntaxError(sourceName, line != null ? line: _current.line, message);
+    if (line == null)
+      line = _current.line;
+    _writeln("\n>>> Failed at #$line: $message"); //for easy detecting error
+    throw new SyntaxError(sourceName, line, message);
   }
   ///Display an warning.
   void _warning(String message, [int line]) {

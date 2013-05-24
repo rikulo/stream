@@ -68,7 +68,9 @@ abstract class StreamServer {
   factory StreamServer({Map<String, dynamic> uriMapping,
       Map errorMapping, Map<String, RequestFilter> filterMapping,
       String homeDir, LoggingConfigurer loggingConfigurer, bool futureOnly: false})
-  => new _StreamServer(new DefaultRouter(uriMapping, errorMapping, filterMapping),
+  => new _StreamServer(
+      new DefaultRouter(uriMapping: uriMapping,
+        errorMapping: errorMapping, filterMapping: filterMapping),
       homeDir, loggingConfigurer, futureOnly);
 
   /** Constructs a server with the given router.

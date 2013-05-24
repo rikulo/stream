@@ -67,9 +67,9 @@ class DefaultRouter implements Router {
    * You can specify it to false if you don't put RSP files with client
    * resource files.
    */
-  DefaultRouter(Map<String, dynamic> uriMapping, Map errorMapping,
+  DefaultRouter({Map<String, dynamic> uriMapping, Map errorMapping,
 			Map<String, RequestFilter> filterMapping,
-      {int cacheSize: 1000, bool protectRSP: true}) {
+      int cacheSize: 1000, bool protectRSP: true}) {
     _cacheSize = cacheSize;
 
     if (uriMapping != null)

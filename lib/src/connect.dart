@@ -245,10 +245,12 @@ class HttpStatusException implements HttpException {
 /// HTTP 403 exception.
 class Http403 extends HttpStatusException {
   Http403([String uri]): super(403, _status2msg(403, uri));
+  Http403.connect(HttpConnect connect): this(connect.request.uri.path);
 }
 /// HTTP 404 exception.
 class Http404 extends HttpStatusException {
   Http404([String uri]): super(404, _status2msg(404, uri));
+  Http404.connect(HttpConnect connect): this(connect.request.uri.path);
 }
 /// HTTP 500 exception.
 class Http500 extends HttpStatusException {

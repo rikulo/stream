@@ -10,6 +10,6 @@ void main() {
       "/static/.*": (connect) => connect.server.resourceLoader
         .load(connect, connect.request.uri.path.substring(7)),
       "/": (connect) => connect.forward("/static/test.html"),
-      "/.*": (connect) => throw new Http404(connect.request.uri.path)
+      "/.*": (connect) => throw new Http404.connect(connect)
     }).start();
 }

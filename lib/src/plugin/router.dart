@@ -63,9 +63,13 @@ class DefaultRouter implements Router {
   /** The constructor.
    *
    * * [cacheSize] - the size of the cache for speeding up URI matching.
+   * * [protectRSP] - protects RSP files from accessing at the client.
+   * You can specify it to false if you don't put RSP files with client
+   * resource files.
    */
   DefaultRouter(Map<String, dynamic> uriMapping, Map errorMapping,
-			Map<String, RequestFilter> filterMapping, {int cacheSize:1000}) {
+			Map<String, RequestFilter> filterMapping,
+      {int cacheSize: 1000, bool protectRSP: true}) {
     _cacheSize = cacheSize;
 
     if (uriMapping != null)
@@ -73,8 +77,9 @@ class DefaultRouter implements Router {
         map(uri, uriMapping[uri]);
 
     //default mapping
-    _uriMapping.add(new _UriMapping("/.*[.]rsp(|[.][^/]*)", _f404));
-      //prevent .rsp and .rsp.* from access
+    if (protectRSP)
+      _uriMapping.add(new _UriMapping("/.*[.]rsp(|[.][^/]*)", _f404));
+        //prevent .rsp and .rsp.* from access
 
     if (filterMapping != null)
       for (final uri in filterMapping.keys)

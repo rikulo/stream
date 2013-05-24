@@ -42,15 +42,11 @@ function d2j {
 	if [ ${f%.dart} != $f ] ; then
 		grep -w 'main[(] *[)]' $f > /dev/null
 		if [ "$?" = "0" ] ; then #found
-			$dart2js $minify $f
+			$dart2js $minify -o$f.js $f
 			if [ "$?" = "0" ] ; then
-				mv out.js ${f%.dart}.dart.js
 				if [ "$minify" = "--minify" ] ; then
-					rm out.js.map
-					rm out.js.deps
-				else
-					mv out.js.map ${f%.dart}.dart.js.map
-					mv out.js.deps ${f%.dart}.dart.js.deps
+					rm $f.js.map
+					rm $f.js.deps
 				fi
 			else
 				exit 1

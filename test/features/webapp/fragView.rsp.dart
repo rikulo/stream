@@ -55,20 +55,26 @@ Future fragView(HttpConnect connect, {Map infos: const {}, header, footer}) { //
 """); //#13
   } //for
 
+  response.write("""  <li>Browser is """); //#16
+
+  response.write(RSP.nns(connect.browser)); //#16
+
+
   response.write("""
+</li>
 </ul>
 """); //#16
 
-  if (footer != null) { //if#17
+  if (footer != null) { //if#18
 
-    response.write("""  """); //#18
+    response.write("""  """); //#19
 
-    response.write(RSP.nns(footer)); //#18
+    response.write(RSP.nns(footer)); //#19
 
 
     response.write("""
 
-"""); //#18
+"""); //#19
   } //if
 
   return RSP.nnf();

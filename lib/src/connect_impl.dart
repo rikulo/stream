@@ -37,11 +37,23 @@ abstract class _AbstractConnect implements HttpConnect {
 
 ///The default implementation of HttpConnect
 class _HttpConnect extends _AbstractConnect {
+  Browser _browser;
+
   _HttpConnect(StreamServer server, HttpRequest request, HttpResponse response):
       this.server = server, super(request, response);
 
   @override
   final StreamServer server;
+
+  @override
+  Browser get browser {
+    if (_browser == null) {
+      final ua = request.headers.value("User-Agent");
+      _browser = new _Browser(ua != null ? ua: "");
+    }
+    return _browser;
+  }
+
   @override
   ErrorDetail errorDetail;
   @override
@@ -57,6 +69,8 @@ class _ProxyConnect extends _AbstractConnect {
 
   @override
   StreamServer get server => _origin.server;
+  @override
+  Browser get browser => _origin.browser;
   @override
   ErrorDetail get errorDetail => _origin.errorDetail;
   @override
@@ -223,3 +237,10 @@ String _toCompleteUrl(HttpRequest request, String uri)
 => _completeUriRegex.hasMatch(uri) ? uri:
   request.uri.resolve(_toAbsUri(request, uri)).toString();
 final RegExp _completeUriRegex = new RegExp(r"^[a-zA-Z]+://");
+
+class _Browser extends Browser {
+  _Browser(this.userAgent);
+
+  @override
+  final String userAgent;
+}

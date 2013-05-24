@@ -1,5 +1,9 @@
 #CHANGES
 
+**0.7.3**
+
+* Issue 32: HttpConnect provides API to retrieve the information of the browser
+
 **0.7.2**
 
 * Issue 28: Support the JSON tag for simplifying the rendering of a Dart object

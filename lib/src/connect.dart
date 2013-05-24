@@ -158,6 +158,11 @@ abstract class HttpConnect {
    */
   Future include(String uri, {HttpRequest request, HttpResponse response});
 
+  /** Returns the browser information.
+   *
+   * * See also [Browser](http://api.rikulo.org/commons/latest/rikulo_browser/Browser.html).
+   */
+  Browser get browser;
   /** The error detailed information, or null if no error occurs.
    */
   ErrorDetail errorDetail;
@@ -205,6 +210,8 @@ class HttpConnectWrapper implements HttpConnect {
   => origin.include(uri, request: request != null ? request: this.request,
     response: response != null ? response: this.response);
 
+  @override
+  Browser get browser => origin.browser;
   @override
   ErrorDetail get errorDetail => origin.errorDetail;
   @override

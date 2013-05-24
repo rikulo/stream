@@ -16,6 +16,7 @@ import "package:logging/logging.dart" show Logger;
 import "package:rikulo_commons/util.dart";
 import "package:rikulo_commons/io.dart";
 import "package:rikulo_commons/async.dart";
+import "package:rikulo_commons/browser.dart";
 
 import "plugin.dart";
 

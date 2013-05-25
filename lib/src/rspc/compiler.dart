@@ -642,7 +642,7 @@ class Compiler {
       mynm = null; //no need to add
 
     if (!importToAdd.isEmpty || mynm != null) {
-      final srcnm = sourceName != null ? sourceName: mypath.toString();
+      final srcnm = _shorten(sourceName != null ? sourceName: mypath.toString());
       final buf = new StringBuffer();
 
       if (importToAdd.isEmpty) {

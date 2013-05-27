@@ -14,6 +14,7 @@ class _StreamServer implements StreamServer {
   int _sessTimeout = 20 * 60; //20 minutes
   final Logger logger;
   Path _homeDir;
+  DateTime _startedSince;
   ResourceLoader _resLoader;
   final Router _router;
   _ConnectErrorCallback _onError;
@@ -169,6 +170,8 @@ class _StreamServer implements StreamServer {
   Path get homeDir => _homeDir;
   @override
   final List<String> indexNames = ['index.html'];
+  @override
+  DateTime get startedSince => _startedSince;
 
   @override
   int get port => _port;
@@ -218,6 +221,7 @@ class _StreamServer implements StreamServer {
       _handleErr(null, err);
     })
     .then((server) {
+      _startedSince = new DateTime.now();
       _server = server;
       _startServer();
       _logStarted();

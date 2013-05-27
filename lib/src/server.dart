@@ -83,6 +83,9 @@ abstract class StreamServer {
   /** The version.
    */
   String get version;
+  /** When the server started. It is null if never started.
+   */
+  DateTime get startedSince;
   /** The path of the home directory. It is the directory that static resources
    * are loaded from.
    */

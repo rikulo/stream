@@ -3,6 +3,7 @@
 **0.7.3**
 
 * Issue 32: HttpConnect provides API to retrieve the information of the browser
+* Issue 31: RSP supports last-modified as the time it has been compiled
 
 **0.7.2**
 

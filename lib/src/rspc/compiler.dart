@@ -23,6 +23,7 @@ class Compiler {
   final List _lookAhead = [];
   final List<_IncInfo> _incs = []; //included
   String _extra = ""; //extra whitespaces
+  String _lastModified;
   int _nextVar = 0; //used to implement TagContext.nextVar()
 
   Compiler(this.source, this.destination, {
@@ -204,11 +205,18 @@ class Compiler {
       _writeln('  response.headers.contentType = ContentType.parse('
         '${toEL(_contentType, direct: false)});');
     }
+    if (_lastModified != null) {
+      _write('  response.headers.set(HttpHeaders.LAST_MODIFIED, ');
+      if (_lastModified == "compile")
+        _writeln("new DateTime.fromMillisecondsSinceEpoch(${new DateTime.now().millisecondsSinceEpoch}));");
+      else
+        _writeln("connect.server.startedSince);");
+    }
   }
 
   ///Sets the page information.
   void setPage(String partOf, String imports, String name, String description, String args,
-      String contentType, [int line]) {
+      String contentType, String lastModified, [int line]) {
     _partOf = partOf;
     _noEL(partOf, "the partOf attribute", line);
     _import = imports;
@@ -220,6 +228,13 @@ class Compiler {
     _args = args;
     _noEL(args, "the args attribute", line);
     _contentType = contentType;
+
+    if (lastModified != null)
+      if (lastModified.isEmpty)
+        lastModified = null;
+      else if (lastModified != "compile" && lastModified != "start")
+        _error("Unknown lastModified attribute: $lastModified");
+    _lastModified = lastModified;
   }
 
   ///Include the given URI.

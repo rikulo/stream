@@ -33,7 +33,7 @@ class RSP {
    * * [pre]: whether to replace whitespace with `&nbsp;` (default: false).
    * It is meaningful only if encode is `xml`.
    */
-  static String nnx(value, {String ecnode, int limit: 0, bool firstLine: false,
+  static String nnx(value, {String encode, int limit: 0, bool firstLine: false,
     pre: false}) {
     String str = value != null ? value.toString(): "";
     if (firstLine) {

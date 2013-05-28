@@ -35,7 +35,7 @@ final infos = {
     <div style="border: 1px solid red">
 """); //#19
 
-    return RSP.nnf(fragView(new HttpConnect.chain(connect), infos: infos)).then((_) { //include#21
+    return Rsp.nnf(fragView(new HttpConnect.chain(connect), infos: infos)).then((_) { //include#21
 
       response.write("""
     </div>
@@ -49,7 +49,7 @@ final infos = {
   <h1>This is a header</h1>
   <p>Passed from the includer for showing """); //#26
 
-      response.write(RSP.nnx(infos)); //#27
+      response.write(Rsp.nnx(infos)); //#27
 
 
       response.write("""
@@ -70,7 +70,7 @@ final infos = {
 
         connect = _cs_.removeLast(); response = connect.response;
 
-        return RSP.nnf(fragView(new HttpConnect.chain(connect), infos: infos, header: _0.toString(), footer: _1.toString())).then((_) { //include#24
+        return Rsp.nnf(fragView(new HttpConnect.chain(connect), infos: infos, header: _0.toString(), footer: _1.toString())).then((_) { //include#24
 
           response.write("""
     </div>
@@ -78,7 +78,7 @@ final infos = {
 </html>
 """); //#35
 
-          return RSP.nnf();
+          return Rsp.nnf();
         }); //end-of-include
       }); //end-of-include
     }); //end-of-include

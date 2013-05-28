@@ -23,7 +23,7 @@ var map = {
   <body>
 """); //#7
 
-  _t0_ = RSP.json([map, "another"]);
+  _t0_ = Rsp.json([map, "another"]);
   response.write("<script>foo = $_t0_;</script>\n");
 
   response.write("""
@@ -39,5 +39,5 @@ document.getElementById("show").innerHTML = out;
 </html>
 """); //#14
 
-  return RSP.nnf();
+  return Rsp.nnf();
 }

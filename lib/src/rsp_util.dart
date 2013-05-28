@@ -8,7 +8,7 @@ part of stream;
  *
  * > They are used in the generated code of RSP pages.
  */
-class RSP {
+class Rsp {
   /** Converts the given value to a non-null string.
    * If the given value is not null, `toString` is called.
    * If null, an empty string is returned.

@@ -13,7 +13,7 @@ Future lastModified1(HttpConnect connect, {input}) { //#2
 
   if (!connect.isIncluded)
     response.headers.contentType = ContentType.parse("""text/html; charset=utf-8""");
-  response.headers.set(HttpHeaders.LAST_MODIFIED, new DateTime.fromMillisecondsSinceEpoch(1369710928514));
+  response.headers.set(HttpHeaders.LAST_MODIFIED, new DateTime.fromMillisecondsSinceEpoch(1369713937143));
 
   response.write("""
 <html>
@@ -23,7 +23,7 @@ Future lastModified1(HttpConnect connect, {input}) { //#2
   <body>
     """); //#2
 
-  response.write(RSP.nnx(input.whatever * input.another, encode: 'none', maxlength: 20)); //#7
+  response.write(Rsp.nnx(input.whatever * input.another, encode: 'none', maxlength: 20)); //#7
 
 
   response.write("""
@@ -32,5 +32,5 @@ Future lastModified1(HttpConnect connect, {input}) { //#2
 </html>
 """); //#7
 
-  return RSP.nnf();
+  return Rsp.nnf();
 }

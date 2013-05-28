@@ -12,7 +12,7 @@ Future syntax(HttpConnect connect, {foo, bool c:false}) { //#4
   var _t0_, _cs_ = new List<HttpConnect>(),
   request = connect.request, response = connect.response;
 
-  response.headers.contentType = ContentType.parse("""${RSP.nns(foo.contentType)}""");
+  response.headers.contentType = ContentType.parse("""${Rsp.nns(foo.contentType)}""");
 
   response.headers.add("age", """129"""); //header#4
 
@@ -24,7 +24,7 @@ Future syntax(HttpConnect connect, {foo, bool c:false}) { //#4
   <head>
     <title>"""); //#5
 
-  response.write(RSP.nnx("$foo.name [${foo.title}]")); //#8
+  response.write(Rsp.nnx("$foo.name [${foo.title}]")); //#8
 
 
   //#8
@@ -38,7 +38,7 @@ Future syntax(HttpConnect connect, {foo, bool c:false}) { //#4
 .
     <p>Another expresion: """);
 
-  response.write(RSP.nnx(foo.description)); //#12
+  response.write(Rsp.nnx(foo.description)); //#12
 
 
   response.write("""
@@ -55,7 +55,7 @@ Future syntax(HttpConnect connect, {foo, bool c:false}) { //#4
 
     response.write("""      <li>"""); //#18
 
-    response.write(RSP.nnx(user.name)); //#18
+    response.write(Rsp.nnx(user.name)); //#18
 
 
     response.write("""
@@ -73,7 +73,7 @@ Future syntax(HttpConnect connect, {foo, bool c:false}) { //#4
 
       response.write("""        """); //#23
 
-      response.write(RSP.nnx(user.showMore())); //#23
+      response.write(Rsp.nnx(user.showMore())); //#23
 
 
       response.write("""
@@ -114,7 +114,7 @@ Future syntax(HttpConnect connect, {foo, bool c:false}) { //#4
       *Employee*
 """); //#37
 
-    return RSP.nnf(syntax(connect, c: true, foo: """abc""")); //forward#38
+    return Rsp.nnf(syntax(connect, c: true, foo: """abc""")); //forward#38
 
   } else { //else#39
 
@@ -138,7 +138,7 @@ Future syntax(HttpConnect connect, {foo, bool c:false}) { //#4
 
     response.write("""        """); //#46
 
-    response.write(RSP.nnx(fruit)); //#46
+    response.write(Rsp.nnx(fruit)); //#46
 
 
     response.write("""
@@ -164,7 +164,7 @@ Future syntax(HttpConnect connect, {foo, bool c:false}) { //#4
 
     connect = _cs_.removeLast(); response = connect.response;
 
-    return RSP.nnf(syntax(new HttpConnect.chain(connect), c: true, foo: _0.toString())).then((_) { //include#51
+    return Rsp.nnf(syntax(new HttpConnect.chain(connect), c: true, foo: _0.toString())).then((_) { //include#51
 
       response.write("""
 
@@ -176,7 +176,7 @@ Future syntax(HttpConnect connect, {foo, bool c:false}) { //#4
       something is meaningful
 """); //#58
 
-        return connect.forward(RSP.cat("""/foo?abc""", {'first': """1st""", 'second': foo})); //#59
+        return connect.forward(Rsp.cat("""/foo?abc""", {'first': """1st""", 'second': foo})); //#59
       } //if
 
       response.write("""
@@ -184,10 +184,10 @@ Future syntax(HttpConnect connect, {foo, bool c:false}) { //#4
 </html>
 """); //#61
 
-      _t0_ = RSP.json(foo.name.length ~/ 2);
+      _t0_ = Rsp.json(foo.name.length ~/ 2);
       response.write("<script>foo1 = $_t0_;</script>\n");
 
-      _t0_ = RSP.json(foo.name.length ~/ 2 * "/]".length);
+      _t0_ = Rsp.json(foo.name.length ~/ 2 * "/]".length);
       response.write("<script>foo2 = $_t0_;</script>\n");
 
       response.write("""
@@ -198,7 +198,7 @@ Future syntax(HttpConnect connect, {foo, bool c:false}) { //#4
 
 """); //#67
 
-      return RSP.nnf();
+      return Rsp.nnf();
     }); //end-of-include
   }); //end-of-include
 }

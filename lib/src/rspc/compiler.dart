@@ -119,7 +119,7 @@ class Compiler {
         }
         _error("Unclosed tag(s): $sb");
       }
-      _writeln("\n$_extra  return RSP.nnf();");
+      _writeln("\n$_extra  return Rsp.nnf();");
       while (!_incs.isEmpty) {
         _extra = _extra.substring(2);
         _writeln("$_extra  ${_incs.removeLast().invocation} //end-of-include");
@@ -245,7 +245,7 @@ class Compiler {
     _write("\n${_current.pre}return connect.include(");
     final emptyArgs = args == null || args.isEmpty;
     if (!emptyArgs)
-      _write("RSP.cat(");
+      _write("Rsp.cat(");
     _write("${toEL(uri, direct: false)}");
     if (!emptyArgs) {
       _catArgs(args);
@@ -260,7 +260,7 @@ class Compiler {
     _checkInclude(line);
     if (verbose) _info("Include $method", line);
 
-    _write("\n${_current.pre}return RSP.nnf($method(new HttpConnect.chain(connect)");
+    _write("\n${_current.pre}return Rsp.nnf($method(new HttpConnect.chain(connect)");
     _outArgs(args);
     _writeln(")).then((_) { //include#$line");
     _extra = "  $_extra";
@@ -286,7 +286,7 @@ class Compiler {
     _write("\n${_current.pre}return connect.forward(");
     final emptyArgs = args == null || args.isEmpty;
     if (!emptyArgs)
-      _write("RSP.cat(");
+      _write("Rsp.cat(");
     _write("${toEL(uri, direct: false)}");
     if (!emptyArgs) {
       _catArgs(args);
@@ -298,7 +298,7 @@ class Compiler {
   void forward(String method, [Map args, int line]) {
     if (verbose) _info("Forward $method", line);
 
-    _write("\n${_current.pre}return RSP.nnf(${method}(connect");
+    _write("\n${_current.pre}return Rsp.nnf(${method}(connect");
     _outArgs(args);
     _writeln(")); //forward#${line}");
   }
@@ -314,7 +314,7 @@ class Compiler {
         _write("'");
         _write(arg);
         _write("': ");
-        _write(toEL(args[arg])); //RSP.cat can handle nob-string value
+        _write(toEL(args[arg])); //Rsp.cat can handle nob-string value
       }
       _write("}");
     }
@@ -559,7 +559,7 @@ class Compiler {
       //1) '/' is NOT a terminal, 2) no skip space for expression
     if (!expr.isEmpty) {
       final pre = _current.pre;
-      _writeln('\n${pre}response.write(RSP.nnx($expr)); //#${line}\n');
+      _writeln('\n${pre}response.write(Rsp.nnx($expr)); //#${line}\n');
     }
   }
 

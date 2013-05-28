@@ -22,20 +22,20 @@ render(HttpConnect connect, {more, less}) {
 
 abc/"""); //#5
 
-  response.write(RSP.nnx(foo)); //#7
+  response.write(Rsp.nnx(foo)); //#7
 
 
   response.write("""
 
 """); //#7
 
-  return connect.include("""${RSP.nns(foo)}""").then((_) { //#8
+  return connect.include("""${Rsp.nns(foo)}""").then((_) { //#8
 
-    return connect.include("""abc/${RSP.nns(foo)}""").then((_) { //#9
+    return connect.include("""abc/${Rsp.nns(foo)}""").then((_) { //#9
 
-      return RSP.nnf(render(new HttpConnect.chain(connect), more: """abc/${RSP.nns(foo)}""", less: foo)).then((_) { //include#10
+      return Rsp.nnf(render(new HttpConnect.chain(connect), more: """abc/${Rsp.nns(foo)}""", less: foo)).then((_) { //include#10
 
-        return RSP.nnf();
+        return Rsp.nnf();
       }); //end-of-include
     }); //end-of-include
   }); //end-of-include

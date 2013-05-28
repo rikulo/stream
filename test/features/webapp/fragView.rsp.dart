@@ -12,7 +12,7 @@ Future fragView(HttpConnect connect, {Map infos: const {}, header, footer}) { //
 
   if (header != null) { //if#2
 
-    response.write(RSP.nnx(header)); //#3
+    response.write(Rsp.nnx(header)); //#3
 
 
     response.write("""
@@ -29,7 +29,7 @@ Future fragView(HttpConnect connect, {Map infos: const {}, header, footer}) { //
 
     response.write("""    <li>"""); //#8
 
-    response.write(RSP.nnx(type)); //#8
+    response.write(Rsp.nnx(type)); //#8
 
 
     response.write("""
@@ -41,7 +41,7 @@ Future fragView(HttpConnect connect, {Map infos: const {}, header, footer}) { //
 
       response.write("""        <li>"""); //#11
 
-      response.write(RSP.nnx(name)); //#11
+      response.write(Rsp.nnx(name)); //#11
 
 
       response.write("""
@@ -57,7 +57,7 @@ Future fragView(HttpConnect connect, {Map infos: const {}, header, footer}) { //
 
   response.write("""  <li>Browser is """); //#16
 
-  response.write(RSP.nnx(connect.browser)); //#16
+  response.write(Rsp.nnx(connect.browser)); //#16
 
 
   response.write("""
@@ -69,7 +69,7 @@ Future fragView(HttpConnect connect, {Map infos: const {}, header, footer}) { //
 
     response.write("""  """); //#19
 
-    response.write(RSP.nnx(footer)); //#19
+    response.write(Rsp.nnx(footer)); //#19
 
 
     response.write("""
@@ -77,5 +77,5 @@ Future fragView(HttpConnect connect, {Map infos: const {}, header, footer}) { //
 """); //#19
   } //if
 
-  return RSP.nnf();
+  return Rsp.nnf();
 }

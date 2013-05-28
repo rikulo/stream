@@ -22,28 +22,28 @@ Future searchResult(HttpConnect connect, {criteria}) { //#2
     <ul>
       <li>text: """); //#2
 
-  response.write(RSP.nnx(criteria.text)); //#11
+  response.write(Rsp.nnx(criteria.text)); //#11
 
 
   response.write("""
 </li>
       <li>since: """); //#11
 
-  response.write(RSP.nnx(criteria.since)); //#12
+  response.write(Rsp.nnx(criteria.since)); //#12
 
 
   response.write("""
 </li>
       <li>within: """); //#12
 
-  response.write(RSP.nnx(criteria.within)); //#13
+  response.write(Rsp.nnx(criteria.within)); //#13
 
 
   response.write("""
 </li>
       <li>hasAttachment: """); //#13
 
-  response.write(RSP.nnx(criteria.hasAttachment)); //#14
+  response.write(Rsp.nnx(criteria.hasAttachment)); //#14
 
 
   response.write("""
@@ -53,5 +53,5 @@ Future searchResult(HttpConnect connect, {criteria}) { //#2
 </html>
 """); //#14
 
-  return RSP.nnf();
+  return Rsp.nnf();
 }

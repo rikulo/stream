@@ -34,7 +34,7 @@ Future home(HttpConnect connect) { //#2
     var _1 = new StringBuffer(); _cs_.add(connect); //var#14
     connect = new HttpConnect.buffer(connect, _1); response = connect.response;
 
-    return RSP.nnf(sidebar(new HttpConnect.chain(connect))).then((_) { //include#15
+    return Rsp.nnf(sidebar(new HttpConnect.chain(connect))).then((_) { //include#15
 
       connect = _cs_.removeLast(); response = connect.response;
 
@@ -64,14 +64,14 @@ Future home(HttpConnect connect) { //#2
 
         connect = _cs_.removeLast(); response = connect.response;
 
-        return RSP.nnf(classic(new HttpConnect.chain(connect), header: _0.toString(), sidebar: _1.toString(), footer: _2.toString(), body: _3.toString())).then((_) { //include#9
+        return Rsp.nnf(classic(new HttpConnect.chain(connect), header: _0.toString(), sidebar: _1.toString(), footer: _2.toString(), body: _3.toString())).then((_) { //include#9
 
           response.write("""
   </body>
 </html>
 """); //#28
 
-          return RSP.nnf();
+          return Rsp.nnf();
         }); //end-of-include
       }); //end-of-include
     }); //end-of-include

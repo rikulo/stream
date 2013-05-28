@@ -35,13 +35,13 @@ less is more
   More information
 """); //#9
 
-  return RSP.nnf(include(new HttpConnect.chain(connect), more: """recursive""")).then((_) { //include#10
+  return Rsp.nnf(include(new HttpConnect.chain(connect), more: """recursive""")).then((_) { //include#10
 
     connect = _cs_.removeLast(); response = connect.response;
 
-    return RSP.nnf(include(new HttpConnect.chain(connect), foo: true, less: less, more: _0.toString())).then((_) { //include#7
+    return Rsp.nnf(include(new HttpConnect.chain(connect), foo: true, less: less, more: _0.toString())).then((_) { //include#7
 
-      return RSP.nnf();
+      return Rsp.nnf();
     }); //end-of-include
   }); //end-of-include
 }

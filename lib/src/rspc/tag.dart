@@ -307,7 +307,7 @@ class JsonTag extends Tag {
     if (val.isEmpty)
       tc.error("Expect an expression");
 
-    tc.writeln("\n${tc.pre}_t0_ = RSP.json($val);"
+    tc.writeln("\n${tc.pre}_t0_ = Rsp.json($val);"
       '\n${tc.pre}response.write("<script>$nm = \$_t0_;</script>\\n");');
   }
   @override

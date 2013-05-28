@@ -7,13 +7,13 @@ import 'dart:io';
 import 'package:stream/stream.dart';
 
 /** Template, lastModified1, for rendering the view. */
-Future lastModified1(HttpConnect connect) { //#2
+Future lastModified1(HttpConnect connect, {input}) { //#2
   var _t0_, _cs_ = new List<HttpConnect>(),
   request = connect.request, response = connect.response;
 
   if (!connect.isIncluded)
     response.headers.contentType = ContentType.parse("""text/html; charset=utf-8""");
-  response.headers.set(HttpHeaders.LAST_MODIFIED, new DateTime.fromMillisecondsSinceEpoch(1369645325255));
+  response.headers.set(HttpHeaders.LAST_MODIFIED, new DateTime.fromMillisecondsSinceEpoch(1369705737923));
 
   response.write("""
 <html>
@@ -21,9 +21,16 @@ Future lastModified1(HttpConnect connect) { //#2
     <title></title>
   </head>
   <body>
+    """); //#2
+
+  response.write(RSP.nnx(input.whatever * input.another, encode: 'none', limit: 20)); //#7
+
+
+  response.write("""
+
   </body>
 </html>
-"""); //#2
+"""); //#7
 
   return RSP.nnf();
 }

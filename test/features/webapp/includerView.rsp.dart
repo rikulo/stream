@@ -49,7 +49,7 @@ final infos = {
   <h1>This is a header</h1>
   <p>Passed from the includer for showing """); //#26
 
-      response.write(RSP.nns(infos)); //#27
+      response.write(RSP.nnx(infos)); //#27
 
 
       response.write("""

@@ -22,14 +22,14 @@ Future helloView(HttpConnect connect) { //#2
     <h1>Stream: Hello RSP</h1>
     <p>Now is """); //#2
 
-  response.write(RSP.nns(new DateTime.now())); //#11
+  response.write(RSP.nnx(new DateTime.now())); //#11
 
 
   response.write("""
 .</p>
     <p>This page is served by Rikulo Stream """); //#11
 
-  response.write(RSP.nns(connect.server.version)); //#12
+  response.write(RSP.nnx(connect.server.version)); //#12
 
 
   response.write("""

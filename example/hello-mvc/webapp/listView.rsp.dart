@@ -21,7 +21,7 @@ Future listView(HttpConnect connect, {String path, List<FileInfo> infos}) { //#2
   <body>
     <h1>Directory: """); //#2
 
-  response.write(RSP.nns(path)); //#10
+  response.write(RSP.nnx(path)); //#10
 
 
   response.write("""
@@ -41,14 +41,14 @@ Future listView(HttpConnect connect, {String path, List<FileInfo> infos}) { //#2
       <tr>
         <td><img src=\""""); //#17
 
-    response.write(RSP.nns(info.isDirectory ? 'file.png': 'directory.png')); //#19
+    response.write(RSP.nnx(info.isDirectory ? 'file.png': 'directory.png')); //#19
 
 
     response.write("""
 "/></td>
         <td>"""); //#19
 
-    response.write(RSP.nns(info.name)); //#20
+    response.write(RSP.nnx(info.name)); //#20
 
 
     response.write("""

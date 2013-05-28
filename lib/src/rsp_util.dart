@@ -19,6 +19,54 @@ class RSP {
    */
   static Future nnf([v]) => v is Future ? v: new Future.value(v);
 
+  /** Converts the given value to a non-null string with the given conditions.
+   *
+   * * [encode] - the encoding method. It can be `none` (output directly),
+   *`xml` (for HTML/XML) and `query` (for query string).
+   * If omitted, `xml` is assumed, i.e, < will be converted to &amp; and so on.
+   *
+   * * [limit]: limit the number of characters being output.
+   * If non positive (default), the whole string will be output.
+   * 
+   * * [firstLine]: output only the first non-empty line (default: false).
+   *
+   * * [pre]: whether to replace whitespace with `&nbsp;` (default: false).
+   * It is meaningful only if encode is `xml`.
+   */
+  static String nnx(value, {String ecnode, int limit: 0, bool firstLine: false,
+    pre: false}) {
+    String str = value != null ? value.toString(): "";
+    if (firstLine) {
+      for (int i = 0;;) {
+        final j = str.indexOf('\n', i);
+        if (j < 0) {
+          str = str.substring(i);
+          break;
+        }
+        if (j > i) {
+          str = str.substring(i, j);
+          break;
+        }
+        ++i;
+      }
+    }
+
+    if (limit > 0 && limit > str.length)
+      str = str.substring(0, limit) + "...";
+
+    switch (encode) {
+      case "none":
+        break;
+      case "query":
+        str = decodeUriComponent(str);
+        break;
+      default: //xml/html
+        str = XmlUtil.encode(str, pre: pre);
+        break;
+    }
+    return str;
+  }
+
   /** Concatenates a path with a map of parameters.
    */
   static String cat(String uri, Map<String, dynamic> parameters) {

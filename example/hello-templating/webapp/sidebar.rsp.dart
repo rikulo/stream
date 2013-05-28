@@ -15,7 +15,7 @@ Future sidebar(HttpConnect connect) { //#2
   <li>This is a sidebar.</li>
   <li>"""); //#2
 
-  response.write(RSP.nns(new DateTime.now())); //#4
+  response.write(RSP.nnx(new DateTime.now())); //#4
 
 
   response.write("""

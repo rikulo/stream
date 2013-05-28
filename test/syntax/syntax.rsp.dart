@@ -24,7 +24,7 @@ Future syntax(HttpConnect connect, {foo, bool c:false}) { //#4
   <head>
     <title>"""); //#5
 
-  response.write(RSP.nns("$foo.name [${foo.title}]")); //#8
+  response.write(RSP.nnx("$foo.name [${foo.title}]")); //#8
 
 
   //#8
@@ -38,7 +38,7 @@ Future syntax(HttpConnect connect, {foo, bool c:false}) { //#4
 .
     <p>Another expresion: """);
 
-  response.write(RSP.nns(foo.description)); //#12
+  response.write(RSP.nnx(foo.description)); //#12
 
 
   response.write("""
@@ -55,7 +55,7 @@ Future syntax(HttpConnect connect, {foo, bool c:false}) { //#4
 
     response.write("""      <li>"""); //#18
 
-    response.write(RSP.nns(user.name)); //#18
+    response.write(RSP.nnx(user.name)); //#18
 
 
     response.write("""
@@ -73,7 +73,7 @@ Future syntax(HttpConnect connect, {foo, bool c:false}) { //#4
 
       response.write("""        """); //#23
 
-      response.write(RSP.nns(user.showMore())); //#23
+      response.write(RSP.nnx(user.showMore())); //#23
 
 
       response.write("""
@@ -138,7 +138,7 @@ Future syntax(HttpConnect connect, {foo, bool c:false}) { //#4
 
     response.write("""        """); //#46
 
-    response.write(RSP.nns(fruit)); //#46
+    response.write(RSP.nnx(fruit)); //#46
 
 
     response.write("""

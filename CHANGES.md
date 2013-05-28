@@ -4,6 +4,7 @@
 
 * Issue 32: HttpConnect provides API to retrieve the information of the browser
 * Issue 31: RSP supports last-modified as the time it has been compiled
+* Issue 33: The expression tag ([= expr]) supports the encoding option
 
 **0.7.2**
 

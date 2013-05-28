@@ -22,7 +22,7 @@ render(HttpConnect connect, {more, less}) {
 
 abc/"""); //#5
 
-  response.write(RSP.nns(foo)); //#7
+  response.write(RSP.nnx(foo)); //#7
 
 
   response.write("""

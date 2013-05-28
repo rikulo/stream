@@ -25,7 +25,7 @@ class RSP {
    *`xml` (for HTML/XML) and `query` (for query string).
    * If omitted, `xml` is assumed, i.e, < will be converted to &amp; and so on.
    *
-   * * [limit]: limit the number of characters being output.
+   * * [maxlength]: limit the number of characters being output.
    * If non positive (default), the whole string will be output.
    * 
    * * [firstLine]: output only the first non-empty line (default: false).
@@ -33,7 +33,7 @@ class RSP {
    * * [pre]: whether to replace whitespace with `&nbsp;` (default: false).
    * It is meaningful only if encode is `xml`.
    */
-  static String nnx(value, {String encode, int limit: 0, bool firstLine: false,
+  static String nnx(value, {String encode, int maxlength: 0, bool firstLine: false,
     pre: false}) {
     String str = value != null ? value.toString(): "";
     if (firstLine) {
@@ -51,8 +51,8 @@ class RSP {
       }
     }
 
-    if (limit > 0 && limit > str.length)
-      str = str.substring(0, limit) + "...";
+    if (maxlength > 0 && maxlength > str.length)
+      str = str.substring(0, maxlength) + "...";
 
     switch (encode) {
       case "none":

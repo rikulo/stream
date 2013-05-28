@@ -15,7 +15,7 @@ Future classic(HttpConnect connect, {header, sidebar, body, footer}) { //#2
   <div class="header">
     """); //#2
 
-  response.write(Rsp.nnx(header)); //#4
+  response.write(Rsp.nnx(header, encode: 'none')); //#4
 
 
   response.write("""
@@ -24,7 +24,7 @@ Future classic(HttpConnect connect, {header, sidebar, body, footer}) { //#2
   <div class="sidebar">
     """); //#4
 
-  response.write(Rsp.nnx(sidebar)); //#7
+  response.write(Rsp.nnx(sidebar, encode: 'none')); //#7
 
 
   response.write("""
@@ -33,7 +33,7 @@ Future classic(HttpConnect connect, {header, sidebar, body, footer}) { //#2
   <div class="body">
     """); //#7
 
-  response.write(Rsp.nnx(body)); //#10
+  response.write(Rsp.nnx(body, encode: 'none')); //#10
 
 
   response.write("""
@@ -42,7 +42,7 @@ Future classic(HttpConnect connect, {header, sidebar, body, footer}) { //#2
   <div class="footer">
     """); //#10
 
-  response.write(Rsp.nnx(footer)); //#13
+  response.write(Rsp.nnx(footer, encode: 'none')); //#13
 
 
   response.write("""

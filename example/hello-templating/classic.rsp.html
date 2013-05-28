@@ -1,15 +1,15 @@
 [:page partOf="hello_templating" args="header, sidebar, body, footer"]
 <div>
   <div class="header">
-    [=header]
+    [=header, encode: 'none']
   </div>
   <div class="sidebar">
-    [=sidebar]
+    [=sidebar, encode: 'none']
   </div>
   <div class="body">
-    [=body]
+    [=body, encode: 'none']
   </div>
   <div class="footer">
-    [=footer]
+    [=footer, encode: 'none']
   </div>
 </div>

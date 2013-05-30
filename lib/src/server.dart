@@ -37,10 +37,15 @@ abstract class StreamServer {
    * starting with * `/`) that the request shall be forwarded to.
    *
    * * [homeDir] - the home directory for holding static resources. If not specified,
-   * it is the root directory of the application (i.e., the parent directory of
-   * the `webapp` directory). You can specify a relative path relative to the root
+   * it is the root directory of the application.
+   * You can specify a relative path relative to the root
    * directory. For example, you can create a directory called `static` to hold
    * the static resources, and then specify `static` as the home directory.
+   *     > The root directory is assumed to the parent directory of the `webapp`
+   *     > directory if it exists. Otherwise, it is assumed to be the directory where
+   *     > the `main` Dart file is. For example, if you execute `dart /foo1/myapp.dart`,
+   *     > the root is assumed to be `/foo1`. On the other hand, if executing
+   *     > `dart /foo2/webapp/myapp.dart`, then the root is `/foo2`.
    * * [uriMapping] - a map of URI mappings, `<String uri, RequestHandler handler>`
    * or `<String uri, String forwardURI>`.
    * The key is a regular expression used to match the request URI. If you can name

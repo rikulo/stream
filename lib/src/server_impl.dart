@@ -51,13 +51,12 @@ class _StreamServer implements StreamServer {
       final nm = path.filename;
       path = path.directoryPath;
       if (nm == "webapp")
-        break; //found and we use its parent as the root
+        return path; //found and we use its parent as the root
+
       final ps = path.toString();
       if (ps.isEmpty || ps == "/")
-        throw new ServerError(
-          "The application must be under the webapp directory, not ${orgpath.toNativePath()}");
+        return orgpath; //assume to be the same directory as script
     }
-    return path;
   }
 
   @override

@@ -1,6 +1,6 @@
 [:page partOf="main.dart" args="Map infos: const {}, header, footer"]
 [:if header != null]
-  [=header]
+  [=header, encode: 'none']
 [/if]
 <ul>
   <li>This is a fragment and generated dynamically</li>
@@ -16,5 +16,5 @@
   <li>Browser is [=connect.browser]</li>
 </ul>
 [:if footer != null]
-  [=footer]
+  [=footer, encode: 'none']
 [/if]

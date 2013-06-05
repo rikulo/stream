@@ -56,7 +56,7 @@ var _uriMapping = {
     });
   },
   "/redirect": (HttpConnect connect) {
-    connect.redirect(connect.request.queryParameters["uri"]);
+    connect.redirect(connect.request.uri.queryParameters["uri"]);
   },
   "/json": json
 };
@@ -113,6 +113,7 @@ class Criteria {
   bool hasAttachment = false;
 }
 Future search(HttpConnect connect) {
-  final criteria = ObjectUtil.inject(new Criteria(), connect.request.queryParameters, silent: true);
+  final criteria = ObjectUtil.inject(new Criteria(),
+      connect.request.uri.queryParameters, silent: true);
   return searchResult(connect, criteria: criteria); //generated from searchResult.rsp.html
 }

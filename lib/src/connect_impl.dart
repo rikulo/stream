@@ -125,16 +125,9 @@ class _ReUriRequest extends HttpRequestWrapper {
   _ReUriRequest(request, this._uri): super(request);
 
   final Uri _uri;
-  Map<String, String> _params;
 
   @override
   Uri get uri => _uri;
-  @override
-  Map<String, String> get queryParameters {
-    if (_params == null)
-      _params = HttpUtil.decodeQuery(uri.query);
-    return _params;
-  }
 }
 
 ///Ignore any invocation alerting the headers
@@ -215,7 +208,7 @@ HttpRequest _wrapRequest(HttpRequest request, String uri) {
   if (org.path == uri && org.query == query)
     return request;
 
-  return new _ReUriRequest(request, new Uri.fromComponents(scheme: org.scheme,
+  return new _ReUriRequest(request, new Uri(scheme: org.scheme,
     userInfo: org.userInfo, port: org.port, path: uri, query: query,
     fragment: org.fragment));
 }

@@ -58,7 +58,7 @@ class Rsp {
       case "none":
         break;
       case "query":
-        str = decodeUriComponent(str);
+        str = Uri.encodeQueryComponent(str);
         break;
       default: //xml/html
         str = XmlUtil.encode(str, pre: pre);

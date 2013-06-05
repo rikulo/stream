@@ -7,7 +7,6 @@ library stream;
 import "dart:io";
 import "dart:async";
 import "dart:collection" show HashMap, LinkedHashMap;
-import "dart:uri";
 import "dart:json" as Json;
 import 'package:meta/meta.dart';
 import 'package:args/args.dart' show Options;

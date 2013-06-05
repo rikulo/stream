@@ -12,7 +12,7 @@ Future fragView(HttpConnect connect, {Map infos: const {}, header, footer}) { //
 
   if (header != null) { //if#2
 
-    response.write(Rsp.nnx(header)); //#3
+    response.write(Rsp.nnx(header, encode: 'none')); //#3
 
 
     response.write("""
@@ -69,7 +69,7 @@ Future fragView(HttpConnect connect, {Map infos: const {}, header, footer}) { //
 
     response.write("""  """); //#19
 
-    response.write(Rsp.nnx(footer)); //#19
+    response.write(Rsp.nnx(footer, encode: 'none')); //#19
 
 
     response.write("""

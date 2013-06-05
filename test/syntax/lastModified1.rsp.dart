@@ -8,12 +8,13 @@ import 'package:stream/stream.dart';
 
 /** Template, lastModified1, for rendering the view. */
 Future lastModified1(HttpConnect connect, {input}) { //#2
-  var _t0_, _cs_ = new List<HttpConnect>(),
-  request = connect.request, response = connect.response;
+  var _t0_, _cs_ = new List<HttpConnect>();
+  HttpRequest request = connect.request;
+  HttpResponse response = connect.response;
 
   if (!connect.isIncluded)
     response.headers.contentType = ContentType.parse("""text/html; charset=utf-8""");
-  response.headers.set(HttpHeaders.LAST_MODIFIED, new DateTime.fromMillisecondsSinceEpoch(1370403888202));
+  response.headers.set(HttpHeaders.LAST_MODIFIED, new DateTime.fromMillisecondsSinceEpoch(1370408104117));
 
   response.write("""
 <html>

@@ -195,8 +195,9 @@ class Compiler {
     if (_args != null)
       _write(", {$_args}");
     _writeln(") { //#$line\n"
-      "  var _t0_, _cs_ = new List<HttpConnect>(),\n"
-      "  request = connect.request, response = connect.response;\n");
+      "  var _t0_, _cs_ = new List<HttpConnect>();\n"
+      "  HttpRequest request = connect.request;\n"
+      "  HttpResponse response = connect.response;\n");
       //_t0_ is reserved for tags
 
     if (_contentType != null) {

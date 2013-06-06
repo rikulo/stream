@@ -86,5 +86,6 @@ class Rsp {
   /** Serializes the given object into a JSON string by use of
    * [stringify](http://api.dartlang.org/docs/releases/latest/dart_json.html#stringify).
    */
-  static String json(data) => Json.stringify(data);
+  static String json(data) => Json.stringify(data).replaceAll("</script>", "<\\/script>");
+    //it is possible that a string contains </script>
 }

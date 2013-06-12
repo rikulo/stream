@@ -408,7 +408,7 @@ class Compiler {
         _pos = i + 1; //skip white spaces until and including linefeed
         return;
       }
-      if (cc != ' ' && cc != '\t')
+      if (cc != ' ' && cc != '\t' && cc != '\r')
         break; //don't skip anything
     }
   }
@@ -418,7 +418,7 @@ class Compiler {
       final cc = text[i];
       if (cc == '\n')
         return text.substring(0, i + 1); //remove tailing spaces (excluding linefeed)
-      if (cc != ' ' && cc != '\t')
+      if (cc != ' ' && cc != '\t' && cc != '\r')
         return text; //don't skip anything
     }
     return "";

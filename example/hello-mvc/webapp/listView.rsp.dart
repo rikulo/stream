@@ -3,7 +3,7 @@
 part of hello_mvc;
 
 /** Template, listView, for rendering the view. */
-Future listView(HttpConnect connect, {String path, List<FileInfo> infos}) { //#2
+Future listView(HttpConnect connect, {String path, List<FileInfo> infos}) { //#3
   var _t0_, _cs_ = new List<HttpConnect>();
   HttpRequest request = connect.request;
   HttpResponse response = connect.response;
@@ -12,7 +12,6 @@ Future listView(HttpConnect connect, {String path, List<FileInfo> infos}) { //#2
     response.headers.contentType = ContentType.parse("""text/html; charset=utf-8""");
 
   response.write("""
-
 <!DOCTYPE html>
 <html>
   <head>
@@ -20,7 +19,7 @@ Future listView(HttpConnect connect, {String path, List<FileInfo> infos}) { //#2
     <link href="theme.css" rel="stylesheet" type="text/css" />
   </head>
   <body>
-    <h1>Directory: """); //#2
+    <h1>Directory: """); //#3
 
   response.write(Rsp.nnx(path)); //#10
 
@@ -38,9 +37,8 @@ Future listView(HttpConnect connect, {String path, List<FileInfo> infos}) { //#2
   for (var info in infos) { //for#17
 
     response.write("""
-
       <tr>
-        <td><img src=\""""); //#17
+        <td><img src=\""""); //#18
 
     response.write(Rsp.nnx(info.isDirectory ? 'file.png': 'directory.png')); //#19
 
@@ -59,7 +57,6 @@ Future listView(HttpConnect connect, {String path, List<FileInfo> infos}) { //#2
   } //for
 
   response.write("""
-
     </table>
 
     <ul>
@@ -67,7 +64,7 @@ Future listView(HttpConnect connect, {String path, List<FileInfo> infos}) { //#2
   <a href="https://github.com/rikulo/stream/tree/master/example/hello-mvc">Github</a> for how it is implemented.</a></li></ul>
   </body>
 </html>
-"""); //#22
+"""); //#23
 
   return Rsp.nnf();
 }

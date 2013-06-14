@@ -3,7 +3,7 @@
 part of hello_rsp;
 
 /** Template, helloView, for rendering the view. */
-Future helloView(HttpConnect connect) { //#2
+Future helloView(HttpConnect connect) { //#3
   var _t0_, _cs_ = new List<HttpConnect>();
   HttpRequest request = connect.request;
   HttpResponse response = connect.response;
@@ -12,7 +12,6 @@ Future helloView(HttpConnect connect) { //#2
     response.headers.contentType = ContentType.parse("""text/html; charset=utf-8""");
 
   response.write("""
-
 <!DOCTYPE html>
 <html>
   <head>
@@ -21,7 +20,7 @@ Future helloView(HttpConnect connect) { //#2
   </head>
   <body>
     <h1>Stream: Hello RSP</h1>
-    <p>Now is """); //#2
+    <p>Now is """); //#3
 
   response.write(Rsp.nnx(new DateTime.now())); //#11
 

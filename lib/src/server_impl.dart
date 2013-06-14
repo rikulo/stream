@@ -7,7 +7,7 @@ part of stream;
 typedef void _ConnectErrorCallback(HttpConnect connect, err, [stackTrace]);
 
 class _StreamServer implements StreamServer {
-  final String version = "0.7.3";
+  final String version = "0.7.4";
   HttpServer _server;
   var _host = InternetAddress.ANY_IP_V4;
   int _port = 8080;

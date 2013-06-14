@@ -1,5 +1,9 @@
 #CHANGES
 
+**0.7.4**
+
+* Issue 36: Change the spec of [:json] to generate a JSON object that can be parse as Dart object directly
+
 **0.7.3**
 
 * Issue 32: HttpConnect provides API to retrieve the information of the browser

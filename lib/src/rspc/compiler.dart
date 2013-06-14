@@ -361,7 +361,7 @@ class Compiler {
           } else if (c2 == ':' || c2 == '/') { //[:beginning-tag] or [/closing-tag]
             int k = j + 1;
             if (k < _len && StringUtil.isChar(source[k], lower:true)) {
-              int m = _skipId(k);
+              int m = _skipTagId(k);
               final tagnm = source.substring(k, m);
               final tag = tags[tagnm];
               if (tag != null) {
@@ -450,10 +450,11 @@ class Compiler {
     }
     _error("Expect '$until'", line);
   }
-  int _skipId(int from) {
+  int _skipTagId(int from) {
     for (; from < _len; ++from) {
       final cc = source[from];
-      if (!StringUtil.isChar(cc, lower:true, upper:true))
+      //dash is allowed in a tag name
+      if (!StringUtil.isChar(cc, lower:true, upper:true) && cc != '-')
         break;
     }
     return from;

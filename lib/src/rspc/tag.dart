@@ -91,7 +91,8 @@ Map<String, Tag> get tags {
   if (_tags == null) {
     _tags = new HashMap();
     for (Tag tag in [new PageTag(), new DartTag(), new HeaderTag(),
-      new IncludeTag(), new ForwardTag(), new VarTag(), new JsonTag(),
+      new IncludeTag(), new ForwardTag(), new VarTag(),
+      new JsonTag(), new JsonJsTag(),
       new ForTag(), new WhileTag(), new IfTag(), new ElseTag()])
       _tags[tag.name] = tag;
   }
@@ -307,13 +308,57 @@ class JsonTag extends Tag {
     if (val.isEmpty)
       tc.error("Expect an expression");
 
+    tc.writeln("\n${tc.pre}_t0_ = Rsp.json($val);");
+    tc.writeln("""${tc.pre}response.write('<script id="$nm" type="text/plain">\$_t0_;</script>\\n');""");
+  }
+  @override
+  bool get hasClosing => false;
+  @override
+  String get name => "json";
+}
+
+/** The json-js tag. It generates a JavaScript object by converting
+ * the given Dart expression into a JSON object.
+ *
+ *     [:json-js name=expression ]
+ *
+ * Then, it generates a SCRIPT tag something similar as follows:
+ *
+ *     <script>name=Json.stringify(expression)</script>
+ *
+ * Notice: it is a JavaScript object. If you'd like to handle it in Dart,
+ * it is better to use [JsonTag] instead.
+ */
+class JsonJsTag extends Tag {
+  @override
+  void begin(TagContext tc, String data) {
+    if (data.isEmpty)
+      tc.error("Expect a variable name");
+
+    final len = data.length;
+    int i = 0;
+    for (; i < len && isValidVarChar(data[i], i == 0); ++i)
+      ;
+    if (i == 0)
+      tc.error("Expect a variable name, not '${data[0]}'");
+
+    final nm = data.substring(0, i);
+    for (; i < len && StringUtil.isChar(data[i], whitespace: true); ++i)
+      ;
+    if (i >= len || data[i] != '=')
+      tc.error("Expect '=', not '${data[i]}");
+
+    final val = data.substring(i + 1).trim();
+    if (val.isEmpty)
+      tc.error("Expect an expression");
+
     tc.writeln("\n${tc.pre}_t0_ = Rsp.json($val);"
       '\n${tc.pre}response.write("<script>$nm = \$_t0_;</script>\\n");');
   }
   @override
   bool get hasClosing => false;
   @override
-  String get name => "json";
+  String get name => "json-js";
 }
 
 ///A skeletal class for implementing control tags, such as [IfTag] and [WhileTag].

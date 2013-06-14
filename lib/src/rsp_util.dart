@@ -88,4 +88,36 @@ class Rsp {
    */
   static String json(data) => Json.stringify(data).replaceAll("</script>", "<\\/script>");
     //it is possible that a string contains </script>
+
+  /** It controls [ScriptTag] whether to disable Dart script.
+   *
+   * For example,
+   *
+   *     [:script src="/script/foo.dart"]
+   *
+   * will generate the following SCRIPT tag if [disableDartScript] is true
+   * or the browser doesn't support Dart:
+   *
+   *     <script src="/script/foo.dart.js"></script>
+   *
+   * The following SCRIPT tags are generated only if if [disableDartScript]
+   * is false (default) and the browser doesn't support Dart:
+   *
+   *     <script type="application/dart" src="/script/foo.dart"></script>
+   *     <script src="/packages/browser/dart.js"></script>
+   */
+  static bool disableDartScript = false;
+
+  ///Returns the SCRIPT tag(s) for loading the given [src].
+  ///It is used internally by [ScriptTag].
+  static String script(HttpConnect connect, String src) {
+    int i = src.lastIndexOf('.dart'), j = i + 5;
+    if (i < 0 || (j < src.length && src[j] != '?'))
+      return '<script src="$src"></script>\n';
+
+    return disableDartScript || !connect.browser.dart ?
+      '<script src="${src.substring(0,j)}.js${src.substring(j)}"></script>\n':
+      '<script type="application/dart" src="$src"></script>\n'
+      '<script src="/packages/browser/dart.js"></script>\n';
+  }
 }

@@ -180,24 +180,26 @@ Future syntax(HttpConnect connect, {foo, bool c:false}) { //#4
         return connect.forward(Rsp.cat("""/foo?abc""", {'first': """1st""", 'second': foo})); //#59
       } //if
 
+      response.write(Rsp.script(connect, """/script/foo.dart""")); //script#61
+
       response.write("""
   </body>
 </html>
-"""); //#61
+"""); //#62
 
-      _t0_ = Rsp.json(foo.name.length ~/ 2);
+      _t0_ = Rsp.json(foo.name.length ~/ 2); //json-js#64
       response.write("<script>foo1 = $_t0_;</script>\n");
 
-      _t0_ = Rsp.json(foo.name.length ~/ 2 * "/]".length);
+      _t0_ = Rsp.json(foo.name.length ~/ 2 * "/]".length); //json#65
       response.write('<script id="foo2" type="text/plain">$_t0_;</script>\n');
 
       response.write("""
 
-"""); //#65
+"""); //#66
 
       response.write("""
 
-"""); //#67
+"""); //#68
 
       return Rsp.nnf();
     }); //end-of-include

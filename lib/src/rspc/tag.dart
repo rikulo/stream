@@ -92,7 +92,7 @@ Map<String, Tag> get tags {
     _tags = new HashMap();
     for (Tag tag in [new PageTag(), new DartTag(), new HeaderTag(),
       new IncludeTag(), new ForwardTag(), new VarTag(),
-      new JsonTag(), new JsonJsTag(),
+      new JsonTag(), new JsonJsTag(), new ScriptTag(),
       new ForTag(), new WhileTag(), new IfTag(), new ElseTag()])
       _tags[tag.name] = tag;
   }
@@ -284,6 +284,14 @@ class VarTag extends Tag {
  * the given Dart expression into a JSON object.
  *
  *     [:json name=expression /]
+ *
+ * It generates
+ *
+ *     <script id="name" type="text/plain">Json.stringify(expression)</script>
+ *
+ * And, you can retrieve it in Dart with:
+ *
+ *     var data = Json.parse(document.query("#data").innerHtml)
  */
 class JsonTag extends Tag {
   @override
@@ -308,7 +316,7 @@ class JsonTag extends Tag {
     if (val.isEmpty)
       tc.error("Expect an expression");
 
-    tc.writeln("\n${tc.pre}_t0_ = Rsp.json($val);");
+    tc.writeln("\n${tc.pre}_t0_ = Rsp.json($val); //json#${tc.line}");
     tc.writeln("""${tc.pre}response.write('<script id="$nm" type="text/plain">\$_t0_;</script>\\n');""");
   }
   @override
@@ -352,13 +360,44 @@ class JsonJsTag extends Tag {
     if (val.isEmpty)
       tc.error("Expect an expression");
 
-    tc.writeln("\n${tc.pre}_t0_ = Rsp.json($val);"
+    tc.writeln("\n${tc.pre}_t0_ = Rsp.json($val); //json-js#${tc.line}"
       '\n${tc.pre}response.write("<script>$nm = \$_t0_;</script>\\n");');
   }
   @override
   bool get hasClosing => false;
   @override
   String get name => "json-js";
+}
+
+/** The script tag to generate `SCRIPT` tag for loading Dart script.
+ *
+ * For example,
+ *
+ *     [:script src="/script/foo.dart"]
+ *
+ * will generate if the browser supports Dart
+ *
+ *     <script type="application/dart" src="/script/foo.dart"></script>
+ *     <script src="/packages/browser/dart.js"></script>
+ *
+ * On the other hand, if the browser doesn't support Dart
+ * or [Rsp.disableDartScript] is true, it always generate
+ *
+ *     <script src="/script/foo.dart.js"></script>
+ */
+class ScriptTag extends Tag {
+  @override
+  void begin(TagContext tc, String data) {
+    final attrs = ArgInfo.parse(data);
+    String src;
+    if (attrs.isEmpty || (src = attrs["src"]) == null)
+      tc.error("The src attribute is required");
+    tc.writeln('\n${tc.pre}response.write(Rsp.script(connect, ${toEL(src)})); //script#${tc.line}');
+  }
+  @override
+  bool get hasClosing => false;
+  @override
+  String get name => "script";
 }
 
 ///A skeletal class for implementing control tags, such as [IfTag] and [WhileTag].

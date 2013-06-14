@@ -24,7 +24,7 @@ var map = {
   <body>
 """); //#7
 
-  _t0_ = Rsp.json([map, "another"]);
+  _t0_ = Rsp.json([map, "another"]); //json-js#13
   response.write("<script>foo = $_t0_;</script>\n");
 
   response.write("""

@@ -17,15 +17,7 @@ abstract class LoggingConfigurer {
 class _LoggingConfigurer implements LoggingConfigurer {
   @override
   void configure(Logger logger) {
-    Logger.root..level = Level.INFO;
-    logger.onRecord.listen((record) {
-      //for better response time, do it async (since the onRecord stream is sync)
-      new Future(() {
-        print("${record.time}:${record.sequenceNumber}\n"
-          "${record.level}: ${record.message}");
-        if (record.exceptionText != null)
-          print("Exception: ${record.exceptionText}");
-      });
-    });
+    Logger.root.level = Level.INFO;
+    logger.onRecord.listen(simpleLoggerHandler);
   }
 }

@@ -12,6 +12,7 @@ import "package:logging/logging.dart";
 
 import "package:rikulo_commons/util.dart";
 import "package:rikulo_commons/mirrors.dart";
+import "package:rikulo_commons/logging.dart";
 
 import "stream.dart";
 

@@ -388,11 +388,25 @@ class JsonJsTag extends Tag {
 class ScriptTag extends Tag {
   @override
   void begin(TagContext tc, String data) {
-    final attrs = ArgInfo.parse(data);
     String src;
-    if (attrs.isEmpty || (src = attrs["src"]) == null)
+    bool bootstrap = true;
+    final attrs = ArgInfo.parse(data);
+    for (final nm in attrs.keys) {
+      switch (nm) {
+        case "src":
+          src = attrs[nm];
+          break;
+        case "bootstrap":
+          bootstrap = attrs[nm] == "true";
+          break;
+        default:
+          tc.warning("Unknow attribute, $nm");
+          break;
+      }
+    }
+    if (src == null)
       tc.error("The src attribute is required");
-    tc.writeln('\n${tc.pre}response.write(Rsp.script(connect, ${toEL(src)})); //script#${tc.line}');
+    tc.writeln('\n${tc.pre}response.write(Rsp.script(connect, ${toEL(src)}, $bootstrap)); //script#${tc.line}');
   }
   @override
   bool get hasClosing => false;

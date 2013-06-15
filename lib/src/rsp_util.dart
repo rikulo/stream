@@ -108,16 +108,22 @@ class Rsp {
    */
   static bool disableDartScript = false;
 
-  ///Returns the SCRIPT tag(s) for loading the given [src].
-  ///It is used internally by [ScriptTag].
-  static String script(HttpConnect connect, String src) {
+  /** Returns the SCRIPT tag(s) for loading the given [src].
+   * It is used internally by [ScriptTag].
+   *
+   * + [bootstrap] - whether to generate `dart.js` if necessary.
+   * Turn it off if you have multiple dart files in the same Web page.
+   */
+  static String script(HttpConnect connect, String src, [bool bootstrap=true]) {
     int i = src.lastIndexOf('.dart'), j = i + 5;
     if (i < 0 || (j < src.length && src[j] != '?'))
       return '<script src="$src"></script>\n';
 
-    return disableDartScript || !connect.browser.dart ?
-      '<script src="${src.substring(0,j)}.js${src.substring(j)}"></script>\n':
-      '<script type="application/dart" src="$src"></script>\n'
-      '<script src="/packages/browser/dart.js"></script>\n';
+    if (disableDartScript || !connect.browser.dart)
+      return '<script src="${src.substring(0,j)}.js${src.substring(j)}"></script>\n';
+
+    final s = '<script type="application/dart" src="$src"></script>\n';
+    return bootstrap ?
+      s + '<script src="/packages/browser/dart.js"></script>\n': s;
   }
 }

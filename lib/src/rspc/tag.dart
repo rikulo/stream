@@ -166,11 +166,19 @@ class HeaderTag extends Tag {
   @override
   void begin(TagContext tc, String data) {
     final attrs = ArgInfo.parse(data);
-    for (final nm in attrs.keys) {
-      final val = attrs[nm];
-      if (val == null)
-        tc.error("The $nm attribute requires a value.");
-      tc.writeln('\n${tc.pre}response.headers.add("$nm", ${toEL(val)}); //header#${tc.line}');
+    if (!attrs.isEmpty) {
+      tc.write("\n${tc.pre}response.headers");
+      bool first = true;
+      for (final nm in attrs.keys) {
+        final val = attrs[nm];
+        if (val == null)
+          tc.error("The $nm attribute requires a value.");
+
+        if (first) first = false;
+        else tc.write("\n${tc.pre}  ");
+        tc.write('..add("$nm", ${toEL(val)})');
+      }
+      tc.writeln('; //header#${tc.line}');
     }
   }
   @override

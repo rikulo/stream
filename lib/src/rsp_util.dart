@@ -89,7 +89,7 @@ class Rsp {
   static String json(data) => Json.stringify(data).replaceAll("</script>", "<\\/script>");
     //it is possible that a string contains </script>
 
-  /** It controls [ScriptTag] whether to disable Dart script.
+  /** It controls [ScriptTag] (and [script]) whether to disable Dart script.
    *
    * For example,
    *

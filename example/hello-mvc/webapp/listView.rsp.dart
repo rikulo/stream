@@ -9,7 +9,7 @@ Future listView(HttpConnect connect, {String path, List<FileInfo> infos}) { //#3
   HttpResponse response = connect.response;
 
   if (!connect.isIncluded)
-    response.headers.contentType = ContentType.parse("""text/html; charset=utf-8""");
+    response.headers.contentType = ContentType.parse("text/html; charset=utf-8");
 
   response.write("""
 <!DOCTYPE html>

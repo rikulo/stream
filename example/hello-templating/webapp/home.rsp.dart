@@ -9,7 +9,7 @@ Future home(HttpConnect connect) { //#2
   HttpResponse response = connect.response;
 
   if (!connect.isIncluded)
-    response.headers.contentType = ContentType.parse("""text/html; charset=utf-8""");
+    response.headers.contentType = ContentType.parse("text/html; charset=utf-8");
 
   response.write("""
 <!DOCTYPE html>
@@ -24,7 +24,7 @@ Future home(HttpConnect connect) { //#2
   var _0 = new StringBuffer(); _cs_.add(connect); //var#10
   connect = new HttpConnect.buffer(connect, _0); response = connect.response;
 
-  return connect.include("""/header.html""").then((_) { //#11
+  return connect.include("/header.html").then((_) { //#11
 
     connect = _cs_.removeLast(); response = connect.response;
 
@@ -46,7 +46,7 @@ Future home(HttpConnect connect) { //#2
       var _2 = new StringBuffer(); _cs_.add(connect); //var#18
       connect = new HttpConnect.buffer(connect, _2); response = connect.response;
 
-      return connect.include("""/footer.html""").then((_) { //#19
+      return connect.include("/footer.html").then((_) { //#19
 
         connect = _cs_.removeLast(); response = connect.response;
 

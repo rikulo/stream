@@ -9,7 +9,7 @@ Future fragView(HttpConnect connect, {Map infos: const {}, header, footer}) { //
   HttpResponse response = connect.response;
 
   if (!connect.isIncluded)
-    response.headers.contentType = ContentType.parse("""text/html; charset=utf-8""");
+    response.headers.contentType = ContentType.parse("text/html; charset=utf-8");
 
   if (header != null) { //if#2
 

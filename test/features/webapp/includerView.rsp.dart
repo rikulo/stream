@@ -9,7 +9,7 @@ Future includerView(HttpConnect connect) { //#2
   HttpResponse response = connect.response;
 
   if (!connect.isIncluded)
-    response.headers.contentType = ContentType.parse("""text/html; charset=utf-8""");
+    response.headers.contentType = ContentType.parse("text/html; charset=utf-8");
 final infos = {
   "fruits": ["apple", "orange", "lemon"],
   "cars": ["bmw", "audi", "honda"]
@@ -29,7 +29,7 @@ final infos = {
     <div style="border: 1px solid blue">
 """); //#7
 
-  return connect.include("""/frag.html""").then((_) { //#18
+  return connect.include("/frag.html").then((_) { //#18
 
     response.write("""
     </div>
@@ -67,7 +67,7 @@ final infos = {
   <p>It also includes another page:</p>
 """); //#30
 
-      return connect.include("""/frag.html""").then((_) { //#32
+      return connect.include("/frag.html").then((_) { //#32
 
         connect = _cs_.removeLast(); response = connect.response;
 

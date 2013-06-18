@@ -324,8 +324,9 @@ class JsonTag extends Tag {
     if (val.isEmpty)
       tc.error("Expect an expression");
 
-    tc.writeln("\n${tc.pre}_t0_ = Rsp.json($val); //json#${tc.line}");
-    tc.writeln("""${tc.pre}response.write('<script id="$nm" type="text/plain">\$_t0_</script>\\n');""");
+    tc.writeln("""${tc.pre}response..write('<script type="text/plain" id="') //json#${tc.line}""");
+    tc.writeln("""${tc.pre} ..write(${toEL(nm)})..write('">')""");
+    tc.writeln("${tc.pre} ..write(Rsp.json($val))..writeln('</script>');");
   }
   @override
   bool get hasClosing => false;
@@ -368,8 +369,8 @@ class JsonJsTag extends Tag {
     if (val.isEmpty)
       tc.error("Expect an expression");
 
-    tc.writeln("\n${tc.pre}_t0_ = Rsp.json($val); //json-js#${tc.line}"
-      '\n${tc.pre}response.write("<script>$nm = \$_t0_;</script>\\n");');
+    tc.writeln('\n${tc.pre}response..write("<script>")..write(${toEL(nm)})..write("=") //json-js#${tc.line}');
+    tc.writeln("${tc.pre} ..write(Rsp.json($val))..writeln('</script>');");
   }
   @override
   bool get hasClosing => false;

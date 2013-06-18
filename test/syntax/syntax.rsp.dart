@@ -13,12 +13,12 @@ Future syntax(HttpConnect connect, {foo, bool c:false}) { //#4
   HttpRequest request = connect.request;
   HttpResponse response = connect.response;
 
-  response.headers.contentType = ContentType.parse("""${Rsp.nns(foo.contentType)}""");
+  response.headers.contentType = ContentType.parse("${Rsp.nns(foo.contentType)}");
 
-  response.headers..add("age", """129""")
+  response.headers..add("age", "129")
     ..add("accept-ranges", foo.acceptRanges); //header#4
 
-  response.headers..add("Cache-Control", """no-cache"""); //header#5
+  response.headers..add("Cache-Control", "no-cache"); //header#5
 
   response.write("""
 <!DOCTYPE html>
@@ -108,7 +108,7 @@ Future syntax(HttpConnect connect, {foo, bool c:false}) { //#4
 
   } else if (c) { //else#35
 
-    return connect.forward("""/x/y/z"""); //#36
+    return connect.forward("/x/y/z"); //#36
 
   } else if (foo.isEmployee) { //else#37
 
@@ -116,7 +116,7 @@ Future syntax(HttpConnect connect, {foo, bool c:false}) { //#4
       *Employee*
 """); //#38
 
-    return Rsp.nnf(syntax(connect, c: true, foo: """abc""")); //forward#39
+    return Rsp.nnf(syntax(connect, c: true, foo: "abc")); //forward#39
 
   } else { //else#40
 
@@ -155,7 +155,7 @@ Future syntax(HttpConnect connect, {foo, bool c:false}) { //#4
 
 """); //#50
 
-  return connect.include("""/abc""").then((_) { //#51
+  return connect.include("/abc").then((_) { //#51
 
     var _0 = new StringBuffer(); _cs_.add(connect); //var#53
     connect = new HttpConnect.buffer(connect, _0); response = connect.response;
@@ -178,21 +178,21 @@ Future syntax(HttpConnect connect, {foo, bool c:false}) { //#4
       something is meaningful
 """); //#59
 
-        return connect.forward(Rsp.cat("""/foo?abc""", {'first': """1st""", 'second': foo})); //#60
+        return connect.forward(Rsp.cat("/foo?abc", {'first': "1st", 'second': foo})); //#60
       } //if
 
-      response.write(Rsp.script(connect, """/script/foo.dart""", true)); //script#62
+      response.write(Rsp.script(connect, "/script/foo.dart", true)); //script#62
 
       response.write("""
   </body>
 </html>
 """); //#63
 
-      _t0_ = Rsp.json(foo.name.length ~/ 2); //json-js#65
-      response.write("<script>foo1 = $_t0_;</script>\n");
-
-      _t0_ = Rsp.json(foo.name.length ~/ 2 * "/]".length); //json#66
-      response.write('<script id="foo2" type="text/plain">$_t0_</script>\n');
+      response..write("<script>")..write("foo1")..write("=") //json-js#65
+       ..write(Rsp.json(foo.name.length ~/ 2))..writeln('</script>');
+      response..write('<script type="text/plain" id="') //json#66
+       ..write("foo2")..write('">')
+       ..write(Rsp.json(foo.name.length ~/ 2 * "/]".length))..writeln('</script>');
 
       response.write("""
 

@@ -9,7 +9,7 @@ Future searchResult(HttpConnect connect, {criteria}) { //#2
   HttpResponse response = connect.response;
 
   if (!connect.isIncluded)
-    response.headers.contentType = ContentType.parse("""text/html; charset=utf-8""");
+    response.headers.contentType = ContentType.parse("text/html; charset=utf-8");
 
   response.write("""
 <html>

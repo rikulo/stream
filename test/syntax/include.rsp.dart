@@ -13,7 +13,7 @@ Future include(HttpConnect connect, {foo, more, less}) { //#3
   HttpResponse response = connect.response;
 
   if (!connect.isIncluded)
-    response.headers.contentType = ContentType.parse("""text/html; charset=utf-8""");
+    response.headers.contentType = ContentType.parse("text/html; charset=utf-8");
 
   var less = new StringBuffer(); _cs_.add(connect); //var#3
   connect = new HttpConnect.buffer(connect, less); response = connect.response;
@@ -36,7 +36,7 @@ less is more
   More information
 """); //#9
 
-  return Rsp.nnf(include(new HttpConnect.chain(connect), more: """recursive""")).then((_) { //include#10
+  return Rsp.nnf(include(new HttpConnect.chain(connect), more: "recursive")).then((_) { //include#10
 
     connect = _cs_.removeLast(); response = connect.response;
 

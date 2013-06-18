@@ -51,7 +51,9 @@ String toEL(String data, {direct: true}) {
     if (cc == '\\')
       sb.write(data[++i]);
   }
-  return '"""$sb"""';
+  final val = sb.toString();
+  return val.indexOf('"') >= 0 ?
+    val.indexOf("'") >= 0 ? '"""$val"""': "'$val'": '"$val"';
 }
 int _skipToELEnd(String data, int from) {
   String sep;

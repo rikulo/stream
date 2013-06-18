@@ -13,8 +13,8 @@ Future lastModified1(HttpConnect connect, {input}) { //#2
   HttpResponse response = connect.response;
 
   if (!connect.isIncluded)
-    response.headers.contentType = ContentType.parse("""text/html; charset=utf-8""");
-  response.headers.set(HttpHeaders.LAST_MODIFIED, new DateTime.fromMillisecondsSinceEpoch(1371262699150));
+    response.headers.contentType = ContentType.parse("text/html; charset=utf-8");
+  response.headers.set(HttpHeaders.LAST_MODIFIED, new DateTime.fromMillisecondsSinceEpoch(1371542651232));
 
   response.write("""
 <html>

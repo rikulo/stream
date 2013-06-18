@@ -9,7 +9,7 @@ Future json(HttpConnect connect) { //#2
   HttpResponse response = connect.response;
 
   if (!connect.isIncluded)
-    response.headers.contentType = ContentType.parse("""text/html; charset=utf-8""");
+    response.headers.contentType = ContentType.parse("text/html; charset=utf-8");
 var map = {
   "first": [123, "abc"],
   "second": true
@@ -24,8 +24,8 @@ var map = {
   <body>
 """); //#7
 
-  _t0_ = Rsp.json([map, "another"]); //json-js#13
-  response.write("<script>foo = $_t0_;</script>\n");
+  response..write("<script>")..write("foo")..write("=") //json-js#13
+   ..write(Rsp.json([map, "another"]))..writeln('</script>');
 
   response.write("""
     <div id="show"></div>

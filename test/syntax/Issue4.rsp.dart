@@ -13,7 +13,7 @@ Future Issue4(HttpConnect connect) { //#1
   HttpResponse response = connect.response;
 
   if (!connect.isIncluded)
-    response.headers.contentType = ContentType.parse("""text/html; charset=utf-8""");
+    response.headers.contentType = ContentType.parse("text/html; charset=utf-8");
 var foo = "test";
 render(HttpConnect connect, {more, less}) {
 }
@@ -30,11 +30,11 @@ abc/"""); //#5
 
 """); //#7
 
-  return connect.include("""${Rsp.nns(foo)}""").then((_) { //#8
+  return connect.include("${Rsp.nns(foo)}").then((_) { //#8
 
-    return connect.include("""abc/${Rsp.nns(foo)}""").then((_) { //#9
+    return connect.include("abc/${Rsp.nns(foo)}").then((_) { //#9
 
-      return Rsp.nnf(render(new HttpConnect.chain(connect), more: """abc/${Rsp.nns(foo)}""", less: foo)).then((_) { //include#10
+      return Rsp.nnf(render(new HttpConnect.chain(connect), more: "abc/${Rsp.nns(foo)}", less: foo)).then((_) { //include#10
 
         return Rsp.nnf();
       }); //end-of-include

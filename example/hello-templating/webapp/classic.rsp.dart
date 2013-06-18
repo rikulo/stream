@@ -9,7 +9,7 @@ Future classic(HttpConnect connect, {header, sidebar, body, footer}) { //#2
   HttpResponse response = connect.response;
 
   if (!connect.isIncluded)
-    response.headers.contentType = ContentType.parse("""text/html; charset=utf-8""");
+    response.headers.contentType = ContentType.parse("text/html; charset=utf-8");
 
   response.write("""
 <div>

@@ -192,7 +192,7 @@ Future syntax(HttpConnect connect, {foo, bool c:false}) { //#4
       response.write("<script>foo1 = $_t0_;</script>\n");
 
       _t0_ = Rsp.json(foo.name.length ~/ 2 * "/]".length); //json#66
-      response.write('<script id="foo2" type="text/plain">$_t0_;</script>\n');
+      response.write('<script id="foo2" type="text/plain">$_t0_</script>\n');
 
       response.write("""
 

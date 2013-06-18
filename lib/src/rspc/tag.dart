@@ -325,7 +325,7 @@ class JsonTag extends Tag {
       tc.error("Expect an expression");
 
     tc.writeln("\n${tc.pre}_t0_ = Rsp.json($val); //json#${tc.line}");
-    tc.writeln("""${tc.pre}response.write('<script id="$nm" type="text/plain">\$_t0_;</script>\\n');""");
+    tc.writeln("""${tc.pre}response.write('<script id="$nm" type="text/plain">\$_t0_</script>\\n');""");
   }
   @override
   bool get hasClosing => false;

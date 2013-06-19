@@ -27,8 +27,7 @@ var map = {
   response..write("<script>")..write("foo")..write("=") //json-js#13
    ..write(Rsp.json([map, "another"]))..writeln('</script>');
 
-  response.write("""
-    <div id="show"></div>
+  response.write("""    <div id="show"></div>
     <script>
 var tests = ["foo[1]", "foo[0].first[0]", "foo[0].second"];
 var out = "";

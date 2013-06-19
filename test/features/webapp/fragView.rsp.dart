@@ -21,8 +21,7 @@ Future fragView(HttpConnect connect, {Map infos: const {}, header, footer}) { //
 """); //#3
   } //if
 
-  response.write("""
-<ul>
+  response.write("""<ul>
   <li>This is a fragment and generated dynamically</li>
 """); //#5
 
@@ -45,13 +44,11 @@ Future fragView(HttpConnect connect, {Map infos: const {}, header, footer}) { //
       response.write(Rsp.nnx(name)); //#11
 
 
-      response.write("""
-</li>
+      response.write("""</li>
 """); //#11
     } //for
 
-    response.write("""
-      </ol>
+    response.write("""      </ol>
     </li>
 """); //#13
   } //for
@@ -61,8 +58,7 @@ Future fragView(HttpConnect connect, {Map infos: const {}, header, footer}) { //
   response.write(Rsp.nnx(connect.browser)); //#16
 
 
-  response.write("""
-</li>
+  response.write("""</li>
 </ul>
 """); //#16
 

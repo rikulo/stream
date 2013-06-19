@@ -11,8 +11,7 @@ Future listView(HttpConnect connect, {String path, List<FileInfo> infos}) { //#3
   if (!connect.isIncluded)
     response.headers.contentType = ContentType.parse("text/html; charset=utf-8");
 
-  response.write("""
-<!DOCTYPE html>
+  response.write("""<!DOCTYPE html>
 <html>
   <head>
     <title>Stream: Hello MVC</title>
@@ -24,8 +23,7 @@ Future listView(HttpConnect connect, {String path, List<FileInfo> infos}) { //#3
   response.write(Rsp.nnx(path)); //#10
 
 
-  response.write("""
-</h1>
+  response.write("""</h1>
 
     <table border="1px" cellspacing="0">
       <tr>
@@ -36,28 +34,24 @@ Future listView(HttpConnect connect, {String path, List<FileInfo> infos}) { //#3
 
   for (var info in infos) { //for#17
 
-    response.write("""
-      <tr>
+    response.write("""      <tr>
         <td><img src=\""""); //#18
 
     response.write(Rsp.nnx(info.isDirectory ? 'file.png': 'directory.png')); //#19
 
 
-    response.write("""
-"/></td>
+    response.write(""""/></td>
         <td>"""); //#19
 
     response.write(Rsp.nnx(info.name)); //#20
 
 
-    response.write("""
-</td>
+    response.write("""</td>
       </tr>
 """); //#20
   } //for
 
-  response.write("""
-    </table>
+  response.write("""    </table>
 
     <ul>
       <li>Please refer to

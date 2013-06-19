@@ -20,8 +20,7 @@ Future syntax(HttpConnect connect, {foo, bool c:false}) { //#4
 
   response.headers..add("Cache-Control", "no-cache"); //header#5
 
-  response.write("""
-<!DOCTYPE html>
+  response.write("""<!DOCTYPE html>
 <html>
   <head>
     <title>"""); //#6
@@ -29,22 +28,16 @@ Future syntax(HttpConnect connect, {foo, bool c:false}) { //#4
   response.write(Rsp.nnx("$foo.name [${foo.title}]")); //#9
 
 
-  //#9
-  response.write("""
-</title>
+  response.write("""</title>
   </head>
   <body>
-    <p>This is a test with """);
-  response.write('"""');
-  response.write("""
-.
-    <p>Another expresion: """);
+    <p>This is a test with ""\" and \\ and ""\\".
+    <p>Another expresion: \""""); //#9
 
   response.write(Rsp.nnx(foo.description)); //#13
 
 
-  response.write("""
-
+  response.write(""""
     <p>An empty expression: """); //#13
 
   response.write("""
@@ -66,8 +59,7 @@ Future syntax(HttpConnect connect, {foo, bool c:false}) { //#4
 
     if (user.isCustomer) { //if#20
 
-      response.write("""
-      <i>!important!</i>
+      response.write("""      <i>!important!</i>
 """); //#21
     } //if
 
@@ -83,13 +75,11 @@ Future syntax(HttpConnect connect, {foo, bool c:false}) { //#4
 """); //#24
     } //while
 
-    response.write("""
-      </li>
+    response.write("""      </li>
 """); //#26
   } //for
 
-  response.write("""
-    </ul>
+  response.write("""    </ul>
 
 """); //#28
 
@@ -102,26 +92,23 @@ Future syntax(HttpConnect connect, {foo, bool c:false}) { //#4
 
   if (foo.isCustomer) { //if#33
 
-    response.write("""
-      *Custmer*
+    response.write("""      *Custmer*
 """); //#34
 
   } else if (c) { //else#35
 
-    return connect.forward("/x/y/z"); //#36
+    return connect.forward("/x/y/z"); //forward#36
 
   } else if (foo.isEmployee) { //else#37
 
-    response.write("""
-      *Employee*
+    response.write("""      *Employee*
 """); //#38
 
     return Rsp.nnf(syntax(connect, c: true, foo: "abc")); //forward#39
 
   } else { //else#40
 
-    response.write("""
-      *Unknown* [/if] 
+    response.write("""      *Unknown* [/if] 
 """); //#41
   } //if
 
@@ -132,8 +119,7 @@ Future syntax(HttpConnect connect, {foo, bool c:false}) { //#4
   var whatever = new StringBuffer(); _cs_.add(connect); //var#44
   connect = new HttpConnect.buffer(connect, whatever); response = connect.response;
 
-  response.write("""
-    define a variable
+  response.write("""    define a variable
 """); //#45
 
   for (var fruit in ["apple", "orange"]) { //for#46
@@ -155,13 +141,12 @@ Future syntax(HttpConnect connect, {foo, bool c:false}) { //#4
 
 """); //#50
 
-  return connect.include("/abc").then((_) { //#51
+  return connect.include("/abc").then((_) { //include#51
 
     var _0 = new StringBuffer(); _cs_.add(connect); //var#53
     connect = new HttpConnect.buffer(connect, _0); response = connect.response;
 
-    response.write("""
-      The content for foo
+    response.write("""      The content for foo
 """); //#54
 
     connect = _cs_.removeLast(); response = connect.response;
@@ -174,17 +159,15 @@ Future syntax(HttpConnect connect, {foo, bool c:false}) { //#4
 
       if (foo.isMeaningful) { //if#58
 
-        response.write("""
-      something is meaningful
+        response.write("""      something is meaningful
 """); //#59
 
-        return connect.forward(Rsp.cat("/foo?abc", {'first': "1st", 'second': foo})); //#60
+        return connect.forward(Rsp.cat("/foo?abc", {'first': "1st", 'second': foo})); //forward#60
       } //if
 
       response.write(Rsp.script(connect, "/script/foo.dart", true)); //script#62
 
-      response.write("""
-  </body>
+      response.write("""  </body>
 </html>
 """); //#63
 

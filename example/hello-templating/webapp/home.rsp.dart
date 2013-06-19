@@ -11,8 +11,7 @@ Future home(HttpConnect connect) { //#2
   if (!connect.isIncluded)
     response.headers.contentType = ContentType.parse("text/html; charset=utf-8");
 
-  response.write("""
-<!DOCTYPE html>
+  response.write("""<!DOCTYPE html>
 <html>
   <head>
     <title>Stream: Hello Templating</title>
@@ -24,7 +23,7 @@ Future home(HttpConnect connect) { //#2
   var _0 = new StringBuffer(); _cs_.add(connect); //var#10
   connect = new HttpConnect.buffer(connect, _0); response = connect.response;
 
-  return connect.include("/header.html").then((_) { //#11
+  return connect.include("/header.html").then((_) { //include#11
 
     connect = _cs_.removeLast(); response = connect.response;
 
@@ -46,7 +45,7 @@ Future home(HttpConnect connect) { //#2
       var _2 = new StringBuffer(); _cs_.add(connect); //var#18
       connect = new HttpConnect.buffer(connect, _2); response = connect.response;
 
-      return connect.include("/footer.html").then((_) { //#19
+      return connect.include("/footer.html").then((_) { //include#19
 
         connect = _cs_.removeLast(); response = connect.response;
 
@@ -57,8 +56,7 @@ Future home(HttpConnect connect) { //#2
         var _3 = new StringBuffer(); _cs_.add(connect); //var#22
         connect = new HttpConnect.buffer(connect, _3); response = connect.response;
 
-        response.write("""
-  <h1>Hello Templating</h1>
+        response.write("""  <h1>Hello Templating</h1>
   <p>In this example, we demostrate how to define the shared layout (aka., the template), define page fragments and assemble them into a complete page. It is based on the so-called *Composite View* pattern.</p>
   <p>For more information, please refer to <a href="http://docs.rikulo.org/stream/latest/RSP/Fundamentals/Templating-_Composite_View_Pattern.html">Templating: Composite View Pattern</a>.</p>
 """); //#23
@@ -67,8 +65,7 @@ Future home(HttpConnect connect) { //#2
 
         return Rsp.nnf(classic(new HttpConnect.chain(connect), header: _0.toString(), sidebar: _1.toString(), footer: _2.toString(), body: _3.toString())).then((_) { //include#9
 
-          response.write("""
-  </body>
+          response.write("""  </body>
 </html>
 """); //#28
 

@@ -29,32 +29,28 @@ final infos = {
     <div style="border: 1px solid blue">
 """); //#7
 
-  return connect.include("/frag.html").then((_) { //#18
+  return connect.include("/frag.html").then((_) { //include#18
 
-    response.write("""
-    </div>
+    response.write("""    </div>
     <div style="border: 1px solid red">
 """); //#19
 
     return Rsp.nnf(fragView(new HttpConnect.chain(connect), infos: infos)).then((_) { //include#21
 
-      response.write("""
-    </div>
+      response.write("""    </div>
     <div style="border: 1px solid red">
 """); //#22
 
       var _0 = new StringBuffer(); _cs_.add(connect); //var#25
       connect = new HttpConnect.buffer(connect, _0); response = connect.response;
 
-      response.write("""
-  <h1>This is a header</h1>
+      response.write("""  <h1>This is a header</h1>
   <p>Passed from the includer for showing """); //#26
 
       response.write(Rsp.nnx(infos)); //#27
 
 
-      response.write("""
-</p>
+      response.write("""</p>
 """); //#27
 
       connect = _cs_.removeLast(); response = connect.response;
@@ -62,19 +58,17 @@ final infos = {
       var _1 = new StringBuffer(); _cs_.add(connect); //var#29
       connect = new HttpConnect.buffer(connect, _1); response = connect.response;
 
-      response.write("""
-  <h2>This is a footer</h2>
+      response.write("""  <h2>This is a footer</h2>
   <p>It also includes another page:</p>
 """); //#30
 
-      return connect.include("/frag.html").then((_) { //#32
+      return connect.include("/frag.html").then((_) { //include#32
 
         connect = _cs_.removeLast(); response = connect.response;
 
         return Rsp.nnf(fragView(new HttpConnect.chain(connect), infos: infos, header: _0.toString(), footer: _1.toString())).then((_) { //include#24
 
-          response.write("""
-    </div>
+          response.write("""    </div>
   </body>
 </html>
 """); //#35

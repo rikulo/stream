@@ -11,8 +11,7 @@ Future helloView(HttpConnect connect) { //#3
   if (!connect.isIncluded)
     response.headers.contentType = ContentType.parse("text/html; charset=utf-8");
 
-  response.write("""
-<!DOCTYPE html>
+  response.write("""<!DOCTYPE html>
 <html>
   <head>
     <title>Stream: Hello RSP</title>
@@ -25,15 +24,13 @@ Future helloView(HttpConnect connect) { //#3
   response.write(Rsp.nnx(new DateTime.now())); //#11
 
 
-  response.write("""
-.</p>
+  response.write(""".</p>
     <p>This page is served by Rikulo Stream """); //#11
 
   response.write(Rsp.nnx(connect.server.version)); //#12
 
 
-  response.write("""
-.</p>
+  response.write(""".</p>
     <p>Please refer to
   <a href="https://github.com/rikulo/stream/tree/master/example/hello-rsp">Github</a> for how it is implemented.</a>
   </body>

@@ -11,8 +11,7 @@ Future searchResult(HttpConnect connect, {criteria}) { //#2
   if (!connect.isIncluded)
     response.headers.contentType = ContentType.parse("text/html; charset=utf-8");
 
-  response.write("""
-<html>
+  response.write("""<html>
   <head>
     <title>Search Result</title>
     <link href="theme.css" rel="stylesheet" type="text/css" />
@@ -26,29 +25,25 @@ Future searchResult(HttpConnect connect, {criteria}) { //#2
   response.write(Rsp.nnx(criteria.text)); //#11
 
 
-  response.write("""
-</li>
+  response.write("""</li>
       <li>since: """); //#11
 
   response.write(Rsp.nnx(criteria.since)); //#12
 
 
-  response.write("""
-</li>
+  response.write("""</li>
       <li>within: """); //#12
 
   response.write(Rsp.nnx(criteria.within)); //#13
 
 
-  response.write("""
-</li>
+  response.write("""</li>
       <li>hasAttachment: """); //#13
 
   response.write(Rsp.nnx(criteria.hasAttachment)); //#14
 
 
-  response.write("""
-</li>
+  response.write("""</li>
     </ul>
   </body>
 </html>

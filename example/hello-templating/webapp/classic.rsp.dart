@@ -11,8 +11,7 @@ Future classic(HttpConnect connect, {header, sidebar, body, footer}) { //#2
   if (!connect.isIncluded)
     response.headers.contentType = ContentType.parse("text/html; charset=utf-8");
 
-  response.write("""
-<div>
+  response.write("""<div>
   <div class="header">
     """); //#2
 

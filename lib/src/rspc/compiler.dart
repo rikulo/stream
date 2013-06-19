@@ -252,7 +252,7 @@ class Compiler {
       _catArgs(args);
       _write(')');
     }
-    _writeln(").then((_) { //#$line");
+    _writeln(").then((_) { //include#$line");
     _extra = "  $_extra";
     _incs.add(new _IncInfo("});"));
   }
@@ -293,7 +293,7 @@ class Compiler {
       _catArgs(args);
       _write(')');
     }
-    _writeln("); //#${line}");
+    _writeln("); //forward#$line");
   }
   //Forward to the given renderer
   void forward(String method, [Map args, int line]) {
@@ -301,7 +301,7 @@ class Compiler {
 
     _write("\n${_current.pre}return Rsp.nnf(${method}(connect");
     _outArgs(args);
-    _writeln(")); //forward#${line}");
+    _writeln(")); //forward#$line");
   }
   //Concatenates arguments
   void _catArgs(Map args) {
@@ -525,44 +525,38 @@ class Compiler {
 
   //Utilities//
   void _outText(String text, [int line]) {
-    if (line == null) line = _line;
-    final pre = _current.pre;
-    int i = 0, j;
-    while ((j = text.indexOf('"""', i)) >= 0) {
-      if (line != null) {
-        _writeln("\n$pre//#$line");
-        line = null;
+    if (text.isEmpty)
+      return; //nothing to do
+
+    _write('\n${_current.pre}response.write("""');
+
+    for (int i = 0, len = text.length; i < len; ++i) {
+      final cc = text[i];
+      if (i == 0 && cc == '\n') {
+        _write('\n'); //first linefeed is ignored, so we have add one more
+      } else if (cc == '"') {
+        if (i == len - 1) { //end with "
+          _write('\\');
+        } else if (i + 2 < len && text[i + 1] == '"' && text[i + 2] == '"') {
+          _write('""\\');
+          i += 2;
+        }
+      } else if (cc == '\\') {
+        _write('\\');
       }
-      _writeln('$pre${_toTripleQuot(text.substring(i, j))}\n'
-        '${pre}response.write(\'"""\');');
-      i = j + 3;
+      _write(cc);
     }
-    if (i == 0) {
-      _write('\n$pre${_toTripleQuot(text)}');
-      if (line != null) _writeln(" //#$line");
-    } else {
-      _writeln('$pre${_toTripleQuot(text.substring(i))}');
-    }
-  }
-  String _toTripleQuot(String text) {
-    //Note: Dart can't handle """" (four quotation marks)
-    var cb = text.startsWith('"') || text.indexOf('\n') >= 0 ? '\n': '', ce = "";
-    if (text.endsWith('"')) {
-      ce = '\\"';
-      text = text.substring(0, text.length - 1);
-    }
-    return 'response.write("""$cb$text$ce""");';
+
+    _writeln('"""); //#${line != null ? line: _line}');
   }
 
   void _outExpr() {
-    //it doesn't push, so we have to use _line instead of _current.line
-    final line = _line; //_tagData might have multiple lines
     final expr = _tagData(skipFollowingSpaces: false);
       //1) '/' is NOT a terminal, 2) no skip space for expression
-    if (!expr.isEmpty) {
-      final pre = _current.pre;
-      _writeln('\n${pre}response.write(Rsp.nnx($expr)); //#${line}\n');
-    }
+    if (!expr.isEmpty)
+      _writeln('\n${_current.pre}response.write(Rsp.nnx($expr)); //#${_line}\n');
+      //it doesn't push, so we have to use _line instead of _current.line
+      //_tagData might have multiple lines
   }
 
   ///merge partOf, and returns the library name

@@ -11,16 +11,14 @@ Future sidebar(HttpConnect connect) { //#2
   if (!connect.isIncluded)
     response.headers.contentType = ContentType.parse("text/html; charset=utf-8");
 
-  response.write("""
-<ul>
+  response.write("""<ul>
   <li>This is a sidebar.</li>
   <li>"""); //#2
 
   response.write(Rsp.nnx(new DateTime.now())); //#4
 
 
-  response.write("""
-</li>
+  response.write("""</li>
 </ul>
 """); //#4
 

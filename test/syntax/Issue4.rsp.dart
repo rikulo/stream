@@ -30,9 +30,9 @@ abc/"""); //#5
 
 """); //#7
 
-  return connect.include("${Rsp.nns(foo)}").then((_) { //#8
+  return connect.include("${Rsp.nns(foo)}").then((_) { //include#8
 
-    return connect.include("abc/${Rsp.nns(foo)}").then((_) { //#9
+    return connect.include("abc/${Rsp.nns(foo)}").then((_) { //include#9
 
       return Rsp.nnf(render(new HttpConnect.chain(connect), more: "abc/${Rsp.nns(foo)}", less: foo)).then((_) { //include#10
 

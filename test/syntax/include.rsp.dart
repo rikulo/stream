@@ -18,8 +18,7 @@ Future include(HttpConnect connect, {foo, more, less}) { //#3
   var less = new StringBuffer(); _cs_.add(connect); //var#3
   connect = new HttpConnect.buffer(connect, less); response = connect.response;
 
-  response.write("""
-less is more
+  response.write("""less is more
 """); //#4
 
   connect = _cs_.removeLast(); response = connect.response;
@@ -32,8 +31,7 @@ less is more
   var _0 = new StringBuffer(); _cs_.add(connect); //var#8
   connect = new HttpConnect.buffer(connect, _0); response = connect.response;
 
-  response.write("""
-  More information
+  response.write("""  More information
 """); //#9
 
   return Rsp.nnf(include(new HttpConnect.chain(connect), more: "recursive")).then((_) { //include#10

@@ -267,7 +267,7 @@ class _StreamServer implements StreamServer {
       //protect from aborted connection
       final connect = new _HttpConnect(this, req, req.response);
       req.response.done.catchError((err) {
-        if (err is SocketIOException)
+        if (err is SocketException)
           logger.fine("${connect.request.uri}: $err"); //nothing to do
         else
           _handleErr(connect, err);

@@ -150,8 +150,7 @@ class Compiler {
     if (_desc == null)
       _desc = "Template, $_name, for rendering the view.";
 
-    final ctypeSpecified = _contentType != null;
-    if (!ctypeSpecified && sourceName != null) {
+    if (_contentType == null && sourceName != null) {
       final i = sourceName.lastIndexOf('.');
       if (i >= 0) {
         final ct = contentTypes[sourceName.substring(i + 1)];
@@ -194,24 +193,21 @@ class Compiler {
     _write("\n/** $_desc */\nFuture $_name(HttpConnect connect");
     if (_args != null)
       _write(", {$_args}");
-    _writeln(") { //#$line\n"
+    _write(") { //#$line\n"
       "  var _t0_, _cs_ = new List<HttpConnect>();\n" //_t0_ is reserved for tags
       "  HttpRequest request = connect.request;\n"
-      "  HttpResponse response = connect.response;\n");
+      "  HttpResponse response = connect.response;\n"
+      "  Rsp.init(connect, ${toEL(_contentType)}");
 
-    if (_contentType != null) {
-      if (!ctypeSpecified) //if not specified, it is set only if not included
-        _write('  if (!connect.isIncluded)\n  ');
-      _writeln('  response.headers.contentType = ContentType.parse('
-        '${toEL(_contentType, direct: false)});');
-    }
     if (_lastModified != null) {
-      _write('  response.headers.set(HttpHeaders.LAST_MODIFIED, ');
+      _write(',\n    () => ');
       if (_lastModified == "compile")
-        _writeln("new DateTime.fromMillisecondsSinceEpoch(${new DateTime.now().millisecondsSinceEpoch}));");
+        _write("new DateTime.fromMillisecondsSinceEpoch(${new DateTime.now().millisecondsSinceEpoch})");
       else
-        _writeln("connect.server.startedSince);");
+        _write("connect.server.startedSince");
     }
+
+    _writeln(');');
   }
 
   ///Sets the page information.
@@ -229,6 +225,7 @@ class Compiler {
     _noEL(args, "the args attribute", line);
     _contentType = contentType;
 
+    _noEL(lastModified, "the lastModified attribute", line);
     if (lastModified != null)
       if (lastModified.isEmpty)
         lastModified = null;

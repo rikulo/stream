@@ -75,6 +75,14 @@ Future loadFile(HttpConnect connect, File file) {
     return file.lastModified();
   }).then((date) {
     headers.add(HttpHeaders.LAST_MODIFIED, date);
+    if (connect.server.chunkedTransferEncoding) {
+      //we compress only text files
+      final ctype = headers.contentType;
+      if (ctype == null || ctype.primaryType == "text"
+      || (ctype.primaryType == "application" && ctype.subType == "json"))
+        headers.chunkedTransferEncoding = true;
+    }
+
     return _loadFile(connect, file);
   });
 }

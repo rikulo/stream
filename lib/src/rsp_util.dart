@@ -9,6 +9,21 @@ part of stream;
  * > They are used in the generated code of RSP pages.
  */
 class Rsp {
+  /** Initializes a RSP page.
+   * It is used by generated RSP dart code. You don't need to invoke it.
+   */
+  static void init(HttpConnect connect, String contentType, [DateTime lastModified()]) {
+    if (!connect.isIncluded) {
+      final headers = connect.response.headers;
+      headers.chunkedTransferEncoding = connect.server.chunkedTransferEncoding;
+
+      if (contentType != null && !contentType.isEmpty)
+        headers.contentType = ContentType.parse(contentType);
+      if (lastModified != null)
+        headers.set(HttpHeaders.LAST_MODIFIED, lastModified());
+    }
+  }
+
   /** Converts the given value to a non-null string.
    * If the given value is not null, `toString` is called.
    * If null, an empty string is returned.

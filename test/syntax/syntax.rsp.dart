@@ -12,8 +12,7 @@ Future syntax(HttpConnect connect, {foo, bool c:false}) { //#4
   var _t0_, _cs_ = new List<HttpConnect>();
   HttpRequest request = connect.request;
   HttpResponse response = connect.response;
-
-  response.headers.contentType = ContentType.parse("${Rsp.nns(foo.contentType)}");
+  Rsp.init(connect, foo.contentType);
 
   response.headers..add("age", "129")
     ..add("accept-ranges", foo.acceptRanges); //header#4

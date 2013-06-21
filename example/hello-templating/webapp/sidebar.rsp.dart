@@ -7,9 +7,7 @@ Future sidebar(HttpConnect connect) { //#2
   var _t0_, _cs_ = new List<HttpConnect>();
   HttpRequest request = connect.request;
   HttpResponse response = connect.response;
-
-  if (!connect.isIncluded)
-    response.headers.contentType = ContentType.parse("text/html; charset=utf-8");
+  Rsp.init(connect, "text/html; charset=utf-8");
 
   response.write("""<ul>
   <li>This is a sidebar.</li>

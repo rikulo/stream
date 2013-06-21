@@ -1,5 +1,9 @@
 #CHANGES
 
+**0.7.5**
+
+* StreamServer.chunkedTransferEncoding supported for compressing the output with GZIP
+
 **0.7.4**
 
 * Issue 36: Change the spec of [:json] to generate a JSON object that can be parse as Dart object directly

@@ -21,7 +21,7 @@ Future home(HttpConnect connect) { //#2
 """); //#2
 
   var _0 = new StringBuffer(); _cs_.add(connect); //var#10
-  connect = new HttpConnect.buffer(connect, _0); response = connect.response;
+  connect = new HttpConnect.stringBuffer(connect, _0); response = connect.response;
 
   return connect.include("/header.html").then((_) { //include#11
 
@@ -32,7 +32,7 @@ Future home(HttpConnect connect) { //#2
 """); //#13
 
     var _1 = new StringBuffer(); _cs_.add(connect); //var#14
-    connect = new HttpConnect.buffer(connect, _1); response = connect.response;
+    connect = new HttpConnect.stringBuffer(connect, _1); response = connect.response;
 
     return Rsp.nnf(sidebar(new HttpConnect.chain(connect))).then((_) { //include#15
 
@@ -43,7 +43,7 @@ Future home(HttpConnect connect) { //#2
 """); //#17
 
       var _2 = new StringBuffer(); _cs_.add(connect); //var#18
-      connect = new HttpConnect.buffer(connect, _2); response = connect.response;
+      connect = new HttpConnect.stringBuffer(connect, _2); response = connect.response;
 
       return connect.include("/footer.html").then((_) { //include#19
 
@@ -54,7 +54,7 @@ Future home(HttpConnect connect) { //#2
 """); //#21
 
         var _3 = new StringBuffer(); _cs_.add(connect); //var#22
-        connect = new HttpConnect.buffer(connect, _3); response = connect.response;
+        connect = new HttpConnect.stringBuffer(connect, _3); response = connect.response;
 
         response.write("""  <h1>Hello Templating</h1>
   <p>In this example, we demostrate how to define the shared layout (aka., the template), define page fragments and assemble them into a complete page. It is based on the so-called *Composite View* pattern.</p>

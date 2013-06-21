@@ -53,10 +53,16 @@ typedef Future RequestHandler(HttpConnect connect);
 /** A HTTP request connection.
  */
 abstract class HttpConnect {
-  /** Instantiates a connection by redirecting the output to the given buffer.
+  /** Instantiates a connection by redirecting the output to the given buffer
+   * (bytes).
    */
-  factory HttpConnect.buffer(HttpConnect origin, StringBuffer buffer)
+  factory HttpConnect.buffer(HttpConnect origin, List<int> buffer)
   => new _BufferedConnect(origin, buffer);
+  /** Instantiates a connection by redirecting the output to the given
+   * string buffer.
+   */
+  factory HttpConnect.stringBuffer(HttpConnect origin, StringBuffer buffer)
+  => new _StringBufferedConnect(origin, buffer);
   /** Instantiates a connection that will be used to include or forward to
    * another request handler.
    *

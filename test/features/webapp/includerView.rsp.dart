@@ -42,7 +42,7 @@ final infos = {
 """); //#22
 
       var _0 = new StringBuffer(); _cs_.add(connect); //var#25
-      connect = new HttpConnect.buffer(connect, _0); response = connect.response;
+      connect = new HttpConnect.stringBuffer(connect, _0); response = connect.response;
 
       response.write("""  <h1>This is a header</h1>
   <p>Passed from the includer for showing """); //#26
@@ -56,7 +56,7 @@ final infos = {
       connect = _cs_.removeLast(); response = connect.response;
 
       var _1 = new StringBuffer(); _cs_.add(connect); //var#29
-      connect = new HttpConnect.buffer(connect, _1); response = connect.response;
+      connect = new HttpConnect.stringBuffer(connect, _1); response = connect.response;
 
       response.write("""  <h2>This is a footer</h2>
   <p>It also includes another page:</p>

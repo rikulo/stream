@@ -117,7 +117,7 @@ Future syntax(HttpConnect connect, {foo, bool c:false}) { //#4
 """); //#43
 
   var whatever = new StringBuffer(); _cs_.add(connect); //var#44
-  connect = new HttpConnect.buffer(connect, whatever); response = connect.response;
+  connect = new HttpConnect.stringBuffer(connect, whatever); response = connect.response;
 
   response.write("""    define a variable
 """); //#45
@@ -144,7 +144,7 @@ Future syntax(HttpConnect connect, {foo, bool c:false}) { //#4
   return connect.include("/abc").then((_) { //include#51
 
     var _0 = new StringBuffer(); _cs_.add(connect); //var#53
-    connect = new HttpConnect.buffer(connect, _0); response = connect.response;
+    connect = new HttpConnect.stringBuffer(connect, _0); response = connect.response;
 
     response.write("""      The content for foo
 """); //#54

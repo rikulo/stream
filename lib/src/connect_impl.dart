@@ -86,8 +86,14 @@ class _ProxyConnect extends _AbstractConnect {
 }
 
 class _BufferedConnect extends _ProxyConnect {
-  _BufferedConnect(HttpConnect connect, StringBuffer buffer):
-    super(connect, connect.request, new BufferedResponse(connect.response, buffer));
+  _BufferedConnect(HttpConnect connect, List<int> buffer):
+    super(connect, connect.request,
+        new BufferedResponse(connect.response, buffer));
+}
+class _StringBufferedConnect extends _ProxyConnect {
+  _StringBufferedConnect(HttpConnect connect, StringBuffer buffer):
+    super(connect, connect.request,
+        new StringBufferedResponse(connect.response, buffer));
 }
 
 ///HttpConnect for forwarded request
@@ -189,6 +195,9 @@ class _ReadOnlyHeaders extends HttpHeadersWrapper {
   }
   @override
   void set contentType(ContentType contentType) {
+  }
+  @override
+  void set chunkedTransferEncoding(bool chunkedTransferEncoding) {
   }
 }
 

@@ -195,10 +195,9 @@ class Compiler {
     if (_args != null)
       _write(", {$_args}");
     _writeln(") { //#$line\n"
-      "  var _t0_, _cs_ = new List<HttpConnect>();\n"
+      "  var _t0_, _cs_ = new List<HttpConnect>();\n" //_t0_ is reserved for tags
       "  HttpRequest request = connect.request;\n"
       "  HttpResponse response = connect.response;\n");
-      //_t0_ is reserved for tags
 
     if (_contentType != null) {
       if (!ctypeSpecified) //if not specified, it is set only if not included

@@ -261,7 +261,7 @@ class _StreamServer implements StreamServer {
     _server.sessionTimeout = sessionTimeout;
     _server.listen((HttpRequest req) {
       req.response.headers
-        ..add(HttpHeaders.SERVER, serverInfo)
+        ..set(HttpHeaders.SERVER, serverInfo)
         ..date = new DateTime.now();
 
       //protect from aborted connection

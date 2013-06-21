@@ -16,7 +16,7 @@ Future include(HttpConnect connect, {foo, more, less}) { //#3
     response.headers.contentType = ContentType.parse("text/html; charset=utf-8");
 
   var less = new StringBuffer(); _cs_.add(connect); //var#3
-  connect = new HttpConnect.buffer(connect, less); response = connect.response;
+  connect = new HttpConnect.stringBuffer(connect, less); response = connect.response;
 
   response.write("""less is more
 """); //#4
@@ -29,7 +29,7 @@ Future include(HttpConnect connect, {foo, more, less}) { //#3
 """); //#6
 
   var _0 = new StringBuffer(); _cs_.add(connect); //var#8
-  connect = new HttpConnect.buffer(connect, _0); response = connect.response;
+  connect = new HttpConnect.stringBuffer(connect, _0); response = connect.response;
 
   response.write("""  More information
 """); //#9

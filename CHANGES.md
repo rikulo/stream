@@ -4,6 +4,7 @@
 
 * Issue 36: Change the spec of [:json] to generate a JSON object that can be parse as Dart object directly
 * Issue 35: A tag for generating the dart script for development, while generating only JS in production
+* HttpConnect.buffer is renamed to HttpConnect.stringBuffer, while HttpConnect.buffer reserved for bytes
 
 **0.7.3**
 

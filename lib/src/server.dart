@@ -119,13 +119,14 @@ abstract class StreamServer {
   int sessionTimeout;
 
   /** Whether the response is default to the chunked transfer encoding
-   * mode. If true, RSP pages and static resources will be gzipped if
-   * the client accepts it.
+   * mode. If true, RSP pages and static resources will be sent in
+   * the chucked transfer encoding mode. It also implies the response will
+   * be compressed with GZIP if the client accepts it.
    *
    * Default: true.
    *
    * You can turn it off if you prefer not to compress the output.
-   * For exaple, it might be compressed by a front-end server.
+   * For example, it might be compressed by a front-end server.
    */
   bool chunkedTransferEncoding;
 

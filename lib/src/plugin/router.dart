@@ -374,9 +374,12 @@ class _UriMapping {
 
     final m = _ptn.firstMatch(uri);
     if (m != null) {
-      if (_groups != null)
+      if (_groups != null) {
+        final count = m.groupCount;
         for (final key in _groups.keys)
-          connect.dataset[_groups[key]] = m.group(key + 1);
+          if (key < count) //unlikely but be safe
+            connect.dataset[_groups[key]] = m.group(key + 1); //group() starts from 1 (not 0)
+      }
       return true;
     }
     return false;

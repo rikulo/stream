@@ -3,6 +3,7 @@
 **0.7.5**
 
 * StreamServer.chunkedTransferEncoding supported for compressing the output with GZIP
+* Issue 38: Unable to use the nested groups in route segments
 
 **0.7.4**
 

@@ -325,53 +325,40 @@ class _UriMapping {
           bracket = false;
           break;
         case '(':
-          if (!bracket) {
-            sb.write('(');
+          if (bracket)
+            break;
 
-            //parse the name of the group, if any
-            String nm;
-            final nmsb = new StringBuffer();
-            int j = i;
-            for (;;) {
-              if (++j >= len) {
+          sb.write('(');
+
+          //parse the name of the group, if any
+          String nm;
+          final nmsb = new StringBuffer();
+          int j = i;
+          for (;;) {
+            if (++j >= len) {
+              sb.write(nmsb);
+              break l_top;
+            }
+
+            final cc = uri[j];
+            if (StringUtil.isChar(cc, lower:true, upper:true, digit: true, match:"_.")) {
+              nmsb.write(cc);
+            } else {
+              if (cc == ':' && !nmsb.isEmpty) {
+                nm = nmsb.toString();
+              } else {
                 sb.write(nmsb);
-                break l_top;
+                --j;
               }
-
-              final cc = uri[j];
-              if (StringUtil.isChar(cc, lower:true, upper:true, digit: true, match:"_."))
-                nmsb.write(cc);
-              else {
-                if (cc == ':') {
-                  nm = nmsb.toString();
-                } else {
-                  sb.write(nmsb);
-                  --j;
-                }
-                break;
-              }
+              break;
             }
+          } //for(;;)
+          i = j;
 
-            //parse upto ')'
-            int nparen = 1;
-            while (++j < len) {
-              final cc = uri[j];
-              sb.write(cc);
-              if (cc == ')' && --nparen <= 0)
-                break;
-              if (cc == '(')
-                ++nparen;
-              if (cc == '\\' && j + 1 < len)
-                sb.write(uri[++j]); //skip next
-            }
-            i = j;
-
-            if (nm != null)
-              _groups[grpId] = nm;
-            ++grpId;
-            continue;
-          }
-          break;
+          if (nm != null)
+            _groups[grpId] = nm;
+          ++grpId;
+          continue;
       }
       sb.write(uri[i]);
     }

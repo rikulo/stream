@@ -30,10 +30,11 @@ var _uriMapping = {
       ..write("Group Matching: ${connect.dataset['group']} and ${connect.dataset['matching']}");
   },
   "/old-link(extra:.*)": "/new-link(extra)/more",
-  "/new-link.*": (HttpConnect connect) {
+  "/new-link(option:.*)?": (HttpConnect connect) {
     connect.response
       ..headers.contentType = contentTypes["text/plain"]
-      ..write("old-link forwarded to ${connect.request.uri}");
+      ..write("old-link forwarded to ${connect.request.uri}"
+        "(option ${connect.dataset['option']})");
   },
   "/500": (HttpConnect connect) {
     throw new Exception("something wrong");

@@ -75,17 +75,24 @@ Future loadFile(HttpConnect connect, File file) {
     return file.lastModified();
   }).then((date) {
     headers.add(HttpHeaders.LAST_MODIFIED, date);
-    if (connect.server.chunkedTransferEncoding) {
-      //we compress only text files
-      final ctype = headers.contentType;
-      if (ctype == null || ctype.primaryType == "text"
-      || (ctype.primaryType == "application" && ctype.subType == "json"))
-        headers.chunkedTransferEncoding = true;
-    }
+    if (connect.server.chunkedTransferEncoding
+    && _isTextType(headers.contentType)) //we compress only text files
+      headers.chunkedTransferEncoding = true;
 
     return _loadFile(connect, file);
   });
 }
+
+bool _isTextType(ContentType ctype) {
+  String ptype;
+  return ctype == null || (ptype = ctype.primaryType) == "text"
+    || (ptype == "application" && _textSubtypes.containsKey(ctype.subType));
+}
+final _textSubtypes = const<String, String> {
+  "json": true, "javascript": true, "dart": true, "xml": true,
+  "xhtml+xml": true, "xslt+xml": true,  "rss+xml": true,
+  "atom+xml": true, "mathml+xml": true, "svg+xml": true
+};
 
 Future _loadFile(HttpConnect connect, File file)
 => connect.response.addStream(file.openRead()); //returns Future<HttpResponse>

@@ -686,7 +686,7 @@ class Compiler {
     _current.write(str);
   }
   void _writeln([String str]) {
-    if (?str) _current.writeln(str);
+    if (str != null) _current.writeln(str);
     else _current.writeln();
   }
 

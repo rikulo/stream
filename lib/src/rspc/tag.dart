@@ -45,7 +45,7 @@ abstract class TagContext {
   }
   ///Write a string plus a linefeed to [output] in the compiler's encoding.
   void writeln([String str]) {
-    if (?str)
+    if (str != null)
       write(str);
     write("\n");
   }

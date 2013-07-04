@@ -101,7 +101,8 @@ class Rsp {
   /** Serializes the given object into a JSON string by use of
    * [stringify](http://api.dartlang.org/docs/releases/latest/dart_json.html#stringify).
    */
-  static String json(data) => Json.stringify(data).replaceAll("</script>", "<\\/script>");
+  static String json(data) => Json.stringify(data).replaceAll(_scriptPtn, "<\\/");
+  static final RegExp _scriptPtn = new RegExp(r"</(?=script>)", caseSensitive: false);
     //it is possible that a string contains </script>
 
   /** It controls [ScriptTag] (and [script]) whether to disable Dart script.

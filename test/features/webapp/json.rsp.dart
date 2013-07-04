@@ -23,7 +23,7 @@ var map = {
 """); //#7
 
   response..write("<script>")..write("foo")..write("=") //json-js#13
-   ..write(Rsp.json([map, "another"]))..writeln('</script>');
+   ..write(Rsp.json([map, "another</sCRipt>"]))..writeln('</script>');
 
   response.write("""    <div id="show"></div>
     <script>

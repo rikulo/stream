@@ -276,6 +276,9 @@ class _StreamServer implements StreamServer {
           _handleErr(connect, err);
       });
 
+      //TODO: use runZoned if it is available (then we don't need try/catch
+      //in _handle and _handleErr)
+
       _handle(connect, 0).then((_) { //0 means filter from beginning
         _close(connect);
       }).catchError((err) {

@@ -264,7 +264,7 @@ abstract class StreamServer {
 
 /** A generic server error.
  */
-class ServerError implements Error {
+class ServerError extends Error {
   final String message;
 
   ServerError(this.message);

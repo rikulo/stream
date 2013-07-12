@@ -726,7 +726,7 @@ class Compiler {
 }
 
 ///Syntax error.
-class SyntaxError implements Error {
+class SyntaxError extends Error {
   String _msg;
   ///The source name
   final String sourceName;

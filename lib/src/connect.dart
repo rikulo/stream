@@ -237,37 +237,41 @@ class ErrorDetail {
 
 /** A HTTP status exception.
  */
-class HttpStatusException implements HttpException {
+class HttpStatusException extends HttpException {
   final int statusCode;
-  String _msg;
 
-  HttpStatusException(this.statusCode, [String message]) {
+  factory HttpStatusException(int statusCode, {String message, Uri uri}) {
     if (message == null) {
       message = statusMessages[statusCode];
       if (message == null)
         message = "Unknown error";
     }
-    _msg = message;
+    return new HttpStatusException._(statusCode, message, uri: uri);
   }
-
-  /** The error message. */
-  String get message => _msg;
+  HttpStatusException._(this.statusCode, String message, {Uri uri}):
+    super(message, uri: uri);
 
   String toString() => "HttpStatusException($statusCode: $message)";
 }
 /// HTTP 403 exception.
 class Http403 extends HttpStatusException {
-  Http403([String uri]): super(403, _status2msg(403, uri));
-  Http403.connect(HttpConnect connect): this(connect.request.uri.path);
+  Http403([String path]): super._(403, _status2msg(403, path));
+  Http403.uri(Uri uri): super._(403, _status2msg(403, uri.path), uri: uri);
+  Http403.connect(HttpConnect connect): this.uri(connect.request.uri);
 }
 /// HTTP 404 exception.
 class Http404 extends HttpStatusException {
-  Http404([String uri]): super(404, _status2msg(404, uri));
-  Http404.connect(HttpConnect connect): this(connect.request.uri.path);
+  Http404([String path]): super._(404, _status2msg(404, path));
+  Http404.uri(Uri uri): super._(404, _status2msg(404, uri.path), uri: uri);
+  Http404.connect(HttpConnect connect): this.uri(connect.request.uri);
 }
 /// HTTP 500 exception.
 class Http500 extends HttpStatusException {
-  Http500([String cause]): super(500, _status2msg(500, cause));
+  Http500([String cause]): super._(500, _status2msg(500, cause));
+  Http500.uri(Uri uri, [String cause]): super._(500,
+      _status2msg(500, cause != null ? "${uri.path}: $cause": uri.path), uri: uri);
+  Http500.connect(HttpConnect connect, [String cause]):
+      this.uri(connect.request.uri, cause);
 }
 String _status2msg(int code, String cause)
 => cause != null ? "${statusMessages[code]}: $cause": null;

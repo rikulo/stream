@@ -33,8 +33,7 @@ void compileFile(String sourceName, {String destinationName, bool verbose : fals
     dest = new File(destinationName);
   }
 
-  if (new Path(source.path).canonicalize().toNativePath() ==
-      new Path(dest.path).canonicalize().toNativePath()) {
+  if (Path.normalize(source.path) == Path.normalize(dest.path)) {
     print("Source and destination are the same file, $source");
     return;
   }
@@ -48,7 +47,7 @@ void compileFile(String sourceName, {String destinationName, bool verbose : fals
     final out = dest.openWrite(encoding: encoding);
     try {
       compile(text, out, sourceName: sourceName,
-          destinationName: new Path(dest.path).toString(), //force to use '/' even in Windows
+          destinationName: _unipath(dest.path), //force to use '/' even in Windows
           encoding: encoding, verbose: verbose);
     } on SyntaxError catch (e) {
       print("${e.message}\nCompilation aborted.");
@@ -61,22 +60,20 @@ void compileFile(String sourceName, {String destinationName, bool verbose : fals
 ///Locates the right location under the webapp folder, if there is one
 File _locate(String flnm) {
   final List<String> segs = [];
-  Path path = new Path(flnm).canonicalize();
-  if (!path.isAbsolute)
-    path = new Path(Directory.current.path).join(path);
+  String path = Path.absolute(Path.normalize(flnm));
 
   for (;;) {
-    segs.add(path.filename);
-    path = path.directoryPath;
-    if (path.isEmpty || path.toString() == "/")
+    segs.add(Path.basename(path));
+    path = Path.dirname(path);
+    if (path.isEmpty || path == Path.separator)
       break;
 
-    final dir = new Directory.fromPath(path);
+    final dir = new Directory(path);
     if (dir.existsSync()) {
-      if (path.filename == "webapp"
-      || new File.fromPath(new Path(dir.path).append("pubspec.yaml")).existsSync())
+      if (Path.basename(path) == "webapp"
+      || new File(Path.join(dir.path, "pubspec.yaml")).existsSync())
         break; //under webapp, or no webapp at all (since project found)
-      if (new Directory.fromPath(new Path(dir.path).append("webapp")).existsSync()) {
+      if (new Directory(Path.join(dir.path, "webapp")).existsSync()) {
         segs.add("webapp"); //not under webapp
         break;
       }
@@ -84,12 +81,12 @@ File _locate(String flnm) {
   }
 
   for (int i = segs.length; --i > 0;)
-    path = path.append(segs[i]);
-  final dir = new Directory.fromPath(path);
+    path = Path.join(path, segs[i]);
+  final dir = new Directory(path);
   if (!dir.existsSync())
     dir.create(recursive: true);
-  path = path.relativeTo(new Path(Directory.current.path));
-  return new File.fromPath(path.append(segs[0]));
+  path = Path.relative(path);
+  return new File(Path.join(path, segs[0]));
 }
 
 /** Compile changed RSP files. This method shall be called within build.dart,

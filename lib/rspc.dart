@@ -9,6 +9,7 @@ import "dart:io";
 import "dart:collection";
 import 'package:meta/meta.dart';
 import "package:args/args.dart";
+import 'package:pathos/path.dart' as Path;
 import "package:rikulo_commons/util.dart";
 
 import "stream.dart" show contentTypes;
@@ -19,4 +20,4 @@ part "src/rspc/compiler.dart";
 part "src/rspc/tag.dart";
 part "src/rspc/tag_util.dart";
 
-const VERSION = "0.7.5";
+const VERSION = "0.7.6";

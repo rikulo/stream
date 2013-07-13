@@ -133,10 +133,10 @@ class Compiler {
       if (sourceName == null || sourceName.isEmpty)
         _error("The page tag with the name attribute is required", line);
 
-      _name = new Path(sourceName).filename;
-      var i = _name.indexOf('.');
+      _name = Path.basename(sourceName);
+      int i = _name.indexOf('.');
       _name = StringUtil.camelize(i < 0 ? _name: _name.substring(0, i));
-
+        //don't use basenameWithoutExtension since there might be multiple '.'
       for (i = _name.length; --i >= 0;) { //check if _name is legal
         final cc = _name[i];
         if (!isValidVarChar(cc, i == 0))
@@ -159,7 +159,8 @@ class Compiler {
       }
     }
 
-    final imports = new LinkedHashSet.from(["dart:async", "dart:io", "package:stream/stream.dart"]);
+    final imports = new LinkedHashSet.from(
+      const ["dart:async", "dart:io", "package:stream/stream.dart"]);
     if (_import != null)
       for (String imp in _import.split(',')) {
         imp = imp.trim();
@@ -168,7 +169,7 @@ class Compiler {
       }
 
     if (_partOf == null || _partOf.isEmpty) { //independent library
-      var lib = new Path(sourceName).filename;
+      String lib = Path.basename(sourceName);
       var i = lib.lastIndexOf('.'); //remove only one extension
       if (i >= 0) lib = lib.substring(0, i);
 
@@ -560,16 +561,15 @@ class Compiler {
     if (destinationName == null)
       _error("The partOf attribute refers to a dart file is allowed only if destination is specified");
 
-    Path libpath = new Path(_partOf),
-        mypath = new Path(destinationName);
-    if (!libpath.isAbsolute)
-      libpath = mypath.directoryPath.join(libpath);
-    mypath = mypath.relativeTo(libpath.directoryPath);
+    String libpath = _partOf, mypath = destinationName;
+    if (!Path.isAbsolute(libpath))
+      libpath = Path.join(Path.dirname(mypath), libpath);
+    mypath = Path.relative(mypath, from: Path.dirname(libpath));
 
-    File libfile = new File.fromPath(libpath);
+    File libfile = new File(libpath);
     if (!libfile.existsSync()) {
-      String libnm = libpath.filename;
-      libnm = libnm.substring(0, libnm.indexOf('.')).toString();
+      String libnm = Path.basename(libpath);
+      libnm = libnm.substring(0, libnm.indexOf('.'));
         //filename must end with .dart (but it might have other extension ahead)
 
       final buf = new StringBuffer()
@@ -804,14 +804,16 @@ int _skipWhitespace(String data, int i) {
 String _shorten(String path, String reference) {
   try {
     if (reference != null && !reference.isEmpty) {
-      Path ref = new Path(reference);
-      if (ref.extension != "")
-        ref = ref.directoryPath;
-      return new Path(path).relativeTo(ref).toString();
+      if (Path.extension(reference) != "")
+        reference = Path.dirname(reference);
+      return _unipath(Path.relative(path, from: reference));
     }
   } catch (err) {
   }
 
-  final nm = new Path(path).filename;
-  return nm.isEmpty ? path: nm;
+  final nm = Path.basename(path);
+  return _unipath(nm.isEmpty ? path: nm);
 }
+
+String _unipath(String path)
+=> Path.separator == '\\' ? path.replaceAll('\\', '/'): path;

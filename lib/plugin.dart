@@ -9,6 +9,7 @@ import "dart:collection";
 import "dart:mirrors";
 import "package:meta/meta.dart";
 import "package:logging/logging.dart";
+import 'package:pathos/path.dart' as Path;
 
 import "package:rikulo_commons/util.dart";
 import "package:rikulo_commons/mirrors.dart";

@@ -7,12 +7,12 @@ part of stream_plugin;
  * Resource loader.
  */
 abstract class ResourceLoader {
-  factory ResourceLoader(Path rootDir)
+  factory ResourceLoader(String rootDir)
   => new FileLoader(rootDir);
 
   /** The root directory.
    */
-  final Path rootDir;
+  final String rootDir;
 
   /** Loads the resource of the given URI to the given response.
    */
@@ -25,17 +25,17 @@ class FileLoader implements ResourceLoader {
   FileLoader(this.rootDir);
 
   @override
-  final Path rootDir;
+  final String rootDir;
 
   @override
   Future load(HttpConnect connect, String uri) {
     var path = uri.substring(1); //must start with '/'
-    path = rootDir.append(path);
+    path = Path.join(rootDir, path);
 
-    var file = new File.fromPath(path);
+    var file = new File(path);
     return file.exists().then((exists) {
       if (!exists)
-        return new Directory.fromPath(path).exists();
+        return new Directory(path).exists();
       return loadFile(connect, file);
     }).then((exists) {
       if (exists is bool) { //null or other value means done (i.e., returned by loadFile)
@@ -47,11 +47,12 @@ class FileLoader implements ResourceLoader {
   }
 }
 
-Future _loadFileAt(HttpConnect connect, String uri, Path dir, List<String> names, int j) {
+Future _loadFileAt(HttpConnect connect, String uri, String dir,
+    List<String> names, int j) {
   if (j >= names.length)
     throw new Http404(uri);
 
-  final file = new File.fromPath(dir.append(names[j]));
+  final File file = new File(Path.join(dir, names[j]));
   return file.exists().then((exists) {
     return exists ? loadFile(connect, file):
       _loadFileAt(connect, uri, dir, names, j + 1);
@@ -66,7 +67,7 @@ Future loadFile(HttpConnect connect, File file) {
     return _loadFile(connect, file);
 
   final headers = connect.response.headers;
-  final ctype = contentTypes[new Path(file.path).extension];
+  final ctype = contentTypes[Path.extension(file.path)];
   if (ctype != null)
     headers.contentType = ctype;
 

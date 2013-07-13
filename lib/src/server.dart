@@ -94,7 +94,7 @@ abstract class StreamServer {
   /** The path of the home directory. It is the directory that static resources
    * are loaded from.
    */
-  Path get homeDir;
+  String get homeDir;
   /** A list of names that will be used to locate the resource if
    * the given path is a directory.
    *

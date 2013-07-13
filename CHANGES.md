@@ -1,5 +1,9 @@
 #CHANGES
 
+**0.7.6**
+
+* API changed because of the deprecation of Path
+
 **0.7.5**
 
 * StreamServer.chunkedTransferEncoding supported for compressing the output with GZIP

@@ -7,13 +7,13 @@ part of stream;
 typedef void _ConnectErrorCallback(HttpConnect connect, err, [stackTrace]);
 
 class _StreamServer implements StreamServer {
-  final String version = "0.7.5";
+  final String version = "0.7.6";
   HttpServer _server;
   var _host = InternetAddress.ANY_IP_V4;
   int _port = 8080;
   int _sessTimeout = 20 * 60; //20 minutes
   final Logger logger;
-  Path _homeDir;
+  String _homeDir;
   DateTime _startedSince;
   ResourceLoader _resLoader;
   final Router _router;
@@ -28,33 +28,26 @@ class _StreamServer implements StreamServer {
   }
 
   void _initDir(String homeDir) {
-    if (homeDir == null) {
-      _homeDir = _getRootPath();
-    } else {
-      Path path = new Path(homeDir);
-      _homeDir = path.isAbsolute ? path: _getRootPath().join(path);
-    }
+    _homeDir = homeDir == null ? _getRootPath():
+      Path.isAbsolute(homeDir) ? homeDir: Path.join(_getRootPath(), homeDir);
 
-    if (!new Directory.fromPath(_homeDir).existsSync())
+    if (!new Directory(_homeDir).existsSync())
       throw new ServerError("$homeDir doesn't exist.");
     _resLoader = new ResourceLoader(_homeDir);
   }
-  static Path _getRootPath() {
-    var path = new Options().script;
-    path = path != null ? new Path(path).directoryPath: new Path("");
-
-    if (!path.isAbsolute)
-      path = new Path(Directory.current.path).join(path);
+  static String _getRootPath() {
+    String path = new Options().script;
+    path = path == null ? Path.current:
+      Path.absolute(Path.normalize(Path.dirname(path)));
 
     //look for webapp
     for (final orgpath = path;;) {
-      final nm = path.filename;
-      path = path.directoryPath;
+      final nm = Path.basename(path);
+      path = Path.dirname(path);
       if (nm == "webapp")
         return path; //found and we use its parent as the root
 
-      final ps = path.toString();
-      if (ps.isEmpty || ps == "/")
+      if (path.isEmpty || path == Path.separator)
         return orgpath; //assume to be the same directory as script
     }
   }
@@ -166,7 +159,7 @@ class _StreamServer implements StreamServer {
   }
 
   @override
-  Path get homeDir => _homeDir;
+  String get homeDir => _homeDir;
   @override
   final List<String> indexNames = ['index.html'];
   @override

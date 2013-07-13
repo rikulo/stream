@@ -88,7 +88,7 @@ bool _isTextType(ContentType ctype) {
   return ctype == null || (ptype = ctype.primaryType) == "text"
     || (ptype == "application" && _textSubtypes.containsKey(ctype.subType));
 }
-final _textSubtypes = const<String, String> {
+final _textSubtypes = const<String, bool> {
   "json": true, "javascript": true, "dart": true, "xml": true,
   "xhtml+xml": true, "xslt+xml": true,  "rss+xml": true,
   "atom+xml": true, "mathml+xml": true, "svg+xml": true

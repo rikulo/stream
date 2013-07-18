@@ -336,7 +336,8 @@ class Compiler {
     final token = _specialToken(sb);
     if (token is _Closing) //if Tag, it is handled by _tagData()
       _skipFollowingSpaces();
-    String text = sb.toString();
+    String text = sb.toString().replaceAll("\r\n", "\n");
+      //to Unix format since the other output assumes it
     if (token is Tag || token is _Closing)
       text = _rmTailingSpaces(text);
     if (text.isEmpty)

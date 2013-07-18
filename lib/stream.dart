@@ -11,7 +11,7 @@ import "dart:json" as Json;
 import 'package:meta/meta.dart';
 import 'package:args/args.dart' show Options;
 import "package:logging/logging.dart" show Logger;
-import 'package:pathos/path.dart' as Path;
+import 'package:path/path.dart' as Path;
 
 import "package:rikulo_commons/util.dart";
 import "package:rikulo_commons/io.dart";

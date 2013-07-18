@@ -9,7 +9,7 @@ import "dart:io";
 import "dart:collection";
 import 'package:meta/meta.dart';
 import "package:args/args.dart";
-import 'package:pathos/path.dart' as Path;
+import 'package:path/path.dart' as Path;
 import "package:rikulo_commons/util.dart";
 
 import "stream.dart" show contentTypes;

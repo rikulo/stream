@@ -12,4 +12,4 @@ dependencies:
   logging: any
   args: any
   meta: any
-  pathos: any
+  path: any

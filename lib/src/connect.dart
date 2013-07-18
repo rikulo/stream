@@ -256,22 +256,22 @@ class HttpStatusException extends HttpException {
 /// HTTP 403 exception.
 class Http403 extends HttpStatusException {
   Http403([String path]): super._(403, _status2msg(403, path));
-  Http403.uri(Uri uri): super._(403, _status2msg(403, uri.path), uri: uri);
-  Http403.connect(HttpConnect connect): this.uri(connect.request.uri);
+  Http403.fromUri(Uri uri): super._(403, _status2msg(403, uri.path), uri: uri);
+  Http403.fromConnect(HttpConnect connect): this.fromUri(connect.request.uri);
 }
 /// HTTP 404 exception.
 class Http404 extends HttpStatusException {
   Http404([String path]): super._(404, _status2msg(404, path));
-  Http404.uri(Uri uri): super._(404, _status2msg(404, uri.path), uri: uri);
-  Http404.connect(HttpConnect connect): this.uri(connect.request.uri);
+  Http404.fromUri(Uri uri): super._(404, _status2msg(404, uri.path), uri: uri);
+  Http404.fromConnect(HttpConnect connect): this.fromUri(connect.request.uri);
 }
 /// HTTP 500 exception.
 class Http500 extends HttpStatusException {
   Http500([String cause]): super._(500, _status2msg(500, cause));
-  Http500.uri(Uri uri, [String cause]): super._(500,
+  Http500.fromUri(Uri uri, [String cause]): super._(500,
       _status2msg(500, cause != null ? "${uri.path}: $cause": uri.path), uri: uri);
-  Http500.connect(HttpConnect connect, [String cause]):
-      this.uri(connect.request.uri, cause);
+  Http500.fromConnect(HttpConnect connect, [String cause]):
+      this.fromUri(connect.request.uri, cause);
 }
 String _status2msg(int code, String cause)
 => cause != null ? "${statusMessages[code]}: $cause": null;

@@ -4,6 +4,8 @@ args.src.usage
 logging
 meta
 metadata
+options
+path
 rikulo_async
 rikulo_io
 rikulo_mirrors

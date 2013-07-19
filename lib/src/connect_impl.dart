@@ -39,11 +39,13 @@ abstract class _AbstractConnect implements HttpConnect {
 class _HttpConnect extends _AbstractConnect {
   Browser _browser;
 
-  _HttpConnect(StreamServer server, HttpRequest request, HttpResponse response):
-      this.server = server, super(request, response);
+  _HttpConnect(this.channel, HttpRequest request, HttpResponse response):
+      super(request, response);
 
   @override
-  final StreamServer server;
+  StreamServer get server => channel.server;
+  @override
+  final Channel channel;
 
   @override
   Browser get browser {
@@ -69,6 +71,8 @@ class _ProxyConnect extends _AbstractConnect {
 
   @override
   StreamServer get server => _origin.server;
+  @override
+  Channel get channel => _origin.channel;
   @override
   Browser get browser => _origin.browser;
   @override

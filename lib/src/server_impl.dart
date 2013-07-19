@@ -7,14 +7,12 @@ part of stream;
 typedef void _ConnectErrorCallback(HttpConnect connect, err, [stackTrace]);
 
 class _StreamServer implements StreamServer {
-  final String version = "0.7.6";
-  HttpServer _server;
-  var _host = InternetAddress.ANY_IP_V4;
-  int _port = 8080;
+  final String version = "0.8.0";
+
+  List<Channel> _channels = [];
   int _sessTimeout = 20 * 60; //20 minutes
   final Logger logger;
   String _homeDir;
-  DateTime _startedSince;
   ResourceLoader _resLoader;
   final Router _router;
   _ConnectErrorCallback _onError;
@@ -162,32 +160,14 @@ class _StreamServer implements StreamServer {
   String get homeDir => _homeDir;
   @override
   final List<String> indexNames = ['index.html'];
-  @override
-  DateTime get startedSince => _startedSince;
 
-  @override
-  int get port => _port;
-  @override
-  void set port(int port) {
-    _assertIdle();
-    _port = port;
-  }
-  @override
-  get host => _host;
-  @override
-  void set host(host) {
-    _assertIdle();
-    if (host is! String && host is! InternetAddress)
-      throw new ArgumentError("host must be String or InternetAddress, not $host");
-    _host = host;
-  }
   @override
   int get sessionTimeout => _sessTimeout;
   @override
   void set sessionTimeout(int timeout) {
     _sessTimeout = timeout;
-    if (_server != null)
-      _server.sessionTimeout = _sessTimeout;
+    for (final _Channel channel in channels)
+      channel._iserver.sessionTimeout = _sessTimeout;
   }
 
   @override
@@ -207,61 +187,66 @@ class _StreamServer implements StreamServer {
   }
 
   @override
-  bool get isRunning => _server != null;
+  bool get isRunning => !_channels.isEmpty;
   @override
-  Future<StreamServer> start({int backlog: 0}) {
-    _assertIdle();
-    return HttpServer.bind(host, port, backlog: backlog)
+  Future<Channel> start({address, int port: 8080, int backlog: 0}) {
+    if (address == null)
+      address = InternetAddress.ANY_IP_V4;
+    return HttpServer.bind(address, port, backlog: backlog)
     .catchError((err) {
       _handleErr(null, err);
     })
-    .then((server) {
-      _startedSince = new DateTime.now();
-      _server = server;
-      _startServer();
-      _logStarted();
-      return this;
+    .then((iserver) {
+      final channel = new _HttpChannel(this, iserver, address, iserver.port, false);
+      _startChannel(channel);
+      _logHttpStarted(channel);
+      return channel;
     });
   }
   @override
-  Future<StreamServer> startSecure({String certificateName, bool requestClientCertificate: false,
-    int backlog: 0}) {
-    _assertIdle();
-    return HttpServer.bindSecure(host, port, certificateName: certificateName,
+  Future<Channel> startSecure({address, int port: 8080, 
+      String certificateName, bool requestClientCertificate: false,
+      int backlog: 0}) {
+    if (address == null)
+      address = InternetAddress.ANY_IP_V4;
+    return HttpServer.bindSecure(address, port, certificateName: certificateName,
         requestClientCertificate: requestClientCertificate, backlog: backlog)
     .catchError((err) {
       _handleErr(null, err);
     })
-    .then((server) {
-      _server = server;
-      _startServer();
-      _logStarted(" HTTPS");
-      return this;
+    .then((iserver) {
+      final channel = new _HttpChannel(this, iserver, address, iserver.port, true);
+      _startChannel(channel);
+      _logHttpStarted(channel);
+      return channel;
     });
   }
-  void _logStarted([String protocol=""]) {
-    logger.info("Rikulo Stream Server $version starting$protocol on "
-      "${host is InternetAddress ? (host as InternetAddress).host: host}:$port\n"
+  void _logHttpStarted(HttpChannel channel) {
+    final address = channel.address, port = channel.port;
+    logger.info(
+      "Rikulo Stream Server $version starting${channel.isSecure ? ' HTTPS': ''} on "
+      "${address is InternetAddress ? (address as InternetAddress).address: address}:$port\n"
       "Home: ${homeDir}");
   }
   @override
-  void startOn(ServerSocket socket) {
-    _assertIdle();
-    _server = new HttpServer.listenOn(socket);
-    _startServer();
+  Channel startOn(ServerSocket socket) {
+    final channel = new _SocketChannel(this, new HttpServer.listenOn(socket), socket);
+    _startChannel(channel);
     logger.info("Rikulo Stream Server $version starting on $socket\n"
       "Home: ${homeDir}");
+    return channel;
   }
-  void _startServer() {
+  void _startChannel(_Channel channel) {
     final serverInfo = "Rikulo Stream $version";
-    _server.sessionTimeout = sessionTimeout;
-    _server.listen((HttpRequest req) {
+    channel._iserver
+    ..sessionTimeout = sessionTimeout
+    ..listen((HttpRequest req) {
       req.response.headers
         ..set(HttpHeaders.SERVER, serverInfo)
         ..date = new DateTime.now();
 
       //protect from aborted connection
-      final connect = new _HttpConnect(this, req, req.response);
+      final connect = new _HttpConnect(channel, req, req.response);
       req.response.done.catchError((err) {
         if (err is SocketException)
           logger.fine("${connect.request.uri}: $err"); //nothing to do
@@ -283,14 +268,10 @@ class _StreamServer implements StreamServer {
   }
   @override
   void stop() {
-    if (_server == null)
+    if (!isRunning)
       throw new StateError("Not running");
-    _server.close();
-    _server = null;
-  }
-  void _assertIdle() {
-    if (_server != null)
-      throw new StateError("Already running");
+    for (final Channel channel in new List.from(channels))
+      channel.close();
   }
 
   @override
@@ -303,8 +284,7 @@ class _StreamServer implements StreamServer {
   }
 
   @override
-  HttpConnectionsInfo get connectionsInfo
-  => _server != null ? _server.connectionsInfo: new HttpConnectionsInfo();
+  List<Channel> get channels => _channels;
 
   Future _ensureFuture(value, [bool ignoreFutureOnly=false]) {
     //Note: we can't use Http500. otherwise, the error won't be logged
@@ -317,4 +297,50 @@ class _StreamServer implements StreamServer {
       return value;
     throw new ServerError("Handler/filter must return null or Future, not $value");
   }
+}
+
+///A channel.
+abstract class _Channel implements Channel {
+  final HttpServer _iserver;
+  @override
+  final StreamServer server;
+  @override
+  final DateTime startedSince;
+
+  bool _closed = false;
+
+  _Channel(this.server, this._iserver): startedSince = new DateTime.now();
+
+  @override
+  HttpConnectionsInfo get connectionsInfo => _iserver.connectionsInfo();
+  @override
+  void close() {
+    _closed = true;
+    _iserver.close();
+
+    final List<Channel> channels = server.channels;
+    for (int i = channels.length; --i >= 0;)
+      if (identical(this, channels[i])) {
+        channels.removeAt(i);
+        break;
+      }
+  }
+  @override
+  bool get isClosed => _closed;
+}
+
+class _HttpChannel extends _Channel implements HttpChannel {
+  final address;
+  final int port;
+  final bool isSecure;
+
+  _HttpChannel(StreamServer server, HttpServer iserver, this.address, this.port,
+      this.isSecure): super(server, iserver);
+}
+
+class _SocketChannel extends _Channel implements SocketChannel {
+  final ServerSocket socket;
+
+  _SocketChannel(StreamServer server, HttpServer iserver, this.socket):
+      super(server, iserver);
 }

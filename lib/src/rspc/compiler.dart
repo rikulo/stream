@@ -208,7 +208,7 @@ class Compiler {
       if (_lastModified == "compile")
         _write("new DateTime.fromMillisecondsSinceEpoch(${new DateTime.now().millisecondsSinceEpoch})");
       else
-        _write("connect.server.startedSince");
+        _write("connect.channel.startedSince");
     }
 
     _writeln(');');

@@ -12,7 +12,7 @@ Future lastModified2(HttpConnect connect) { //#2
   HttpRequest request = connect.request;
   HttpResponse response = connect.response;
   Rsp.init(connect, "text/html; charset=utf-8",
-    () => connect.server.startedSince);
+    () => connect.channel.startedSince);
 
   response.write("""<html>
   <head>

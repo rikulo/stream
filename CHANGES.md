@@ -1,5 +1,9 @@
 #CHANGES
 
+**0.8.0**
+
+* Issue 42: Allow a Stream server to listen multiple addresses/ports and web sockets
+
 **0.7.6**
 
 * API changed because of the deprecation of Path

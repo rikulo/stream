@@ -88,9 +88,6 @@ abstract class StreamServer {
   /** The version.
    */
   String get version;
-  /** When the server started. It is null if never started.
-   */
-  DateTime get startedSince;
   /** The path of the home directory. It is the directory that static resources
    * are loaded from.
    */
@@ -101,17 +98,6 @@ abstract class StreamServer {
    * Default: `index.html`
    */
   List<String> get indexNames;
-
-  /** The port. Default: 8080.
-   */
-  int port;
-  /** The host. It can either be a [String] or an [InternetAddress].
-   *
-   * Default: InternetAddress.ANY_IP_V4 (i.e., "0.0.0.0").
-   * It will cause Stream server to listen all adapters
-   * IP addresses using IPv4.
-   */
-  var host;
 
   /** The timeout, in seconds, for sessions of this server.
    * Default: 1200 (unit: seconds)
@@ -134,18 +120,47 @@ abstract class StreamServer {
    */
   bool get isRunning;
   /** Starts the server
+   *
+   * * [address] - It can either be a [String] or an [InternetAddress].
+   * Default: InternetAddress.ANY_IP_V4 (i.e., "0.0.0.0").
+   * It will cause Stream server to listen all adapters
+   * IP addresses using IPv4.
+   *
+   * * [port] - the port. Default: 8080.
+   * If port has the value 0 an ephemeral port will be chosen by the system.
+   * The actual port used can be retrieved using [Channel.port].
    */
-  Future<StreamServer> start({int backlog: 0});
+  Future<Channel> start({address, int port: 8080, int backlog: 0});
   /** Starts the server listening for HTTPS request.
+   *
+   * * [address] - It can either be a [String] or an [InternetAddress].
+   * Default: InternetAddress.ANY_IP_V4 (i.e., "0.0.0.0").
+   * It will cause Stream server to listen all adapters
+   * IP addresses using IPv4.
+   *
+   * * [port] - the port. Default: 8080.
+   * If port has the value 0 an ephemeral port will be chosen by the system.
+   * The actual port used can be retrieved using [Channel.port].
    */
-  Future<StreamServer> startSecure({String certificateName, bool requestClientCertificate: false,
-    int backlog: 0});
+  Future<Channel> startSecure({address, int port: 8080,
+      String certificateName, bool requestClientCertificate: false,
+      int backlog: 0});
   /** Starts the server to an existing the given socket.
    *
-   * Notice [host] and [port] are ignored.
+   * To listen Web Sockets, you can use `WebSocketTransformer` (dart:io) to
+   * upgrade HTTP request to WebSocket request:
+   *
+   *     new StreamServer(uriMapping: {
+   *       "/cmd", (HttpConnect connect) =>
+   *           WebSocketTransformer.upgrade(connect.request).then((websocket) {
+   *             ...
+   *           });
+   *     }).startOn(yourSocket);
    */
-  void startOn(ServerSocket socket);
-  /** Stops the server.
+  Channel startOn(ServerSocket socket);
+  /** Stops the server. It will close all [channels].
+   *
+   * To close an individual channel, please use [Channel.close] instead.
    */
   void stop();
 
@@ -256,10 +271,53 @@ abstract class StreamServer {
    */
   Logger get logger;
 
-  /** Returns the information summarizing the number of current connections
-   * handled by the server.
+  /** Returns a readonly list of channels served by this server.
+   * Each time [start], [startSecure] or [startOn] is called, an instance
+   * is added to the returned list.
+   *
+   * To close a particular channel, invoke [Channel.close]. To close all,
+   * invoke [stop] to stop the server.
    */
+  List<Channel> get channels;
+}
+
+/** A channel. A channel is either a [HttpChannel] or a [SocketChannel].
+ */
+abstract class Channel {
+  ///The connection information summarizing the number of current connections
+  //handled in this channel.
   HttpConnectionsInfo get connectionsInfo;
+  /** When the server started. It is null if never started.
+   */
+  DateTime get startedSince;
+  /** Closes the channel.
+   *
+   * To start all channels, please use [StreamServer.stop] instead.
+   */
+  void close();
+  /** Indicates whether the channel is closed.
+   */
+  bool get isClosed;
+
+  ///The server for serving this channel.
+  StreamServer get server;
+}
+/** A HTTP channel.
+ */
+abstract class HttpChannel extends Channel {
+  /** The address. It can be either a [String] or an [InternetAddress].
+   */
+  get address;
+  ///The port.
+  int get port;
+  ///Whether it is a HTTPS channel
+  bool get isSecure;
+}
+/** A socket channel.
+ */
+abstract class SocketChannel extends Channel {
+  ///The socket that this channel is bound to.
+  ServerSocket get socket;
 }
 
 /** A generic server error.

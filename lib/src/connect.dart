@@ -80,6 +80,8 @@ abstract class HttpConnect {
 
   ///The Stream server
   StreamServer get server;
+  ///The channel that this connection is on.
+  Channel get channel;
   ///The HTTP request.
   HttpRequest get request;
   /** The HTTP response.
@@ -190,6 +192,8 @@ class HttpConnectWrapper implements HttpConnect {
 
   @override
   StreamServer get server => origin.server;
+  @override
+  Channel get channel => origin.channel;
   @override
   HttpRequest get request => origin.request;
   @override

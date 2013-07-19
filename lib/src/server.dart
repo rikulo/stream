@@ -119,7 +119,17 @@ abstract class StreamServer {
   /** Indicates whether the server is running.
    */
   bool get isRunning;
-  /** Starts the server
+  /** Starts the server to handle the given channel.
+   *
+   * Notice that you can invoke [start], [startSecure] and [startOn] multiple
+   * times to handle multiple channels:
+   *
+   *     new StreamServer()
+   *       ..start(port: 80)
+   *       ..startSecure(address: "11.22.33.44", port: 443);
+   *
+   * To know which channel a request is received, you can access
+   * [HttpConnect.channel].
    *
    * * [address] - It can either be a [String] or an [InternetAddress].
    * Default: InternetAddress.ANY_IP_V4 (i.e., "0.0.0.0").
@@ -132,6 +142,16 @@ abstract class StreamServer {
    */
   Future<Channel> start({address, int port: 8080, int backlog: 0});
   /** Starts the server listening for HTTPS request.
+   *
+   * Notice that you can invoke [start], [startSecure] and [startOn] multiple
+   * times to handle multiple channels:
+   *
+   *     new StreamServer()
+   *       ..start(port: 80)
+   *       ..startSecure(address: "11.22.33.44", port: 443);
+   *
+   * To know which channel a request is received, you can access
+   * [HttpConnect.channel].
    *
    * * [address] - It can either be a [String] or an [InternetAddress].
    * Default: InternetAddress.ANY_IP_V4 (i.e., "0.0.0.0").
@@ -146,6 +166,17 @@ abstract class StreamServer {
       String certificateName, bool requestClientCertificate: false,
       int backlog: 0});
   /** Starts the server to an existing the given socket.
+   *
+   * Notice that you can invoke [start], [startSecure] and [startOn] multiple
+   * times to handle multiple channels:
+   *
+   *     new StreamServer()
+   *       ..start(port: 80)
+   *       ..startSecure(address: "11.22.33.44", port: 443)
+   *       ..startOn(fooSocket);
+   *
+   * To know which channel a request is received, you can access
+   * [HttpConnect.channel].
    *
    * To listen Web Sockets, you can use `WebSocketTransformer` (dart:io) to
    * upgrade HTTP request to WebSocket request:

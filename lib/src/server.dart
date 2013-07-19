@@ -36,6 +36,23 @@ abstract class StreamServer {
    * (i.e., `void`). If not, it shall return an URI (which is a non-empty string,
    * starting with * `/`) that the request shall be forwarded to.
    *
+   * ##Web Socket Handling
+   * 
+   * To handle Web Sockets, you can prefix the URI mapping with `'ws:'`,
+   * and then implement a Web Socket handler. A Web Socket handler has a
+   * single argument and the argument type must be [WebSocket]. For example,
+   *
+   *     new StreamServer(uriMapping: {
+   *       socket.listen((event) {
+   *         //event is the message sent by the client
+   *         //you can handle it and return a message as follows:
+   *         socket.add("Server received: $evt");
+   *       });
+   *       return socket.done;
+   *     }).start();
+   *
+   * ##Arguments
+   *
    * * [homeDir] - the home directory for holding static resources. If not specified,
    * it is the root directory of the application.
    * You can specify a relative path relative to the root
@@ -177,16 +194,6 @@ abstract class StreamServer {
    *
    * To know which channel a request is received, you can access
    * [HttpConnect.channel].
-   *
-   * To listen Web Sockets, you can use `WebSocketTransformer` (dart:io) to
-   * upgrade HTTP request to WebSocket request:
-   *
-   *     new StreamServer(uriMapping: {
-   *       "/cmd", (HttpConnect connect) =>
-   *           WebSocketTransformer.upgrade(connect.request).then((websocket) {
-   *             ...
-   *           });
-   *     }).startOn(yourSocket);
    */
   Channel startOn(ServerSocket socket);
   /** Stops the server. It will close all [channels].

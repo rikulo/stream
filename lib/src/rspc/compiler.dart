@@ -26,8 +26,11 @@ class Compiler {
   String _lastModified;
   int _nextVar = 0; //used to implement TagContext.nextVar()
 
-  Compiler(this.source, this.destination, {
-      this.sourceName, this.destinationName, this.encoding:Encoding.UTF_8, this.verbose: false}) {
+  Compiler(String source, this.destination, {
+      this.sourceName, this.destinationName, this.encoding:Encoding.UTF_8,
+      this.verbose: false}):
+      this.source = source.replaceAll("\r\n", "\n") {
+        //to Unix format since _write assumes it
     _tagCtxs.add(_current = new _TagContext.root(this, destination));
     _len = source.length;
   }
@@ -336,8 +339,7 @@ class Compiler {
     final token = _specialToken(sb);
     if (token is _Closing) //if Tag, it is handled by _tagData()
       _skipFollowingSpaces();
-    String text = sb.toString().replaceAll("\r\n", "\n");
-      //to Unix format since the other output assumes it
+    String text = sb.toString();
     if (token is Tag || token is _Closing)
       text = _rmTailingSpaces(text);
     if (text.isEmpty)
@@ -406,7 +408,7 @@ class Compiler {
         _pos = i + 1; //skip white spaces until and including linefeed
         return;
       }
-      if (cc != ' ' && cc != '\t' && cc != '\r')
+      if (cc != ' ' && cc != '\t')
         break; //don't skip anything
     }
   }
@@ -416,7 +418,7 @@ class Compiler {
       final cc = text[i];
       if (cc == '\n')
         return text.substring(0, i + 1); //remove tailing spaces (excluding linefeed)
-      if (cc != ' ' && cc != '\t' && cc != '\r')
+      if (cc != ' ' && cc != '\t')
         return text; //don't skip anything
     }
     return "";

@@ -3,6 +3,7 @@
 **0.8.0**
 
 * Issue 42: Allow a Stream server to listen multiple addresses/ports and web sockets
+* Issue 43: Allow to map Web Socket directly without invoking WebSocketTransformer explicitly
 
 **0.7.6**
 

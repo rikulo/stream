@@ -234,22 +234,35 @@ class DefaultRouter implements Router {
 ///Renderer for 404
 final _f404 = (_) {throw new Http404();};
 
+///Returns a function that can *upgrade* HttpConnect to WebSocket
+Function _upgradeWS(Future handler(WebSocket socket))
+=> (HttpConnect connect)
+  => WebSocketTransformer.upgrade(connect.request).then(handler);
+
 class _UriMapping {
   final String uri;
   RegExp _ptn;
   Map<int, String> _groups;
   ///It could be a function, a string or a list of (string or _Var).
   var handler;
-  ///The method to match with
+  ///The method to match with. (It is in upper case)
   String method;
 
-  _UriMapping(this.uri, handler) {
-    _parseHandler(handler);
+  _UriMapping(this.uri, rawhandler) {
+    _parseHandler(rawhandler);
     _parseUri(uri);
+
+    if (method == "WS") { //handle specially
+      if (rawhandler is! Function)
+        throw new ServerError(
+          "'ws:' must be mapped to a function-typed handler, not $rawhandler");
+      handler = _upgradeWS(rawhandler);
+      method = null;
+    }
   }
-  void _parseHandler(handler) {
-    if (handler is String) {
-      final String val = handler;
+  void _parseHandler(rawhandler) {
+    if (rawhandler is String) {
+      final String val = rawhandler;
       List segs = [];
       int k = 0, len = val.length;
       for (int i = 0; i < len; ++i) {
@@ -279,13 +292,13 @@ class _UriMapping {
       if (!segs.isEmpty) {
         if (k < len)
           segs.add(val.substring(k));
-        handler = segs;
+        rawhandler = segs;
       }
     }
-    this.handler = handler;
+    handler = rawhandler;
   }
   void _parseUri(String uri) {
-    //handle get:xxx, post:xxx
+    //handle get:xxx, post:xxx, ws:xxz
     for (int i = 0, len = uri.length; i < len; ++i) {
       final cc = uri[i];
       if (cc == ':') {

@@ -24,6 +24,34 @@
     <li><a href="/redirect?uri=include">Redirect to /include</a></li>
     <li><a href="/redirect?uri=http://rikulo.org">Redirect to http://rikulo.org</a></li>
     <li><a href="/json">Test the json tag</a></li>
+    <li><a href="javascript:testWebSocket()">Test Web Socket</a>
+      | <a href="javascript:closeWebSocket()">Close</a></li>
     </ul>
+
+  <script type="text/javascript">
+  var ws, receivedmsg;
+  function closeWebSocket() {
+    if (ws != null) {
+      ws.close();
+      ws = null;
+    }
+  }
+  function testWebSocket() {
+    closeWebSocket();
+
+    ws = new WebSocket("ws://localhost:8080/ws-test/first");
+    ws.onopen = function() {
+      console.log("connection started");
+      ws.send("Hi there, this is client");
+    };
+    ws.onmessage = function (evt) { 
+      receivedmsg = evt.data;
+      console.log("Echo back: " + receivedmsg);
+    };
+    ws.onclose = function() {
+      console.log("connection closed");
+    };
+  }
+  </script>
   </body>
 </html>

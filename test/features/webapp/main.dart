@@ -59,7 +59,13 @@ var _uriMapping = {
   "/redirect": (HttpConnect connect) {
     connect.redirect(connect.request.uri.queryParameters["uri"]);
   },
-  "/json": json
+  "/json": json,
+  "ws:/ws-test(/.*)?": (WebSocket socket) {
+    socket.listen((evt) {
+      socket.add("Server received: $evt");
+    });
+    return socket.done;
+  }
 };
 
 //Error mapping

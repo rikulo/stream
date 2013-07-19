@@ -129,8 +129,9 @@ class _StreamServer implements StreamServer {
         }
       }
 
-      (handler is Function ? _ensureFuture(handler(connect), true):
-        forward(connect, handler)).then((_) {
+      (handler is Function ?
+        _ensureFuture(handler(connect), true): forward(connect, handler))
+      .then((_) {
         _close(connect);
       }).catchError((err) {
         if (!shouted)

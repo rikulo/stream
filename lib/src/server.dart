@@ -36,10 +36,10 @@ abstract class StreamServer {
    * (i.e., `void`). If not, it shall return an URI (which is a non-empty string,
    * starting with * `/`) that the request shall be forwarded to.
    *
-   * ##Web Socket Handling
+   * ##WebSocket Handling
    * 
-   * To handle Web Sockets, you can prefix the URI mapping with `'ws:'`,
-   * and then implement a Web Socket handler. A Web Socket handler has a
+   * To handle WebSockets, you can prefix the URI mapping with `'ws:'`,
+   * and then implement a WebSocket handler. A WebSocket handler has a
    * single argument and the argument type must be [WebSocket]. For example,
    *
    *     new StreamServer(uriMapping: {

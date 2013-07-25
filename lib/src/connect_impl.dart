@@ -206,23 +206,32 @@ class _ReadOnlyHeaders extends HttpHeadersWrapper {
 }
 
 ///[uri]: if null, it means no need to change
-HttpRequest _wrapRequest(HttpRequest request, String uri) {
-  if (uri == null)
+///[keepQuery]: whether to keep the original query parameters
+HttpRequest _wrapRequest(HttpRequest request, String path, {bool keepQuery:false}) {
+  if (path == null)
     return request;
 
   final org = request.uri;
-  final i = uri.indexOf('?');
-  String query = "";
-  if (i >= 0) {
-    query = uri.substring(i + 1);
-    uri = uri.substring(0, i);
-  }
-  uri = _toAbsUri(request, uri);
-  if (org.path == uri && org.query == query)
+  String query;
+  if (keepQuery) {
+    query = org.query;
+  } else {
+    query = "";
+
+    final i = path.indexOf('?');
+    if (i >= 0) {
+      query = path.substring(i + 1);
+      path = path.substring(0, i);
+    }
+	}
+
+  path = _toAbsUri(request, path);
+
+  if (org.path == path && org.query == query)
     return request;
 
   return new _ReUriRequest(request, new Uri(scheme: org.scheme,
-    userInfo: org.userInfo, port: org.port, path: uri, query: query,
+    userInfo: org.userInfo, port: org.port, path: path, query: query,
     fragment: org.fragment));
 }
 HttpResponse _wrapResponse(HttpResponse response, bool included)

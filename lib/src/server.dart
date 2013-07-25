@@ -133,6 +133,41 @@ abstract class StreamServer {
    */
   bool chunkedTransferEncoding;
 
+  /** The prefix used to denote a different version of JavaScript or Dart code,
+   * such that the browser will reload the JavaScript files automatically.
+   * It will be removed before the URI mapping and  it is not visible to
+   * the request handler. For example, you can generate the JavaScript link as
+   * follows in RSP:
+   *
+   *     <script src="[=connect.server.uriVersionPrefix]/js/init.js"></script>
+   *
+   * Then, no matter the value of [uriVersionPrefix], the file at `/js/init.js`
+   * will always be loaded.
+   *
+   * > Default: "" (no special prefix at all). Notice the value must start
+   * with `"/"`.
+   *
+   * ##Typical Use
+   *
+   * You usually assign a build number to it when the server is restarted:
+   *
+   *     server.uriVersionPrefix = "/$buildNumber";
+   *
+   * Then, the browser will reload the JavaScript code automatically each
+   * time the build number is changed.
+   *
+   * You can prefix it to the image that depends on the build number too.
+   *
+   * ##The script Tag
+   *
+   * The [script](http://docs.rikulo.org/stream/latest/RSP/Standard_Tags/script.html)
+   * tag supports [uriVersionPrefix] automatically, so you don't need to
+   * (and shall not) prefix the URI with this:
+   *
+   *     [:script src="/js/init.dart"] [!-- no need to prefix uriVersionPrefix --]
+   */
+  String uriVersionPrefix;
+
   /** Indicates whether the server is running.
    */
   bool get isRunning;

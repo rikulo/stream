@@ -175,6 +175,17 @@ class _StreamServer implements StreamServer {
   bool chunkedTransferEncoding = true;
 
   @override
+  String get uriVersionPrefix => _uriVerPrefix;
+  @override
+  void set uriVersionPrefix(String prefix) {
+    if (prefix.isEmpty || (prefix.startsWith("/") && !prefix.endsWith("/")))
+      _uriVerPrefix = prefix;
+    else
+      throw new ArgumentError("must be empty or start with /: $prefix");
+  }
+  String _uriVerPrefix = "";
+
+  @override
   ResourceLoader get resourceLoader => _resLoader;
   void set resourceLoader(ResourceLoader loader) {
     if (loader == null)
@@ -242,7 +253,7 @@ class _StreamServer implements StreamServer {
     channel._iserver
     ..sessionTimeout = sessionTimeout
     ..listen((HttpRequest req) {
-      req.response.headers
+      (req = _unVersionPrefix(req, uriVersionPrefix)).response.headers
         ..set(HttpHeaders.SERVER, serverInfo)
         ..date = new DateTime.now();
 
@@ -344,4 +355,10 @@ class _SocketChannel extends _Channel implements SocketChannel {
 
   _SocketChannel(StreamServer server, HttpServer iserver, this.socket):
       super(server, iserver);
+}
+
+HttpRequest _unVersionPrefix(HttpRequest req, String prefix) {
+  String path;
+  return !prefix.isEmpty && (path = req.uri.path).startsWith(prefix) ?
+    _wrapRequest(req, path.substring(prefix.length), keepQuery: true): req;
 }

@@ -4,6 +4,7 @@
 
 * Issue 42: Allow a Stream server to listen multiple addresses/ports and web sockets
 * Issue 43: Allow to map WebSocket directly without invoking WebSocketTransformer explicitly
+* Issue 41: Able to encode the build number into JS and/or CSS s.t. the browse will use the latest JS/CSS automatically
 
 **0.7.6**
 

@@ -32,7 +32,7 @@ class Compiler {
       this.source = source.replaceAll("\r\n", "\n") {
         //to Unix format since _write assumes it
     _tagCtxs.add(_current = new _TagContext.root(this, destination));
-    _len = source.length;
+    _len = this.source.length;
   }
 
   ///Compiles the given source into Dart code. Notice: it can be called only once.

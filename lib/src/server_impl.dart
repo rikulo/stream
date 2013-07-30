@@ -7,7 +7,7 @@ part of stream;
 typedef void _ConnectErrorCallback(HttpConnect connect, err, [stackTrace]);
 
 class _StreamServer implements StreamServer {
-  final String version = "0.8.0";
+  final String version = "0.8.1";
 
   List<Channel> _channels = [];
   int _sessTimeout = 20 * 60; //20 minutes

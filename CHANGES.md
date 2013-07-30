@@ -1,5 +1,9 @@
 #CHANGES
 
+**0.8.1**
+
+* Issue 44: The page tag supports the part attribute to include other dart files, and the dart attribute to embed code before the function
+
 **0.8.0**
 
 * Issue 42: Allow a Stream server to listen multiple addresses/ports and web sockets

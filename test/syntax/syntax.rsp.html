@@ -1,6 +1,7 @@
 [!-- Syntax Test --]
 [:page contentType="[=foo.contentType]" args="foo, bool c:false"
-	import="dart:collection show LinkedHashMap"/]
+	import="dart:collection show LinkedHashMap"
+  dart="var someExternal = 123;"/]
 [:header age="129" accept-ranges="[=foo.acceptRanges]" ]
 [:header Cache-Control="no-cache"]
 <!DOCTYPE html>

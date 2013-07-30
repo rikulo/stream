@@ -104,13 +104,16 @@ Map<String, Tag> _tags;
 class PageTag extends Tag {
   @override
   void begin(TagContext tc, String data) {
-    String partOf, imports, name, desc, args, ctype, lastModified;
+    String partOf, parts, imports, name, desc, args, ctype, lastModified, dart;
     final attrs = ArgInfo.parse(data);
     for (final nm in attrs.keys) {
       switch (nm) {
         case "partOf":
         case "part-of":
           partOf = attrs[nm];
+          break;
+        case "part":
+          parts = attrs[nm];
           break;
         case "import":
           imports = attrs[nm];
@@ -135,12 +138,16 @@ class PageTag extends Tag {
         case "lastModified":
           lastModified = attrs[nm];
           break;
+        case "dart":
+          dart = attrs[nm];
+          break;
         default:
           tc.warning("Unknow attribute, $nm");
           break;
       }
     }
-    tc.compiler.setPage(partOf, imports, name, desc, args, ctype, lastModified);
+    tc.compiler.setPage(partOf, parts, imports, name, desc, args, ctype,
+      lastModified, dart);
   }
   @override
   bool get hasClosing => false;

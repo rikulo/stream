@@ -14,7 +14,7 @@ class Compiler {
   final Encoding encoding;
   final bool verbose;
   //the closure's partOf, import, name, args...
-  String _partOf, _import, _name, _args, _desc, _contentType;
+  String _partOf, _parts, _import, _name, _args, _desc, _contentType, _dart;
   final List<_TagContext> _tagCtxs = [];
   _TagContext _current;
   //The position, length and _line of the source
@@ -193,6 +193,20 @@ class Compiler {
       _writeln("part of $_partOf;");
     }
 
+    if (_parts != null && !_parts.isEmpty) {
+      _writeln();
+      for (String pt in _parts.split(","))
+        if (!(pt = pt.trim()).isEmpty)
+          _writeln("part '$pt';");
+    }
+
+    if (_dart != null && !_dart.isEmpty) {
+      _writeln();
+      _write(_dart);
+      if (!_dart.endsWith("\n"))
+        _writeln();
+    }
+
     _current.indent();
     _write("\n/** $_desc */\nFuture $_name(HttpConnect connect");
     if (_args != null)
@@ -215,10 +229,13 @@ class Compiler {
   }
 
   ///Sets the page information.
-  void setPage(String partOf, String imports, String name, String description, String args,
-      String contentType, String lastModified, [int line]) {
+  void setPage(String partOf, String parts, String imports,
+      String name, String description, String args,
+      String contentType, String lastModified, String dart, [int line]) {
     _partOf = partOf;
     _noEL(partOf, "the partOf attribute", line);
+    _parts = parts;
+    _noEL(parts, "the part attribute", line);
     _import = imports;
     _noEL(_import, "the import attribute", line);
     _name = name;
@@ -227,6 +244,8 @@ class Compiler {
     _noEL(description, "the description attribute", line);
     _args = args;
     _noEL(args, "the args attribute", line);
+    _dart = dart;
+    _noEL(dart, "the dart attribute", line);
     _contentType = contentType;
 
     _noEL(lastModified, "the lastModified attribute", line);

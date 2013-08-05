@@ -40,12 +40,14 @@ class _StreamServer implements StreamServer {
 
     //look for webapp
     for (final orgpath = path;;) {
-      final nm = Path.basename(path);
+      final String nm = Path.basename(path);
+      final String op = path;
       path = Path.dirname(path);
       if (nm == "webapp")
         return path; //found and we use its parent as the root
 
-      if (path.isEmpty || path == Path.separator)
+      if (path == op //happens under Windows ("C:\")
+          || path.isEmpty || path == Path.separator)
         return orgpath; //assume to be the same directory as script
     }
   }

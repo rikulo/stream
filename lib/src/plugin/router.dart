@@ -55,7 +55,7 @@ class DefaultRouter implements Router {
   final Map<int, dynamic> _codeMapping = new HashMap(); //mapping of status code to URI/Function
   final List<_ErrMapping> _errMapping = []; //exception to URI/Function
 
-  final Map<String, dynamic> _uriCache = new LinkedHashMap();
+  final _UriCache _uriCache = new _UriCache();
   int _cacheSize;
 
   static final _NOT_FOUND = new Object();
@@ -133,8 +133,9 @@ class DefaultRouter implements Router {
       throw new ServerError("URI mapping: function (renderer) or string (URI) is required for $uri");
 
     _map(_uriMapping, uri, handler, preceding);
-    _uriCache.clear();
+    _uriCache.reset();
   }
+
   /** Maps the given URI to the given filter.
    *
    * * [uri]: a regular expression used to match the request URI.
@@ -173,7 +174,8 @@ class DefaultRouter implements Router {
 
   @override
   getHandler(HttpConnect connect, String uri) {
-    var handler = _uriCache[uri];
+    final Map<String, dynamic> cache = _uriCache.getCache(connect, _uriMapping);
+    var handler = cache[uri];
     if (handler == null) {
       _UriMapping mp;
       for (mp in _uriMapping)
@@ -183,10 +185,10 @@ class DefaultRouter implements Router {
         }
 
       //store to cache
-      _uriCache[uri] = handler == null ? _NOT_FOUND:
+      cache[uri] = handler == null ? _NOT_FOUND:
         mp.hasGroup() ? mp: handler; //store _UriMapping if mp.hasGroup()
-      if (_uriCache.length > _cacheSize)
-        _uriCache.remove(_uriCache.keys.first);
+      if (cache.length > _cacheSize)
+        cache.remove(cache.keys.first);
     } else if (identical(handler, _NOT_FOUND)) {
       return;
     } else if (handler is _UriMapping) { //hasGroup
@@ -410,4 +412,36 @@ class _ErrMapping {
   final ClassMirror error;
   final handler;
   _ErrMapping(this.error, this.handler);
+}
+
+class _UriCache {
+  ///If _multimethod is false => <String uri, handler>
+  ///If _multimethod is true => <String method, <String uri, handler>>
+  Map<String, dynamic> _cache;
+  bool _multimethod;
+
+  void reset() {
+    _multimethod = null;
+    _cache = null;
+  }
+  Map<String, dynamic> getCache(HttpConnect connect, List<_UriMapping> mappings) {
+    if (_multimethod == null) {
+      _cache = new LinkedHashMap();
+      _multimethod = false;
+      for (final _UriMapping m in mappings) {
+        if (m.method != null) {
+          _multimethod = true;
+          _cache = new HashMap(); //<String method, <String uri, handler>>
+          break;
+        }
+      }
+    }
+
+    if (!_multimethod)
+      return _cache;
+
+    final String method = connect.request.method;
+    final Map<String, dynamic> cache = _cache[method];
+    return cache != null ? cache: (_cache[method] = new LinkedHashMap());
+  }
 }

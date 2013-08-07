@@ -109,7 +109,8 @@ abstract class HttpConnect {
    * `/login?whatever` and `http://rikulo.org/project/stream`.
    *
    * > Notice: you shall invoke this method instead of `HttpResponse.redirect()`,
-   * since `HttpResponse.redirect()` will close the connection.
+   * since `HttpResponse.redirect()` will close the connection (which
+   * will be called automatically under Rikulo Stream).
    */
   void redirect(String url, {int status: HttpStatus.MOVED_TEMPORARILY});
 
@@ -211,8 +212,8 @@ class HttpConnectWrapper implements HttpConnect {
   bool get isForwarded => origin.isForwarded;
 
   @override
-  void redirect(String uri) {
-    origin.redirect(_toCompleteUrl(request, uri));
+  void redirect(String uri, {int status: HttpStatus.MOVED_TEMPORARILY}) {
+    origin.redirect(_toCompleteUrl(request, uri), status: status);
   }
   @override
   Future forward(String uri, {HttpRequest request, HttpResponse response})

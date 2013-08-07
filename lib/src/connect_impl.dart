@@ -23,8 +23,8 @@ abstract class _AbstractConnect implements HttpConnect {
   bool get isForwarded => false;
 
   @override
-  void redirect(String uri) {
-    response.statusCode = HttpStatus.FOUND;
+  void redirect(String uri, {int status: HttpStatus.MOVED_TEMPORARILY}) {
+    response.statusCode = status;
     response.headers.set("Location", _toCompleteUrl(request, uri));
   }
   @override

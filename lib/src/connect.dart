@@ -107,8 +107,11 @@ abstract class HttpConnect {
    *
    * * [url] - the location to redirect to. It can be an URI or URL, such as
    * `/login?whatever` and `http://rikulo.org/project/stream`.
+   *
+   * > Notice: you shall invoke this method instead of `HttpResponse.redirect()`,
+   * since `HttpResponse.redirect()` will close the connection.
    */
-  void redirect(String url);
+  void redirect(String url, {int status: HttpStatus.MOVED_TEMPORARILY});
 
   /** Forward this connection to the given [uri].
    *

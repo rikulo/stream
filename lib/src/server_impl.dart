@@ -251,7 +251,7 @@ class _StreamServer implements StreamServer {
     return channel;
   }
   void _startChannel(_Channel channel) {
-    final serverInfo = "Rikulo Stream $version";
+    final serverInfo = "Stream/$version";
     channel._iserver
     ..sessionTimeout = sessionTimeout
     ..listen((HttpRequest req) {

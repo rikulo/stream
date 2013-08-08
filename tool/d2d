@@ -45,7 +45,7 @@ ver=${ver#version: }
 PATH=$PATH:$SDK/bin
 echo Compiling $libdir $ver
 exclude_list=$(cat $homedir/tool/lib/exclude.lst | tr '\n' ',')
-$dartdoc --package-root $homedir/packages --exclude-lib $exclude_list --out $outdir $libdir/*.dart
+$dartdoc --link-api --package-root $homedir/packages --exclude-lib $exclude_list --out $outdir $libdir/*.dart
 if [ ! -f $outdir/index.html ] ; then
 	echo $outdir/index.html not found. Failed?
 	exit 1

@@ -3,6 +3,46 @@
 // Author: tomyeh
 part of stream;
 
+/** A HTTP channel.
+ * A channel represents the Internet address and port that [StreamServer]
+ * is bound to.
+ *
+ * A channel can serve multiple HTTP connection ([HttpConnect]). A HTTP
+ * connection is actually a pair of [HttpRequest] and [HttpResponse].
+ */
+abstract class HttpChannel {
+  ///The connection information summarizing the number of current connections
+  //handled in this channel.
+  HttpConnectionsInfo get connectionsInfo;
+  /** When the server started. It is null if never started.
+   */
+  DateTime get startedSince;
+  /** Closes the channel.
+   *
+   * To start all channels, please use [StreamServer.stop] instead.
+   */
+  void close();
+  /** Indicates whether the channel is closed.
+   */
+  bool get isClosed;
+
+  ///The server for serving this channel.
+  StreamServer get server;
+
+  ///The socket that this channel is bound to.
+  ///It is available only if the channel is started by [StreamServer.startOn].
+  ServerSocket get socket;
+
+  /** The address. It can be either a [String] or an [InternetAddress].
+   * It is null if the channel is started by [StreamServer.startOn].
+   */
+  get address;
+  ///The port.
+  int get port;
+  ///Whether it is a HTTPS channel
+  bool get isSecure;
+}
+
 /** The request filter. It is used with the `filterMapping` parameter of [StreamServer].
  *
  * * [chain] - the callback to *resume* the request handling. If there is another filter

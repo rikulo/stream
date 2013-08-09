@@ -3,6 +3,50 @@
 // Author: tomyeh
 part of stream;
 
+///The implementation of channel.
+class _HttpChannel implements HttpChannel {
+  final HttpServer _iserver;
+  @override
+  final StreamServer server;
+  @override
+  final DateTime startedSince;
+
+  bool _closed = false;
+
+  _HttpChannel(this.server, this._iserver, this.address, this.port,
+      this.isSecure): startedSince = new DateTime.now(), socket = null;
+  _HttpChannel.fromSocket(this.server, this._iserver, ServerSocket socket):
+    startedSince = new DateTime.now(), this.socket = socket,
+    isSecure = socket is SecureServerSocket,
+    address = null, port = socket.port;
+
+  @override
+  HttpConnectionsInfo get connectionsInfo => _iserver.connectionsInfo();
+  @override
+  void close() {
+    _closed = true;
+    _iserver.close();
+
+    final List<HttpChannel> channels = server.channels;
+    for (int i = channels.length; --i >= 0;)
+      if (identical(this, channels[i])) {
+        channels.removeAt(i);
+        break;
+      }
+  }
+  @override
+  bool get isClosed => _closed;
+
+  @override
+  final ServerSocket socket;
+  @override
+  final address;
+  @override
+  final int port;
+  @override
+  final bool isSecure;
+}
+
 ///Skeletal implementation
 abstract class _AbstractConnect implements HttpConnect {
   Map<String, dynamic> _dataset;

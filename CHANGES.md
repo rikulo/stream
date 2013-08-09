@@ -2,7 +2,7 @@
 
 **0.8.2**
 
-* Channel, HttpChannel and SocketChannel are renamed to HttpChannel, HttpIPChannel and HttpSocketChannel
+* Channel, HttpChannel and SocketChannel are merged into HttpChannel
 
 **0.8.1**
 

@@ -184,7 +184,7 @@ abstract class StreamServer {
    * [HttpConnect.channel].
    *
    * * [address] - It can either be a [String] or an [InternetAddress].
-   * Default: InternetAddress.ANY_IP_V4 (i.e., "0.0.0.0").
+   * Default: [InternetAddress.ANY_IP_V4] (i.e., "0.0.0.0").
    * It will cause Stream server to listen all adapters
    * IP addresses using IPv4.
    *
@@ -196,7 +196,7 @@ abstract class StreamServer {
    * If backlog has the value of 0 (the default) a reasonable value will be chosen
    * by the system.
    */
-  Future<HttpIPChannel> start({address, int port: 8080, int backlog: 0});
+  Future<HttpChannel> start({address, int port: 8080, int backlog: 0});
   /** Starts the server listening for HTTPS request.
    *
    * Notice that you can invoke [start], [startSecure] and [startOn] multiple
@@ -218,7 +218,7 @@ abstract class StreamServer {
    * If port has the value 0 an ephemeral port will be chosen by the system.
    * The actual port used can be retrieved using [HttpChannel.port].
    */
-  Future<HttpIPChannel> startSecure({address, int port: 8443,
+  Future<HttpChannel> startSecure({address, int port: 8443,
       String certificateName, bool requestClientCertificate: false,
       int backlog: 0});
   /** Starts the server to an existing socket.
@@ -233,8 +233,11 @@ abstract class StreamServer {
    *
    * To know which channel a request is received, you can access
    * [HttpConnect.channel].
+   *
+   * Unlike [start], when the channel or the server is closed, the server
+   * will just detach itself, but not closing [socket].
    */
-  HttpSocketChannel startOn(ServerSocket socket);
+  HttpChannel startOn(ServerSocket socket);
   /** Stops the server. It will close all [channels].
    *
    * To close an individual channel, please use [HttpChannel.close] instead.
@@ -314,12 +317,12 @@ abstract class StreamServer {
   ResourceLoader resourceLoader;
 
   /** The application-specific error handler to listen all errors that
-   * ever happens in this server.
+   * ever happen in this server.
    *
-   * If the connect argument is null, it means it is a server error.
-   * If not null, it means it is caused by an event handler or filter.
+   * If the [connect] argument is null, it means it is a server error.
+   * If not null, it means it is caused by an event handler or an event filter.
    */
-  void onError(void handler(HttpConnect connect, err, [stackTrace]));
+  void onError(void onError(HttpConnect connect, err, [stackTrace]));
 
   /** Maps the given URI to the given handler.
    *
@@ -356,45 +359,6 @@ abstract class StreamServer {
    * invoke [stop] to stop the server.
    */
   List<HttpChannel> get channels;
-}
-
-/** A channel. A channel is either a [HttpIPChannel] or a [HttpSocketChannel].
- */
-abstract class HttpChannel {
-  ///The connection information summarizing the number of current connections
-  //handled in this channel.
-  HttpConnectionsInfo get connectionsInfo;
-  /** When the server started. It is null if never started.
-   */
-  DateTime get startedSince;
-  /** Closes the channel.
-   *
-   * To start all channels, please use [StreamServer.stop] instead.
-   */
-  void close();
-  /** Indicates whether the channel is closed.
-   */
-  bool get isClosed;
-
-  ///The server for serving this channel.
-  StreamServer get server;
-}
-/** A HTTP channel.
- */
-abstract class HttpIPChannel extends HttpChannel {
-  /** The address. It can be either a [String] or an [InternetAddress].
-   */
-  get address;
-  ///The port.
-  int get port;
-  ///Whether it is a HTTPS channel
-  bool get isSecure;
-}
-/** A socket channel.
- */
-abstract class HttpSocketChannel extends HttpChannel {
-  ///The socket that this channel is bound to.
-  ServerSocket get socket;
 }
 
 /** A generic server error.

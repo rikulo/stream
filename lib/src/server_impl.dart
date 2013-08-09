@@ -254,7 +254,7 @@ class _StreamServer implements StreamServer {
     return channel;
   }
   void _startChannel(_HttpChannel channel) {
-    final serverInfo = "Stream/$version";
+    final String serverInfo = "Stream/$version";
     channel._iserver
     ..sessionTimeout = sessionTimeout
     ..listen((HttpRequest req) {
@@ -282,6 +282,7 @@ class _StreamServer implements StreamServer {
     }, onError: (err) {
       _handleErr(null, err);
     });
+    _channels.add(channel);
   }
   @override
   void stop() {

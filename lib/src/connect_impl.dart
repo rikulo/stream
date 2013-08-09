@@ -45,7 +45,7 @@ class _HttpConnect extends _AbstractConnect {
   @override
   StreamServer get server => channel.server;
   @override
-  final Channel channel;
+  final HttpChannel channel;
 
   @override
   Browser get browser {
@@ -72,7 +72,7 @@ class _ProxyConnect extends _AbstractConnect {
   @override
   StreamServer get server => _origin.server;
   @override
-  Channel get channel => _origin.channel;
+  HttpChannel get channel => _origin.channel;
   @override
   Browser get browser => _origin.browser;
   @override

@@ -7,9 +7,9 @@ part of stream;
 typedef void _ConnectErrorCallback(HttpConnect connect, err, [stackTrace]);
 
 class _StreamServer implements StreamServer {
-  final String version = "0.8.1";
+  final String version = "0.8.2";
 
-  List<Channel> _channels = [];
+  List<HttpChannel> _channels = [];
   int _sessTimeout = 20 * 60; //20 minutes
   final Logger logger;
   String _homeDir;
@@ -169,7 +169,7 @@ class _StreamServer implements StreamServer {
   @override
   void set sessionTimeout(int timeout) {
     _sessTimeout = timeout;
-    for (final _Channel channel in channels)
+    for (final _HttpChannel channel in channels)
       channel._iserver.sessionTimeout = _sessTimeout;
   }
 
@@ -203,7 +203,7 @@ class _StreamServer implements StreamServer {
   @override
   bool get isRunning => !_channels.isEmpty;
   @override
-  Future<Channel> start({address, int port: 8080, int backlog: 0}) {
+  Future<HttpIPChannel> start({address, int port: 8080, int backlog: 0}) {
     if (address == null)
       address = InternetAddress.ANY_IP_V4;
     return HttpServer.bind(address, port, backlog: backlog)
@@ -211,14 +211,14 @@ class _StreamServer implements StreamServer {
       _handleErr(null, err);
     })
     .then((iserver) {
-      final channel = new _HttpChannel(this, iserver, address, iserver.port, false);
+      final channel = new _HttpIPChannel(this, iserver, address, iserver.port, false);
       _startChannel(channel);
       _logHttpStarted(channel);
       return channel;
     });
   }
   @override
-  Future<Channel> startSecure({address, int port: 8080, 
+  Future<HttpIPChannel> startSecure({address, int port: 8443, 
       String certificateName, bool requestClientCertificate: false,
       int backlog: 0}) {
     if (address == null)
@@ -229,13 +229,13 @@ class _StreamServer implements StreamServer {
       _handleErr(null, err);
     })
     .then((iserver) {
-      final channel = new _HttpChannel(this, iserver, address, iserver.port, true);
+      final channel = new _HttpIPChannel(this, iserver, address, iserver.port, true);
       _startChannel(channel);
       _logHttpStarted(channel);
       return channel;
     });
   }
-  void _logHttpStarted(HttpChannel channel) {
+  void _logHttpStarted(HttpIPChannel channel) {
     final address = channel.address, port = channel.port;
     logger.info(
       "Rikulo Stream Server $version starting${channel.isSecure ? ' HTTPS': ''} on "
@@ -243,14 +243,14 @@ class _StreamServer implements StreamServer {
       "Home: ${homeDir}");
   }
   @override
-  Channel startOn(ServerSocket socket) {
-    final channel = new _SocketChannel(this, new HttpServer.listenOn(socket), socket);
+  HttpSocketChannel startOn(ServerSocket socket) {
+    final channel = new _HttpSocketChannel(this, new HttpServer.listenOn(socket), socket);
     _startChannel(channel);
     logger.info("Rikulo Stream Server $version starting on $socket\n"
       "Home: ${homeDir}");
     return channel;
   }
-  void _startChannel(_Channel channel) {
+  void _startChannel(_HttpChannel channel) {
     final serverInfo = "Stream/$version";
     channel._iserver
     ..sessionTimeout = sessionTimeout
@@ -284,7 +284,7 @@ class _StreamServer implements StreamServer {
   void stop() {
     if (!isRunning)
       throw new StateError("Not running");
-    for (final Channel channel in new List.from(channels))
+    for (final HttpChannel channel in new List.from(channels))
       channel.close();
   }
 
@@ -298,7 +298,7 @@ class _StreamServer implements StreamServer {
   }
 
   @override
-  List<Channel> get channels => _channels;
+  List<HttpChannel> get channels => _channels;
 
   Future _ensureFuture(value, [bool ignoreFutureOnly=false]) {
     //Note: we can't use Http500. otherwise, the error won't be logged
@@ -314,7 +314,7 @@ class _StreamServer implements StreamServer {
 }
 
 ///A channel.
-abstract class _Channel implements Channel {
+abstract class _HttpChannel implements HttpChannel {
   final HttpServer _iserver;
   @override
   final StreamServer server;
@@ -323,7 +323,7 @@ abstract class _Channel implements Channel {
 
   bool _closed = false;
 
-  _Channel(this.server, this._iserver): startedSince = new DateTime.now();
+  _HttpChannel(this.server, this._iserver): startedSince = new DateTime.now();
 
   @override
   HttpConnectionsInfo get connectionsInfo => _iserver.connectionsInfo();
@@ -332,7 +332,7 @@ abstract class _Channel implements Channel {
     _closed = true;
     _iserver.close();
 
-    final List<Channel> channels = server.channels;
+    final List<HttpChannel> channels = server.channels;
     for (int i = channels.length; --i >= 0;)
       if (identical(this, channels[i])) {
         channels.removeAt(i);
@@ -343,19 +343,19 @@ abstract class _Channel implements Channel {
   bool get isClosed => _closed;
 }
 
-class _HttpChannel extends _Channel implements HttpChannel {
+class _HttpIPChannel extends _HttpChannel implements HttpIPChannel {
   final address;
   final int port;
   final bool isSecure;
 
-  _HttpChannel(StreamServer server, HttpServer iserver, this.address, this.port,
+  _HttpIPChannel(StreamServer server, HttpServer iserver, this.address, this.port,
       this.isSecure): super(server, iserver);
 }
 
-class _SocketChannel extends _Channel implements SocketChannel {
+class _HttpSocketChannel extends _HttpChannel implements HttpSocketChannel {
   final ServerSocket socket;
 
-  _SocketChannel(StreamServer server, HttpServer iserver, this.socket):
+  _HttpSocketChannel(StreamServer server, HttpServer iserver, this.socket):
       super(server, iserver);
 }
 

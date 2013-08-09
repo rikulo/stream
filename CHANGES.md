@@ -1,5 +1,9 @@
 #CHANGES
 
+**0.8.2**
+
+* Channel, HttpChannel and SocketChannel are renamed to HttpChannel, HttpIPChannel and HttpSocketChannel
+
 **0.8.1**
 
 * Issue 44: The page tag supports the part attribute to include other dart files, and the dart attribute to embed code before the function

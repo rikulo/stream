@@ -190,9 +190,13 @@ abstract class StreamServer {
    *
    * * [port] - the port. Default: 8080.
    * If port has the value 0 an ephemeral port will be chosen by the system.
-   * The actual port used can be retrieved using [Channel.port].
+   * The actual port used can be retrieved using [HttpChannel.port].
+   *
+   * * [backlog] - specify the listen backlog for the underlying OS listen setup.
+   * If backlog has the value of 0 (the default) a reasonable value will be chosen
+   * by the system.
    */
-  Future<Channel> start({address, int port: 8080, int backlog: 0});
+  Future<HttpIPChannel> start({address, int port: 8080, int backlog: 0});
   /** Starts the server listening for HTTPS request.
    *
    * Notice that you can invoke [start], [startSecure] and [startOn] multiple
@@ -210,14 +214,14 @@ abstract class StreamServer {
    * It will cause Stream server to listen all adapters
    * IP addresses using IPv4.
    *
-   * * [port] - the port. Default: 8080.
+   * * [port] - the port. Default: 8443.
    * If port has the value 0 an ephemeral port will be chosen by the system.
-   * The actual port used can be retrieved using [Channel.port].
+   * The actual port used can be retrieved using [HttpChannel.port].
    */
-  Future<Channel> startSecure({address, int port: 8080,
+  Future<HttpIPChannel> startSecure({address, int port: 8443,
       String certificateName, bool requestClientCertificate: false,
       int backlog: 0});
-  /** Starts the server to an existing the given socket.
+  /** Starts the server to an existing socket.
    *
    * Notice that you can invoke [start], [startSecure] and [startOn] multiple
    * times to handle multiple channels:
@@ -230,10 +234,10 @@ abstract class StreamServer {
    * To know which channel a request is received, you can access
    * [HttpConnect.channel].
    */
-  Channel startOn(ServerSocket socket);
+  HttpSocketChannel startOn(ServerSocket socket);
   /** Stops the server. It will close all [channels].
    *
-   * To close an individual channel, please use [Channel.close] instead.
+   * To close an individual channel, please use [HttpChannel.close] instead.
    */
   void stop();
 
@@ -348,15 +352,15 @@ abstract class StreamServer {
    * Each time [start], [startSecure] or [startOn] is called, an instance
    * is added to the returned list.
    *
-   * To close a particular channel, invoke [Channel.close]. To close all,
+   * To close a particular channel, invoke [HttpChannel.close]. To close all,
    * invoke [stop] to stop the server.
    */
-  List<Channel> get channels;
+  List<HttpChannel> get channels;
 }
 
-/** A channel. A channel is either a [HttpChannel] or a [SocketChannel].
+/** A channel. A channel is either a [HttpIPChannel] or a [HttpSocketChannel].
  */
-abstract class Channel {
+abstract class HttpChannel {
   ///The connection information summarizing the number of current connections
   //handled in this channel.
   HttpConnectionsInfo get connectionsInfo;
@@ -377,7 +381,7 @@ abstract class Channel {
 }
 /** A HTTP channel.
  */
-abstract class HttpChannel extends Channel {
+abstract class HttpIPChannel extends HttpChannel {
   /** The address. It can be either a [String] or an [InternetAddress].
    */
   get address;
@@ -388,7 +392,7 @@ abstract class HttpChannel extends Channel {
 }
 /** A socket channel.
  */
-abstract class SocketChannel extends Channel {
+abstract class HttpSocketChannel extends HttpChannel {
   ///The socket that this channel is bound to.
   ServerSocket get socket;
 }

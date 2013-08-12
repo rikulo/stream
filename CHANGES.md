@@ -3,6 +3,7 @@
 **0.8.2**
 
 * Channel, HttpChannel and SocketChannel are merged into HttpChannel
+* Issue 47: RSP shall escape $ to prevent Dart from interpreting it.
 
 **0.8.1**
 

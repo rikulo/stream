@@ -168,23 +168,26 @@ Future syntax(HttpConnect connect, {foo, bool c:false}) { //#5
 
       response.write(Rsp.script(connect, "/script/foo.dart", true)); //script#63
 
-      response.write("""  </body>
+      response.write("""    <script>
+    \$("#j\\q");
+    </script>
+  </body>
 </html>
 """); //#64
 
-      response..write("<script>")..write("foo1")..write("=") //json-js#66
+      response..write("<script>")..write("foo1")..write("=") //json-js#69
        ..write(Rsp.json(foo.name.length ~/ 2))..writeln('</script>');
-      response..write('<script type="text/plain" id="') //json#67
+      response..write('<script type="text/plain" id="') //json#70
        ..write("foo2")..write('">')
        ..write(Rsp.json(foo.name.length ~/ 2 * "/]".length))..writeln('</script>');
 
       response.write("""
 
-"""); //#68
+"""); //#71
 
       response.write("""
 
-"""); //#70
+"""); //#73
 
       return Rsp.nnf();
     }); //end-of-include

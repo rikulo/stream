@@ -560,7 +560,7 @@ class Compiler {
           _write('""\\');
           i += 2;
         }
-      } else if (cc == '\\') {
+      } else if (cc == '\\' || cc == '\$') {
         _write('\\');
       }
       _write(cc);

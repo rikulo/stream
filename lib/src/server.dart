@@ -322,7 +322,7 @@ abstract class StreamServer {
    * If the [connect] argument is null, it means it is a server error.
    * If not null, it means it is caused by an event handler or an event filter.
    */
-  void onError(void onError(HttpConnect connect, err, [stackTrace]));
+  void onError(void onError(HttpConnect connect, error, [stackTrace]));
 
   /** Maps the given URI to the given handler.
    *

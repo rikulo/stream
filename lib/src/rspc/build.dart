@@ -5,18 +5,22 @@ part of stream_rspc;
 
 /** Compiles the given [source] RSP document to the given output stream [out].
  * Notice that the caller has to close the output stream by himself.
+ *
+ * * [imports] - additional imported packages, such as `["package:foo/foo.dart"]`.
  */
 void compile(String source, IOSink out, {String sourceName, String destinationName,
-    Encoding encoding: Encoding.UTF_8, bool verbose: false}) {
+    Encoding encoding: Encoding.UTF_8, bool verbose: false, List<String> imports}) {
   new Compiler(source, out, sourceName: sourceName, destinationName: destinationName,
-      encoding: encoding, verbose: verbose).compile();
+      encoding: encoding, verbose: verbose, imports: imports).compile();
 }
 
 /** Compiles the RSP document of the given [sourceName] and write the result to
  * the file of given [destinationName].
+ *
+ * * [imports] - additional imported packages, such as `["package:foo/foo.dart"]`.
  */
 void compileFile(String sourceName, {String destinationName, bool verbose : false, 
-    Encoding encoding : Encoding.UTF_8}) {
+    Encoding encoding : Encoding.UTF_8, List<String> imports}) {
   final source = new File(sourceName);
   if (!source.existsSync()) {
     print("File not found: ${sourceName}");
@@ -48,7 +52,7 @@ void compileFile(String sourceName, {String destinationName, bool verbose : fals
     try {
       compile(text, out, sourceName: sourceName,
           destinationName: _unipath(dest.path), //force to use '/' even in Windows
-          encoding: encoding, verbose: verbose);
+          encoding: encoding, verbose: verbose, imports: imports);
     } on SyntaxError catch (e) {
       print("${e.message}\nCompilation aborted.");
     } finally {
@@ -97,9 +101,10 @@ File _locate(String flnm) {
  * * [filenameMapper] - returns the filename of the destination file, which
  * must end with `.dart`. If omitted, it will be generated under the `webapp`
  * folder with the same path structure.
+ * * [imports] - additional imported packages, such as `["package:foo/foo.dart"]`.
  */
 void build(List<String> arguments, {String filenameMapper(String source),
-    Encoding encoding: Encoding.UTF_8}) {
+    Encoding encoding: Encoding.UTF_8, List<String> imports}) {
   final ArgParser argParser = new ArgParser()
     ..addOption("changed", allowMultiple: true)
     ..addOption("removed", allowMultiple: true)
@@ -122,7 +127,8 @@ void build(List<String> arguments, {String filenameMapper(String source),
     Directory.current.list(recursive: true).listen((fse) {
       if (fse is File && _rspSource(fse.path) >= 0)
         compileFile(fse.path, encoding: encoding,
-          destinationName: filenameMapper != null ? filenameMapper(fse.path): null);
+          destinationName: filenameMapper != null ? filenameMapper(fse.path): null,
+          imports: imports);
     });
 
   } else {
@@ -138,7 +144,8 @@ void build(List<String> arguments, {String filenameMapper(String source),
     for (String name in changed) {
       if (_rspSource(name) >= 0)
         compileFile(name, encoding: encoding,
-          destinationName: filenameMapper != null ? filenameMapper(name): null);
+          destinationName: filenameMapper != null ? filenameMapper(name): null,
+          imports: imports);
     }
   }
 }

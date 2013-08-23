@@ -1,5 +1,10 @@
 #CHANGES
 
+**0.8.3**
+
+* Issue 49: RSP: Able to generate additional imported packages without specifying them in each RSP file
+* Issue 48: RSP: A tag to simplify the implementation of custom tags s.t. dev needs to implement a closure only
+
 **0.8.2**
 
 * Channel, HttpChannel and SocketChannel are merged into HttpChannel

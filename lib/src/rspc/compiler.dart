@@ -15,6 +15,7 @@ class Compiler {
   final bool verbose;
   //the closure's partOf, import, name, args...
   String _partOf, _parts, _import, _name, _args, _desc, _contentType, _dart;
+  final List<String> _defImports;
   final List<_TagContext> _tagCtxs = [];
   _TagContext _current;
   //The position, length and _line of the source
@@ -28,8 +29,9 @@ class Compiler {
 
   Compiler(String source, this.destination, {
       this.sourceName, this.destinationName, this.encoding:Encoding.UTF_8,
-      this.verbose: false}):
-      this.source = source.replaceAll("\r\n", "\n") {
+      this.verbose: false, List<String> imports}):
+      this.source = source.replaceAll("\r\n", "\n"),
+      this._defImports = imports {
         //to Unix format since _write assumes it
     _tagCtxs.add(_current = new _TagContext.root(this, destination));
     _len = this.source.length;
@@ -71,7 +73,7 @@ class Compiler {
           started = true;
           _start(prevln); //use previous line number since it could be multiple lines
         }
-        _outText(text, prevln);
+        outText(_current, text, prevln);
       } else {
         if (!started) {
           started = true;
@@ -164,6 +166,8 @@ class Compiler {
 
     final imports = new LinkedHashSet.from(
       const ["dart:async", "dart:io", "package:stream/stream.dart"]);
+    if (_defImports != null)
+      imports.addAll(_defImports);
     if (_import != null)
       for (String imp in _import.split(',')) {
         imp = imp.trim();
@@ -325,18 +329,8 @@ class Compiler {
   //Concatenates arguments
   void _catArgs(Map args) {
     if (args != null && !args.isEmpty) {
-      _write(", {");
-      bool first = true;
-      for (final arg in args.keys) {
-        if (first) first = false;
-        else _write(", ");
-
-        _write("'");
-        _write(arg);
-        _write("': ");
-        _write(toEL(args[arg])); //Rsp.cat can handle nob-string value
-      }
-      _write("}");
+      _write(", ");
+      outMap(_current, args);
     }
   }
   void _outArgs(Map args) {
@@ -543,32 +537,6 @@ class Compiler {
   }
 
   //Utilities//
-  void _outText(String text, [int line]) {
-    if (text.isEmpty)
-      return; //nothing to do
-
-    _write('\n${_current.pre}response.write("""');
-
-    for (int i = 0, len = text.length; i < len; ++i) {
-      final cc = text[i];
-      if (i == 0 && cc == '\n') {
-        _write('\n'); //first linefeed is ignored, so we have add one more
-      } else if (cc == '"') {
-        if (i == len - 1) { //end with "
-          _write('\\');
-        } else if (i + 2 < len && text[i + 1] == '"' && text[i + 2] == '"') {
-          _write('""\\');
-          i += 2;
-        }
-      } else if (cc == '\\' || cc == '\$') {
-        _write('\\');
-      }
-      _write(cc);
-    }
-
-    _writeln('"""); //#${line != null ? line: _line}');
-  }
-
   void _outExpr() {
     final expr = _tagData(skipFollowingSpaces: false);
       //1) '/' is NOT a terminal, 2) no skip space for expression

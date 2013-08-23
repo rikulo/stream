@@ -105,7 +105,7 @@ class PageTag extends Tag {
   @override
   void begin(TagContext tc, String data) {
     String partOf, parts, imports, name, desc, args, ctype, lastModified, dart;
-    final attrs = ArgInfo.parse(data);
+    final attrs = parseArgs(data);
     for (final nm in attrs.keys) {
       switch (nm) {
         case "partOf":
@@ -172,7 +172,7 @@ class DartTag extends Tag {
 class HeaderTag extends Tag {
   @override
   void begin(TagContext tc, String data) {
-    final attrs = ArgInfo.parse(data);
+    final attrs = parseArgs(data);
     if (!attrs.isEmpty) {
       tc.write("\n${tc.pre}response.headers");
       bool first = true;
@@ -273,7 +273,7 @@ class ForwardTag extends Tag {
 class VarTag extends Tag {
   @override
   void begin(TagContext tc, String data) {
-    final argInfo = new ArgInfo(tc, data, strFirst: false);
+    final argInfo = new ArgInfo(tc, data, stringFirst: false);
     final parentArgs = tc.parent.args;
     var varnm = tc.data
       = parentArgs != null ? (parentArgs[argInfo.first] = tc.nextVar()): argInfo.first;
@@ -406,7 +406,7 @@ class ScriptTag extends Tag {
   void begin(TagContext tc, String data) {
     String src;
     bool bootstrap = true;
-    final attrs = ArgInfo.parse(data);
+    final attrs = parseArgs(data);
     for (final nm in attrs.keys) {
       switch (nm) {
         case "src":

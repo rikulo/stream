@@ -64,7 +64,7 @@ typedef Future RequestFilter(HttpConnect connect, Future chain(HttpConnect conn)
  *       final info = {"name": "Rikulo Stream", "version": connect.server.version};
  *       connect.response
  *         ..headers.contentType = contentTypes["json"]
- *         ..write(Json.stringify(info));
+ *         ..write(JSON.encode(info));
  *     }
  *
  * On the other hand, if a request is handled asynchronously, it *must* return

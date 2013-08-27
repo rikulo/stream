@@ -7,15 +7,13 @@ library stream;
 import "dart:io";
 import "dart:async";
 import "dart:collection" show HashMap, LinkedHashMap;
-import "dart:json" as Json;
+import "dart:convert" show JSON;
 import 'package:meta/meta.dart';
-import 'package:args/args.dart' show Options;
 import "package:logging/logging.dart" show Logger;
 import 'package:path/path.dart' as Path;
 
 import "package:rikulo_commons/util.dart";
 import "package:rikulo_commons/io.dart";
-import "package:rikulo_commons/async.dart";
 import "package:rikulo_commons/browser.dart";
 
 import "plugin.dart";

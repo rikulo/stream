@@ -4,7 +4,7 @@
 part of stream_rspc;
 
 class _Environ {
-  Encoding encoding = Encoding.UTF_8;
+  Encoding encoding = UTF8;
   bool verbose = false;
   List<String> sources;
 }
@@ -22,7 +22,8 @@ void main() {
 
 bool _parseArgs(_Environ env) {
   final argParser = new ArgParser()
-    ..addOption("encoding", abbr: 'e', help: "Specify character encoding used by source file")
+    ..addOption("encoding", abbr: 'e',
+      help: "Specify character encoding used by source file, such as utf-8, ascii and latin-1")
     ..addFlag("help", abbr: 'h', negatable: false, help: "Display this message")
     ..addFlag("verbose", abbr: 'v', negatable: false, help: "Enable verbose output")
     ..addFlag("version", negatable: false, help: "Version information");
@@ -44,13 +45,14 @@ bool _parseArgs(_Environ env) {
   if (val != null)
     switch (val.toLowerCase()) {
       case 'ascii':
-        env.encoding = Encoding.ASCII;
+        env.encoding = ASCII;
         break;
       case 'utf-8':
-        env.encoding = Encoding.UTF_8;
+        env.encoding = UTF8;
         break;
       case 'iso-8859-1':
-        env.encoding = Encoding.ISO_8859_1;
+      case 'latin-1':
+        env.encoding = LATIN1;
         break;
       default:
         print("Unknown encoding: $val");

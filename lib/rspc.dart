@@ -6,6 +6,7 @@
 library stream_rspc;
 
 import "dart:io";
+import "dart:convert";
 import "dart:collection";
 import 'package:meta/meta.dart';
 import "package:args/args.dart";

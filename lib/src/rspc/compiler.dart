@@ -28,7 +28,7 @@ class Compiler {
   int _nextVar = 0; //used to implement TagContext.nextVar()
 
   Compiler(String source, this.destination, {
-      this.sourceName, this.destinationName, this.encoding:Encoding.UTF_8,
+      this.sourceName, this.destinationName, this.encoding: UTF8,
       this.verbose: false, List<String> imports}):
       this.source = source.replaceAll("\r\n", "\n"),
       this._defImports = imports {

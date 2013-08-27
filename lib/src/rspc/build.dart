@@ -9,7 +9,7 @@ part of stream_rspc;
  * * [imports] - additional imported packages, such as `["package:foo/foo.dart"]`.
  */
 void compile(String source, IOSink out, {String sourceName, String destinationName,
-    Encoding encoding: Encoding.UTF_8, bool verbose: false, List<String> imports}) {
+    Encoding encoding: UTF8, bool verbose: false, List<String> imports}) {
   new Compiler(source, out, sourceName: sourceName, destinationName: destinationName,
       encoding: encoding, verbose: verbose, imports: imports).compile();
 }
@@ -20,7 +20,7 @@ void compile(String source, IOSink out, {String sourceName, String destinationNa
  * * [imports] - additional imported packages, such as `["package:foo/foo.dart"]`.
  */
 void compileFile(String sourceName, {String destinationName, bool verbose : false, 
-    Encoding encoding : Encoding.UTF_8, List<String> imports}) {
+    Encoding encoding : UTF8, List<String> imports}) {
   final source = new File(sourceName);
   if (!source.existsSync()) {
     print("File not found: ${sourceName}");
@@ -104,7 +104,7 @@ File _locate(String flnm) {
  * * [imports] - additional imported packages, such as `["package:foo/foo.dart"]`.
  */
 void build(List<String> arguments, {String filenameMapper(String source),
-    Encoding encoding: Encoding.UTF_8, List<String> imports}) {
+    Encoding encoding: UTF8, List<String> imports}) {
   final ArgParser argParser = new ArgParser()
     ..addOption("changed", allowMultiple: true)
     ..addOption("removed", allowMultiple: true)

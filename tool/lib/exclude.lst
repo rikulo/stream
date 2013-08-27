@@ -7,6 +7,7 @@ metadata
 options
 path
 rikulo_async
+rikulo_convert
 rikulo_io
 rikulo_mirrors
 rikulo_util

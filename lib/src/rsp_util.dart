@@ -99,7 +99,7 @@ class Rsp {
   }
 
   /** Serializes the given object into a JSON string by use of
-   * [stringify](http://api.dartlang.org/docs/releases/latest/dart_json.html#stringify).
+   * [JSON.encode](http://api.dartlang.org/docs/releases/latest/dart_convert.html#JSON).
    */
   static String json(data) => JSON.encode(data).replaceAll(_scriptPtn, "<\\/");
   static final RegExp _scriptPtn = new RegExp(r"</(?=script>)", caseSensitive: false);

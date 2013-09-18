@@ -5,7 +5,6 @@ library syntax_rsp;
 import 'dart:async';
 import 'dart:io';
 import 'package:stream/stream.dart';
-import 'dart:collection' show LinkedHashMap;
 
 var someExternal = 123;
 

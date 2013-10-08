@@ -8,7 +8,7 @@ typedef void _ConnectErrorCallback(HttpConnect connect, err, [stackTrace]);
 
 class _StreamServer implements StreamServer {
   @override
-  final String version = "0.8.3";
+  final String version = "0.8.4";
   @override
   final Logger logger;
 

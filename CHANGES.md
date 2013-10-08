@@ -1,5 +1,9 @@
 #CHANGES
 
+**0.8.4**
+
+* Issue 52: FileLoader shall support ETag and caching
+
 **0.8.3**
 
 * Issue 49: RSP: Able to generate additional imported packages without specifying them in each RSP file

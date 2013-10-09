@@ -96,7 +96,8 @@ bool _setHeaders(HttpConnect connect, File file,
     }
   }
 
-  if (connect.request.method == "HEAD")
+  if (connect.request.method == "HEAD"
+  || connect.response.statusCode >= HttpStatus.BAD_REQUEST) //error
     return false; //no more processing
 
   if (range != null) {
@@ -138,26 +139,25 @@ class _Range {
     } else {
       end = end == null ? filesize: end + 1; //from inclusive to exclusive
     }
-    if (start < 0) start = 0;
-    if (start > filesize) start = filesize;
-    if (end < start) end = start;
-    if (end > filesize) end = filesize;
     return new _Range._(start, end, end - start);
   }
   _Range._(this.start, this.end, this.length);
+
+  bool validate(int filesize)
+  => start >= 0 && length >= 0 && end <= filesize;
 }
 
 _Range _parseRange(HttpConnect connect, int filesize) {
   //TODO: handle If-Range
   //TODO: handle multiple ranges (mutlipart/byteranges; boundary=...)
 
-  final String range = connect.request.headers.value("range");
-  if (range == null)
+  final String rangeValue = connect.request.headers.value("range");
+  if (rangeValue == null)
     return null;
 
-  final Match matches = _reRange.firstMatch(range);
+  final Match matches = _reRange.firstMatch(rangeValue);
   if (matches == null)
-    return _badRequest(connect);
+    return _rangeError(connect, HttpStatus.BAD_REQUEST);
 
   final List<int> values = new List(2);
   for (int i = 0; i < 2; ++i) {
@@ -166,12 +166,18 @@ _Range _parseRange(HttpConnect connect, int filesize) {
       try {
         values[i] = int.parse(match);
       } catch (ex) {
-        return _badRequest(connect);
+        return _rangeError(connect, HttpStatus.BAD_REQUEST);
       }
   }
-  return new _Range(values[0], values[1], filesize);
+
+  final _Range range = new _Range(values[0], values[1], filesize);
+  if (!range.validate(filesize)) {
+    connect.response.headers.set(HttpHeaders.CONTENT_RANGE, "bytes */$filesize");
+    return _rangeError(connect, HttpStatus.REQUESTED_RANGE_NOT_SATISFIABLE);
+  }
+  return range;
 }
-_badRequest(HttpConnect connect) {
-  connect.response.statusCode = HttpStatus.BAD_REQUEST;
+_rangeError(HttpConnect connect, int code) {
+  connect.response.statusCode = code;
 }
-final RegExp _reRange = new RegExp(r"^bytes=(\d*)\-(\d*)$");
+final RegExp _reRange = new RegExp(r"^bytes=(\d*)\-(\d*)");

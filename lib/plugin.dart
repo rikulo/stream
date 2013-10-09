@@ -20,3 +20,4 @@ import "stream.dart";
 part "src/plugin/configurer.dart";
 part "src/plugin/router.dart";
 part "src/plugin/loader.dart";
+part "src/plugin/loader_impl.dart";

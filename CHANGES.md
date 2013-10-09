@@ -2,6 +2,7 @@
 
 **0.8.4**
 
+* Issue 51: FileLoader shall support partial content, aka., range
 * Issue 52: FileLoader shall support ETag and caching
 
 **0.8.3**

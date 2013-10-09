@@ -22,11 +22,20 @@ abstract class ResourceLoader {
 /** A file cache. It is used by [FileLoader].
  */
 abstract class FileCache {
-  ///The value of the etag header, or null if not available.
-  String get etag;
+  /** Returns the value of the ETag header. If null is returned, ETag header
+   * won't be generated.
+   */
+  String getETag(DateTime lastModified, int filesize);
+  /** Returns the duration for the Expires and max-age headers.
+   * If null is returned, the Expires and max-age headers won't be generated.
+   */
+  Duration getExpires(File file);
 
-  ///Whether a file shall be cached with the given filesize.
-  bool shallCache(int filesize);
+  /** Whether the given file shall be cached.
+   *
+   * * [filesize] - the size of [file] in bytes.
+   */
+  bool shallCache(File file, int filesize);
   ///Returns the content of file, or null if not cached or expires (unit: bytes) .
   List<int> getContent(File file, DateTime lastModified);
   ///Stores the content of the file (unit: bytes) into the cache.
@@ -42,18 +51,47 @@ class FileLoader implements ResourceLoader {
 
   @override
   final String rootDir;
-  ///The value of the etag header. Ignored if null (default).
-  String etag;
 
   /** The total cache size (unit: bytes). Default: 2 * 1024 * 1024.
    * Note: [cacheSize] must be larger than [cacheThreshold].
    * Otherwise, result is unpreditable.
    */
   int cacheSize = 2 * 1024 * 1024;
-  ///The threadhold (unit: bytes) to cache. Only files less than this size
+  ///The thread hold (unit: bytes) to cache. Only files less than this size
   ///will be cached. Default: 96 * 1024.
   int cacheThreshold = 96 * 1024;
   FileCache _cache;
+
+  ///Whether to generate the ETag header. Default: true.
+  bool useETag = true;
+  ///Whether to generate the Expires and max-age headers. Default: true.
+  bool useExpires = true;
+
+  /** Returns the value of the ETag header.
+   * If null is returned, ETag header won't be generated.
+   *
+   * Default: a string combining [lastModified] and [filesize]
+   * if [useEtag] is true.
+   * You can override this method if necessary.
+   */
+  String getETag(DateTime lastModified, int filesize)
+  => useETag ? 'W/"$filesize-${lastModified.millisecondsSinceEpoch}"': null;
+  /** Returns the duration for the Expires and max-age headers.
+   * If null is returned, the Expires and max-age headers won't be generated.
+   *
+   * Default: 30 days if [useExpres] is true.
+   * You can override this method if necessary.
+   */
+  Duration getExpires(File file) => useExpires ? const Duration(days: 30): null;
+
+  /** Whether the given file shall be cached.
+   *
+   * Default: it returns true if [filesize] is not greater than [cacheThreshold].
+   * You override this method if necessary.
+   *
+   * * [filesize] - the size of [file] in bytes.
+   */
+  bool shallCache(File file, int filesize) => filesize <= cacheThreshold;
 
   @override
   Future load(HttpConnect connect, String uri) {
@@ -73,67 +111,6 @@ class FileLoader implements ResourceLoader {
   }
 }
 
-class _CacheEntry {
-  final List<int> content;
-  final int filesize;
-  final DateTime lastModified;
-
-  _CacheEntry(this.content, this.lastModified, this.filesize);
-}
-
-class _FileCache implements FileCache {
-  final FileLoader _loader;
-  final Map<String, _CacheEntry> _cache = new LinkedHashMap();
-  int _cacheSize = 0;
-
-  _FileCache(this._loader);
-
-  @override
-  bool shallCache(int filesize) => filesize <= _loader.cacheThreshold;
-  @override
-  String get etag => _loader.etag;
-  @override
-  List<int> getContent(File file, DateTime lastModified) {
-    final String path = file.path;
-    final _CacheEntry entry = _cache[path];
-    if (entry != null) {
-      if (entry.lastModified == lastModified)
-        return entry.content;
-
-      _cache.remove(path);
-      _cacheSize -= entry.filesize;
-    }
-  }
-  @override
-  void setContent(File file, DateTime lastModified, List<int> content) {
-    final int filesize = content.length;
-    if (shallCache(filesize)) {
-      final String path = file.path;
-      final _CacheEntry entry = _cache[path];
-      _cache[path] = new _CacheEntry(content, lastModified, filesize);
-      _cacheSize += filesize;
-      if (entry != null)
-        _cacheSize -= entry.filesize;
-
-      //reduce the cache's size if necessary
-      while (_cacheSize > _loader.cacheSize)
-        _cacheSize -= _cache.remove(_cache.keys.first).filesize;
-    }
-  }
-}
-
-Future _loadFileAt(HttpConnect connect, String uri, String dir,
-    List<String> names, int j, [FileCache cache]) {
-  if (j >= names.length)
-    throw new Http404(uri);
-
-  final File file = new File(Path.join(dir, names[j]));
-  return file.exists().then((exists) {
-    return exists ? loadFile(connect, file, cache):
-      _loadFileAt(connect, uri, dir, names, j + 1, cache);
-  });
-}
-
 /** Loads a file into the given response.
  * Notice that this method assumes the file exists.
  */
@@ -149,53 +126,40 @@ Future loadFile(HttpConnect connect, File file, [FileCache cache]) {
   }
 
   return file.lastModified().then((DateTime lastModified) {
+    _Range range;
     if (cache != null) {
       final List<int> content = cache.getContent(file, lastModified);
       if (content != null) {
-        if (!isIncluded)
-          _setHeaders(connect, lastModified, content.length, cache.etag);
-        connect.response.add(content);
+        final int filesize = content.length;
+        if (!isIncluded) {
+          range = _parseRange(connect, filesize);
+          if (!_setHeaders(connect, file, lastModified, filesize, cache, range))
+            return; //done
+        }
+
+        connect.response.add(
+          range != null && range.length != filesize ?
+            content.sublist(range.start, range.end): content);
         return;
       }
     }
 
     return file.length().then((int filesize) {
-      if (!isIncluded)
-        _setHeaders(connect, lastModified, filesize, cache != null ? cache.etag: null);
+      if (!isIncluded) {
+        range = _parseRange(connect, filesize);
+        if (!_setHeaders(connect, file, lastModified, filesize, cache, range))
+          return; //done
+      }
 
-      if (cache != null && cache.shallCache(filesize))
+      if (cache != null && cache.shallCache(file, filesize))
         return file.readAsBytes().then((List<int> content) {
           cache.setContent(file, lastModified, content);
           connect.response.add(content);
         });
 
-      return connect.response.addStream(file.openRead()); //returns Future<HttpResponse>
+      return connect.response.addStream(
+        range != null && range.length != filesize ? 
+          file.openRead(range.start, range.end): file.openRead());
     });
   });
 }
-
-void _setHeaders(HttpConnect connect, DateTime lastModified, int filesize,
-    String etag) {
-  connect.response.contentLength = filesize;
-
-  final HttpHeaders headers = connect.response.headers;
-  headers
-      ..set(HttpHeaders.LAST_MODIFIED, lastModified)
-      ..set(HttpHeaders.ETAG, etag != null ?
-        etag: 'W/"$filesize-${lastModified.millisecondsSinceEpoch}"');
-
-  if (connect.server.chunkedTransferEncoding
-  && _isTextType(headers.contentType)) //we compress only text files
-    headers.chunkedTransferEncoding = true;
-}
-
-bool _isTextType(ContentType ctype) {
-  String ptype;
-  return ctype == null || (ptype = ctype.primaryType) == "text"
-    || (ptype == "application" && _textSubtypes.containsKey(ctype.subType));
-}
-final _textSubtypes = const<String, bool> {
-  "json": true, "javascript": true, "dart": true, "xml": true,
-  "xhtml+xml": true, "xslt+xml": true,  "rss+xml": true,
-  "atom+xml": true, "mathml+xml": true, "svg+xml": true
-};

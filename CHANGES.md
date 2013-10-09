@@ -1,9 +1,13 @@
 #CHANGES
 
+**0.8.5**
+
+* Issue 53: FileLoader supports multipart range output
+
 **0.8.4**
 
-* Issue 51: FileLoader shall support partial content, aka., range
-* Issue 52: FileLoader shall support ETag and caching
+* Issue 51: FileLoader supports partial content, aka., range
+* Issue 52: FileLoader supports ETag and caching
 
 **0.8.3**
 

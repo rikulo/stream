@@ -115,51 +115,47 @@ class FileLoader implements ResourceLoader {
  * Notice that this method assumes the file exists.
  */
 Future loadFile(HttpConnect connect, File file, [FileCache cache]) {
+  final HttpResponse response = connect.response;
   final bool isIncluded = connect.isIncluded;
+  ContentType contentType;
   if (!isIncluded) {
     final ext = Path.extension(file.path);
     if (!ext.isEmpty) {
-      final ctype = contentTypes[ext.substring(1)];
-      if (ctype != null)
-        connect.response.headers.contentType = ctype;
+      contentType = contentTypes[ext.substring(1)];
+      if (contentType != null)
+        response.headers.contentType = contentType;
     }
   }
 
   return file.lastModified().then((DateTime lastModified) {
-    _Range range;
+    List<_Range> ranges;
     if (cache != null) {
       final List<int> content = cache.getContent(file, lastModified);
       if (content != null) {
         final int filesize = content.length;
         if (!isIncluded) {
-          range = _parseRange(connect, filesize);
-          if (!_setHeaders(connect, file, lastModified, filesize, cache, range))
+          ranges = _parseRange(connect, filesize);
+          if (!_setHeaders(connect, file, lastModified, filesize, cache, ranges))
             return; //done
         }
-
-        connect.response.add(
-          range != null && range.length != filesize ?
-            content.sublist(range.start, range.end): content);
-        return;
+        return _outContentInRanges(response, ranges, contentType, content);
       }
     }
 
     return file.length().then((int filesize) {
       if (!isIncluded) {
-        range = _parseRange(connect, filesize);
-        if (!_setHeaders(connect, file, lastModified, filesize, cache, range))
+        ranges = _parseRange(connect, filesize);
+        if (!_setHeaders(connect, file, lastModified, filesize, cache, ranges))
           return; //done
       }
 
       if (cache != null && cache.shallCache(file, filesize))
         return file.readAsBytes().then((List<int> content) {
           cache.setContent(file, lastModified, content);
-          connect.response.add(content);
+          return _outContentInRanges(response, ranges, contentType, content);
         });
 
-      return connect.response.addStream(
-        range != null && range.length != filesize ? 
-          file.openRead(range.start, range.end): file.openRead());
+      return _outFileInRanges(response, ranges, contentType, file, filesize);
     });
   });
 }

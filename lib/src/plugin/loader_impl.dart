@@ -76,10 +76,9 @@ Future _loadFileAt(HttpConnect connect, String uri, String dir,
 ///Returns false if no need to send the content
 bool _setHeaders(HttpConnect connect, File file,
     DateTime lastModified, int filesize,
-    FileCache cache, _Range range) {
-  connect.response.contentLength = range != null ? range.length: filesize;
-
-  final HttpHeaders headers = connect.response.headers;
+    FileCache cache, List<_Range> ranges) {
+  final HttpResponse response = connect.response;
+  final HttpHeaders headers = response.headers;
   headers
       ..set(HttpHeaders.ACCEPT_RANGES, "bytes")
       ..set(HttpHeaders.LAST_MODIFIED, lastModified);
@@ -97,13 +96,21 @@ bool _setHeaders(HttpConnect connect, File file,
   }
 
   if (connect.request.method == "HEAD"
-  || connect.response.statusCode >= HttpStatus.BAD_REQUEST) //error
+  || response.statusCode >= HttpStatus.BAD_REQUEST) //error
     return false; //no more processing
 
-  if (range != null) {
-    connect.response.statusCode = HttpStatus.PARTIAL_CONTENT;
-    headers.set(HttpHeaders.CONTENT_RANGE,
-      "bytes ${range.start}-${range.end - 1}/$filesize");
+  if (ranges == null) {
+    response.contentLength = filesize;
+  } else {
+    response.statusCode = HttpStatus.PARTIAL_CONTENT;
+    if (ranges.length == 1) {
+      final _Range range = ranges[0];
+      response.contentLength = range.length;
+      headers.set(HttpHeaders.CONTENT_RANGE,
+        "bytes ${range.start}-${range.end - 1}/$filesize");
+    } else {
+      headers.contentType = _multipartBytesType;
+    }
   }
 
   if (connect.server.chunkedTransferEncoding
@@ -147,37 +154,123 @@ class _Range {
   => start >= 0 && length >= 0 && end <= filesize;
 }
 
-_Range _parseRange(HttpConnect connect, int filesize) {
+List<_Range> _parseRange(HttpConnect connect, int filesize) {
   //TODO: handle If-Range
-  //TODO: handle multiple ranges (mutlipart/byteranges; boundary=...)
 
-  final String rangeValue = connect.request.headers.value("range");
-  if (rangeValue == null)
+  final String srange = connect.request.headers.value("range");
+  if (srange == null)
     return null;
+  if (!srange.startsWith("bytes="))
+    return _rangeError(connect);
 
-  final Match matches = _reRange.firstMatch(rangeValue);
-  if (matches == null)
-    return _rangeError(connect, HttpStatus.BAD_REQUEST);
+  List<_Range> ranges = [];
+  for (int i = 6;;) {
+    final int j = srange.indexOf(',', i);
+    final Match matches = _reRange.firstMatch(
+      j >= 0 ? srange.substring(i, j): srange.substring(i));
+    if (matches == null)
+      return _rangeError(connect);
 
-  final List<int> values = new List(2);
-  for (int i = 0; i < 2; ++i) {
-    final match = matches[i + 1];
-    if (!match.isEmpty)
-      try {
-        values[i] = int.parse(match);
-      } catch (ex) {
-        return _rangeError(connect, HttpStatus.BAD_REQUEST);
-      }
+    final List<int> values = new List(2);
+    for (int i = 0; i < 2; ++i) {
+      final match = matches[i + 1];
+      if (!match.isEmpty)
+        try {
+          values[i] = int.parse(match);
+        } catch (ex) {
+          return _rangeError(connect);
+        }
+    }
+
+    final _Range range = new _Range(values[0], values[1], filesize);
+    if (!range.validate(filesize)) {
+      connect.response.headers.set(HttpHeaders.CONTENT_RANGE, "bytes */$filesize");
+      return _rangeError(connect, HttpStatus.REQUESTED_RANGE_NOT_SATISFIABLE);
+    }
+    ranges.add(range);
+
+    if (j < 0)
+      break;
+    i = j + 1;
   }
-
-  final _Range range = new _Range(values[0], values[1], filesize);
-  if (!range.validate(filesize)) {
-    connect.response.headers.set(HttpHeaders.CONTENT_RANGE, "bytes */$filesize");
-    return _rangeError(connect, HttpStatus.REQUESTED_RANGE_NOT_SATISFIABLE);
-  }
-  return range;
+  if (ranges.isEmpty)
+    return _rangeError(connect);
+  return ranges;
 }
-_rangeError(HttpConnect connect, int code) {
+_rangeError(HttpConnect connect, [int code = HttpStatus.BAD_REQUEST]) {
   connect.response.statusCode = code;
 }
-final RegExp _reRange = new RegExp(r"^bytes=(\d*)\-(\d*)");
+final RegExp _reRange = new RegExp(r"(\d*)\-(\d*)");
+
+typedef Future _WriteRange(_Range range);
+class _RangeWriter {
+  final HttpResponse response;
+  final List<_Range> ranges;
+  final String contentType;
+  final int filesize;
+  final _WriteRange output;
+
+  _RangeWriter(this.response, this.ranges, ContentType contentType,
+    this.filesize, this.output): this.contentType = contentType != null ?
+      "${HttpHeaders.CONTENT_TYPE}: ${contentType}": null;
+
+  Future write([int j = 0]) {
+    if (j >= ranges.length) { //no more
+      response
+        ..writeln()
+        ..writeln(_MIME_BOUNDARY_END);
+      return null; //done
+    }
+
+    response
+      ..writeln()
+      ..writeln(_MIME_BOUNDARY_BEGIN);
+    if (contentType != null)
+      response.writeln(contentType);
+
+    final _Range range = ranges[j];
+    response
+      ..writeln("${HttpHeaders.CONTENT_RANGE}: bytes ${range.start}-${range.end - 1}/$filesize")
+      ..writeln();
+    return output(range).then((_) => write(j + 1));
+  }
+}
+
+Future _outContentInRanges(HttpResponse response, List<_Range> ranges,
+    ContentType contentType, List<int> content) {
+  final int filesize = content.length;
+  if (ranges == null || ranges.length == 1) {
+    final _Range range = ranges != null ? ranges[0]: null;
+    response.add(
+      range != null && range.length != filesize ?
+        content.sublist(range.start, range.end): content);
+  } else {
+    return new _RangeWriter(response, ranges, contentType, filesize,
+      (_Range range) {
+        response.add(content.sublist(range.start, range.end));
+        return new Future.value();
+      }).write();
+  }
+}
+
+Future _outFileInRanges(HttpResponse response, List<_Range> ranges,
+    ContentType contentType, File file, int filesize) {
+  if (ranges == null || ranges.length == 1) {
+    final _Range range = ranges != null ? ranges[0]: null;
+    return response.addStream(
+      range != null && range.length != filesize ? 
+        file.openRead(range.start, range.end): file.openRead());
+  } else {
+    return new _RangeWriter(response, ranges, contentType, filesize,
+        (_Range range)
+        => response.addStream(file.openRead(range.start, range.end)))
+      .write();
+  }
+}
+
+//the boundary used for multipart output
+const String _MIME_BOUNDARY = "STREAM_MIME_BOUNDARY";
+const String _MIME_BOUNDARY_BEGIN = "--$_MIME_BOUNDARY";
+const String _MIME_BOUNDARY_END = "--$_MIME_BOUNDARY--";
+final ContentType _multipartBytesType =
+  ContentType.parse("multipart/byteranges; boundary=$_MIME_BOUNDARY");

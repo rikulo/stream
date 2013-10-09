@@ -28,7 +28,7 @@ abstract class FileCache {
   ///Whether a file shall be cached with the given filesize.
   bool shallCache(int filesize);
   ///Returns the content of file, or null if not cached or expires (unit: bytes) .
-  List<int> getContent(File file, DateTime lastModified, int filesize);
+  List<int> getContent(File file, DateTime lastModified);
   ///Stores the content of the file (unit: bytes) into the cache.
   void setContent(File file, DateTime lastModified, List<int> content);
 }
@@ -45,14 +45,14 @@ class FileLoader implements ResourceLoader {
   ///The value of the etag header. Ignored if null (default).
   String etag;
 
-  /** The total cache size (unit: bytes). Default: 500KB.
+  /** The total cache size (unit: bytes). Default: 2 * 1024 * 1024.
    * Note: [cacheSize] must be larger than [cacheThreshold].
    * Otherwise, result is unpreditable.
    */
-  int cacheSize = 500 * 1024;
+  int cacheSize = 2 * 1024 * 1024;
   ///The threadhold (unit: bytes) to cache. Only files less than this size
-  ///will be cached. Default: 50KB.
-  int cacheThreshold = 50 * 1024;
+  ///will be cached. Default: 96 * 1024.
+  int cacheThreshold = 96 * 1024;
   FileCache _cache;
 
   @override
@@ -62,15 +62,13 @@ class FileLoader implements ResourceLoader {
 
     var file = new File(path);
     return file.exists().then((exists) {
-      if (!exists)
-        return new Directory(path).exists();
-      return loadFile(connect, file, _cache);
-    }).then((exists) {
-      if (exists is bool) { //null or other value means done (i.e., returned by loadFile)
+      if (exists)
+        return loadFile(connect, file, _cache);
+      return new Directory(path).exists().then((exists) {
         if (exists)
           return _loadFileAt(connect, uri, path, connect.server.indexNames, 0, _cache);
         throw new Http404(uri);
-      }
+      });
     });
   }
 }
@@ -95,11 +93,11 @@ class _FileCache implements FileCache {
   @override
   String get etag => _loader.etag;
   @override
-  List<int> getContent(File file, DateTime lastModified, int filesize) {
+  List<int> getContent(File file, DateTime lastModified) {
     final String path = file.path;
     final _CacheEntry entry = _cache[path];
     if (entry != null) {
-      if (entry.filesize == filesize && entry.lastModified == lastModified)
+      if (entry.lastModified == lastModified)
         return entry.content;
 
       _cache.remove(path);
@@ -140,48 +138,55 @@ Future _loadFileAt(HttpConnect connect, String uri, String dir,
  * Notice that this method assumes the file exists.
  */
 Future loadFile(HttpConnect connect, File file, [FileCache cache]) {
-  final headers = connect.response.headers;
   final bool isIncluded = connect.isIncluded;
   if (!isIncluded) {
-    final ctype = contentTypes[Path.extension(file.path)];
-    if (ctype != null)
-      headers.contentType = ctype;
+    final ext = Path.extension(file.path);
+    if (!ext.isEmpty) {
+      final ctype = contentTypes[ext.substring(1)];
+      if (ctype != null)
+        connect.response.headers.contentType = ctype;
+    }
   }
 
-  int filesize;
-  return file.length().then((_) {
-    filesize = _;
-    if (!isIncluded)
-      connect.response.contentLength = filesize;
-    return file.lastModified();
-  }).then((DateTime lastModified) {
-    if (!isIncluded) {
-      headers
-        ..set(HttpHeaders.LAST_MODIFIED, lastModified)
-        ..set(HttpHeaders.ETAG, cache != null && cache.etag != null ?
-          cache.etag: 'W/"$filesize-${lastModified.millisecondsSinceEpoch}"');
-
-      if (connect.server.chunkedTransferEncoding
-      && _isTextType(headers.contentType)) //we compress only text files
-        headers.chunkedTransferEncoding = true;
-    }
-
+  return file.lastModified().then((DateTime lastModified) {
     if (cache != null) {
-      final List<int> content = cache.getContent(file, lastModified, filesize);
+      final List<int> content = cache.getContent(file, lastModified);
       if (content != null) {
+        if (!isIncluded)
+          _setHeaders(connect, lastModified, content.length, cache.etag);
         connect.response.add(content);
         return;
       }
+    }
 
-      if (cache.shallCache(filesize))
+    return file.length().then((int filesize) {
+      if (!isIncluded)
+        _setHeaders(connect, lastModified, filesize, cache != null ? cache.etag: null);
+
+      if (cache != null && cache.shallCache(filesize))
         return file.readAsBytes().then((List<int> content) {
           cache.setContent(file, lastModified, content);
           connect.response.add(content);
         });
-    }
 
-    return _loadFile(connect, file);
+      return connect.response.addStream(file.openRead()); //returns Future<HttpResponse>
+    });
   });
+}
+
+void _setHeaders(HttpConnect connect, DateTime lastModified, int filesize,
+    String etag) {
+  connect.response.contentLength = filesize;
+
+  final HttpHeaders headers = connect.response.headers;
+  headers
+      ..set(HttpHeaders.LAST_MODIFIED, lastModified)
+      ..set(HttpHeaders.ETAG, etag != null ?
+        etag: 'W/"$filesize-${lastModified.millisecondsSinceEpoch}"');
+
+  if (connect.server.chunkedTransferEncoding
+  && _isTextType(headers.contentType)) //we compress only text files
+    headers.chunkedTransferEncoding = true;
 }
 
 bool _isTextType(ContentType ctype) {
@@ -194,6 +199,3 @@ final _textSubtypes = const<String, bool> {
   "xhtml+xml": true, "xslt+xml": true,  "rss+xml": true,
   "atom+xml": true, "mathml+xml": true, "svg+xml": true
 };
-
-Future _loadFile(HttpConnect connect, File file)
-=> connect.response.addStream(file.openRead()); //returns Future<HttpResponse>

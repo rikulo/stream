@@ -25,7 +25,7 @@ abstract class FileCache {
   /** Returns the value of the ETag header. If null is returned, ETag header
    * won't be generated.
    */
-  String getETag(DateTime lastModified, int filesize);
+  String getETag(File file, DateTime lastModified, int filesize);
   /** Returns the duration for the Expires and max-age headers.
    * If null is returned, the Expires and max-age headers won't be generated.
    */
@@ -52,14 +52,14 @@ class FileLoader implements ResourceLoader {
   @override
   final String rootDir;
 
-  /** The total cache size (unit: bytes). Default: 2 * 1024 * 1024.
+  /** The total cache size (unit: bytes). Default: 3 * 1024 * 1024.
    * Note: [cacheSize] must be larger than [cacheThreshold].
    * Otherwise, result is unpreditable.
    */
-  int cacheSize = 2 * 1024 * 1024;
+  int cacheSize = 3 * 1024 * 1024;
   ///The thread hold (unit: bytes) to cache. Only files less than this size
-  ///will be cached. Default: 96 * 1024.
-  int cacheThreshold = 96 * 1024;
+  ///will be cached. Default: 128 * 1024.
+  int cacheThreshold = 128 * 1024;
   FileCache _cache;
 
   ///Whether to generate the ETag header. Default: true.
@@ -74,8 +74,8 @@ class FileLoader implements ResourceLoader {
    * if [useEtag] is true.
    * You can override this method if necessary.
    */
-  String getETag(DateTime lastModified, int filesize)
-  => useETag ? 'W/"$filesize-${lastModified.millisecondsSinceEpoch}"': null;
+  String getETag(File file, DateTime lastModified, int filesize)
+  => useETag ? _getETag(lastModified, filesize): null;
   /** Returns the duration for the Expires and max-age headers.
    * If null is returned, the Expires and max-age headers won't be generated.
    *
@@ -128,17 +128,18 @@ Future loadFile(HttpConnect connect, File file, [FileCache cache]) {
   }
 
   return file.lastModified().then((DateTime lastModified) {
+    _FileDetail detail;
     List<_Range> ranges;
     if (cache != null) {
       final List<int> content = cache.getContent(file, lastModified);
       if (content != null) {
-        final int filesize = content.length;
+        detail = new _FileDetail(file, lastModified, content.length, cache);
         if (!isIncluded) {
-          if (!_checkHeaders(connect, lastModified, filesize, cache))
+          if (!_checkHeaders(connect, detail))
             return;
 
-          ranges = _parseRange(connect, filesize);
-          if (!_setHeaders(connect, file, lastModified, filesize, cache, ranges))
+          ranges = _parseRange(connect, detail);
+          if (!_setHeaders(connect, detail, ranges))
             return; //done
         }
         return _outContentInRanges(response, ranges, contentType, content);
@@ -146,12 +147,13 @@ Future loadFile(HttpConnect connect, File file, [FileCache cache]) {
     }
 
     return file.length().then((int filesize) {
+      detail = new _FileDetail(file, lastModified, filesize, cache);
       if (!isIncluded) {
-        if (!_checkHeaders(connect, lastModified, filesize, cache))
+        if (!_checkHeaders(connect, detail))
           return;
 
-        ranges = _parseRange(connect, filesize);
-        if (!_setHeaders(connect, file, lastModified, filesize, cache, ranges))
+        ranges = _parseRange(connect, detail);
+        if (!_setHeaders(connect, detail, ranges))
           return; //done
       }
 

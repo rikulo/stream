@@ -4,6 +4,7 @@
 
 * Issue 53: FileLoader supports multipart/byteranges
 * Issue 54: Support If-Match, If-None-Match, If-Modified-Since and If-Unmodified-Since
+* Issue 55: Support If-Range
 
 **0.8.4**
 

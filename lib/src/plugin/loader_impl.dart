@@ -6,6 +6,22 @@ part of stream_plugin;
 //--- Cache and File Loading ---//
 //--- ---//
 
+class _FileDetail {
+  final File file;
+  final DateTime lastModified;
+  final int filesize;
+  final FileCache cache;
+
+  _FileDetail(this.file, this.lastModified, this.filesize, this.cache);
+
+  //Returns the ETAG value, or null if not available.
+  String get etag
+  => _etag != null ? _etag:
+    (_etag = cache != null ? cache.getETag(file, lastModified, filesize):
+        _getETag(lastModified, filesize));
+  String _etag;
+}
+
 class _CacheEntry {
   final List<int> content;
   final int filesize;
@@ -22,8 +38,8 @@ class _FileCache implements FileCache {
   _FileCache(this._loader);
 
   @override
-  String getETag(DateTime lastModified, int filesize)
-  => _loader.getETag(lastModified, filesize);
+  String getETag(File file, DateTime lastModified, int filesize)
+  => _loader.getETag(file, lastModified, filesize);
   @override
   Duration getExpires(File file)
   => _loader.getExpires(file);
@@ -74,12 +90,11 @@ Future _loadFileAt(HttpConnect connect, String uri, String dir,
 }
 
 ///Returns false if no need to send the content
-bool _checkHeaders(HttpConnect connect, DateTime lastModified, int filesize,
-    FileCache cache) {
+bool _checkHeaders(HttpConnect connect, _FileDetail detail) {
   final HttpResponse response = connect.response;
   final HttpRequest request = connect.request;
   final HttpHeaders rqheaders = request.headers;
-  final String etag = cache != null ? cache.getETag(lastModified, filesize): null;
+  final String etag = detail.etag;
 
   //Check If-Match
   final String ifMatch = rqheaders.value(HttpHeaders.IF_MATCH);
@@ -129,7 +144,7 @@ bool _checkHeaders(HttpConnect connect, DateTime lastModified, int filesize,
   //Check If-Modified-Since
   final DateTime ifModifiedSince = rqheaders.ifModifiedSince;
   if (ifModifiedSince != null
-  && lastModified.isBefore(ifModifiedSince.add(const Duration(seconds: 1)))) {
+  && detail.lastModified.isBefore(ifModifiedSince.add(_ONE_SECOND))) {
     response.statusCode = HttpStatus.NOT_MODIFIED;
     if (etag != null)
       response.headers.set(HttpHeaders.ETAG, etag);
@@ -141,7 +156,7 @@ bool _checkHeaders(HttpConnect connect, DateTime lastModified, int filesize,
   if (value != null) {
     try {
       final DateTime ifUnmodifiedSince = HttpDate.parse(value);
-      if (lastModified.isAfter(ifUnmodifiedSince.add(const Duration(seconds: 1)))) {
+      if (detail.lastModified.isAfter(ifUnmodifiedSince.add(_ONE_SECOND))) {
         response.statusCode = HttpStatus.PRECONDITION_FAILED;
         return false;
       }
@@ -152,23 +167,21 @@ bool _checkHeaders(HttpConnect connect, DateTime lastModified, int filesize,
 }
 
 ///Returns false if no need to send the content
-bool _setHeaders(HttpConnect connect, File file,
-    DateTime lastModified, int filesize,
-    FileCache cache, List<_Range> ranges) {
+bool _setHeaders(HttpConnect connect, _FileDetail detail, List<_Range> ranges) {
   final HttpResponse response = connect.response;
   final HttpHeaders headers = response.headers;
   headers
       ..set(HttpHeaders.ACCEPT_RANGES, "bytes")
-      ..set(HttpHeaders.LAST_MODIFIED, lastModified);
+      ..set(HttpHeaders.LAST_MODIFIED, detail.lastModified);
 
-  if (cache != null) {
-    final String etag = cache.getETag(lastModified, filesize);
+  if (detail.cache != null) {
+    final String etag = detail.etag;
     if (etag != null)
       headers.set(HttpHeaders.ETAG, etag);
-    final Duration dur = cache.getExpires(file);
+    final Duration dur = detail.cache.getExpires(detail.file);
     if (dur != null) {
       headers
-        ..set(HttpHeaders.EXPIRES, lastModified.add(dur))
+        ..set(HttpHeaders.EXPIRES, detail.lastModified.add(dur))
         ..set(HttpHeaders.CACHE_CONTROL, "max-age=${dur.inSeconds}");
     }
   }
@@ -178,14 +191,14 @@ bool _setHeaders(HttpConnect connect, File file,
     return false; //no more processing
 
   if (ranges == null) {
-    response.contentLength = filesize;
+    response.contentLength = detail.filesize;
   } else {
     response.statusCode = HttpStatus.PARTIAL_CONTENT;
     if (ranges.length == 1) {
       final _Range range = ranges[0];
       response.contentLength = range.length;
       headers.set(HttpHeaders.CONTENT_RANGE,
-        "bytes ${range.start}-${range.end - 1}/$filesize");
+        "bytes ${range.start}-${range.end - 1}/${detail.filesize}");
     } else {
       headers.contentType = _multipartBytesType;
     }
@@ -197,6 +210,9 @@ bool _setHeaders(HttpConnect connect, File file,
   return true;
 }
 
+String _getETag(DateTime lastModified, int filesize)
+=> 'W/"$filesize-${lastModified.millisecondsSinceEpoch}"';
+
 bool _isTextType(ContentType ctype) {
   String ptype;
   return ctype == null || (ptype = ctype.primaryType) == "text"
@@ -207,6 +223,7 @@ final _textSubtypes = const<String, bool> {
   "xhtml+xml": true, "xslt+xml": true,  "rss+xml": true,
   "atom+xml": true, "mathml+xml": true, "svg+xml": true
 };
+const Duration _ONE_SECOND = const Duration(seconds: 1);
 
 //--- Range Handling ---//
 //--- ---//
@@ -232,10 +249,22 @@ class _Range {
   => start >= 0 && length >= 0 && end <= filesize;
 }
 
-List<_Range> _parseRange(HttpConnect connect, int filesize) {
-  //TODO: handle If-Range
+List<_Range> _parseRange(HttpConnect connect, _FileDetail detail) {
+  final HttpHeaders rqheaders = connect.request.headers;
+  final String ifRange = rqheaders.value(HttpHeaders.IF_RANGE);
+  if (ifRange != null) {
+    try {
+      if (detail.lastModified.isAfter(HttpDate.parse(ifRange).add(_ONE_SECOND)))
+        return null; //dirty
+    } catch (e) { //ignore it silently
+    }
 
-  final String srange = connect.request.headers.value("range");
+    final String etag = detail.etag;
+    if (etag != null && etag != ifRange.trim())
+      return null; //dirty
+  }
+
+  final String srange = rqheaders.value(HttpHeaders.RANGE);
   if (srange == null)
     return null;
   if (!srange.startsWith("bytes="))
@@ -260,9 +289,10 @@ List<_Range> _parseRange(HttpConnect connect, int filesize) {
         }
     }
 
-    final _Range range = new _Range(values[0], values[1], filesize);
-    if (!range.validate(filesize)) {
-      connect.response.headers.set(HttpHeaders.CONTENT_RANGE, "bytes */$filesize");
+    final _Range range = new _Range(values[0], values[1], detail.filesize);
+    if (!range.validate(detail.filesize)) {
+      connect.response.headers.set(
+          HttpHeaders.CONTENT_RANGE, "bytes */${detail.filesize}");
       return _rangeError(connect, HttpStatus.REQUESTED_RANGE_NOT_SATISFIABLE);
     }
     ranges.add(range);

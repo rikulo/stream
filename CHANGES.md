@@ -2,7 +2,8 @@
 
 **0.8.5**
 
-* Issue 53: FileLoader supports multipart range output
+* Issue 53: FileLoader supports multipart/byteranges
+* Issue 54: Support If-Match, If-None-Match, If-Modified-Since and If-Unmodified-Since
 
 **0.8.4**
 

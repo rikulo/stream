@@ -134,6 +134,9 @@ Future loadFile(HttpConnect connect, File file, [FileCache cache]) {
       if (content != null) {
         final int filesize = content.length;
         if (!isIncluded) {
+          if (!_checkHeaders(connect, lastModified, filesize, cache))
+            return;
+
           ranges = _parseRange(connect, filesize);
           if (!_setHeaders(connect, file, lastModified, filesize, cache, ranges))
             return; //done
@@ -144,6 +147,9 @@ Future loadFile(HttpConnect connect, File file, [FileCache cache]) {
 
     return file.length().then((int filesize) {
       if (!isIncluded) {
+        if (!_checkHeaders(connect, lastModified, filesize, cache))
+          return;
+
         ranges = _parseRange(connect, filesize);
         if (!_setHeaders(connect, file, lastModified, filesize, cache, ranges))
           return; //done

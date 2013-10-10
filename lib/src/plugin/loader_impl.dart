@@ -74,6 +74,84 @@ Future _loadFileAt(HttpConnect connect, String uri, String dir,
 }
 
 ///Returns false if no need to send the content
+bool _checkHeaders(HttpConnect connect, DateTime lastModified, int filesize,
+    FileCache cache) {
+  final HttpResponse response = connect.response;
+  final HttpRequest request = connect.request;
+  final HttpHeaders rqheaders = request.headers;
+  final String etag = cache != null ? cache.getETag(lastModified, filesize): null;
+
+  //Check If-Match
+  final String ifMatch = rqheaders.value(HttpHeaders.IF_MATCH);
+  if (ifMatch != null && ifMatch != "*") {
+    bool matched = false;
+    if (etag != null) {
+      for (final String each in ifMatch.split(',')) {
+        if (each.trim() == etag) {
+          matched = true;
+          break;
+        }
+      }
+    }
+    if (!matched) {
+      response.statusCode = HttpStatus.PRECONDITION_FAILED;
+      return false;
+    }
+  }
+
+  //Check If-None-Match
+  //Note: it shall be checked before If-Modified-Since
+  final String ifNoneMatch = rqheaders.value(HttpHeaders.IF_NONE_MATCH);
+  if (ifNoneMatch != null) {
+    bool matched = ifNoneMatch == "*";
+    if (!matched && etag != null) {
+      for (final String each in ifNoneMatch.split(',')) {
+        if (each.trim() == etag) {
+          matched = true;
+          break;
+        }
+      }
+    }
+
+    if (matched) {
+      final String method = request.method;
+      if (method == "GET" || method == "HEAD") {
+        response.statusCode = HttpStatus.NOT_MODIFIED;
+        if (etag != null)
+          response.headers.set(HttpHeaders.ETAG, etag);
+        return false;
+      }
+      response.statusCode = HttpStatus.PRECONDITION_FAILED;
+      return false;
+    }
+  }
+
+  //Check If-Modified-Since
+  final DateTime ifModifiedSince = rqheaders.ifModifiedSince;
+  if (ifModifiedSince != null
+  && lastModified.isBefore(ifModifiedSince.add(const Duration(seconds: 1)))) {
+    response.statusCode = HttpStatus.NOT_MODIFIED;
+    if (etag != null)
+      response.headers.set(HttpHeaders.ETAG, etag);
+    return false;
+  }
+
+  //Check If-Unmodified-Since
+  final String value = rqheaders.value(HttpHeaders.IF_UNMODIFIED_SINCE);
+  if (value != null) {
+    try {
+      final DateTime ifUnmodifiedSince = HttpDate.parse(value);
+      if (lastModified.isAfter(ifUnmodifiedSince.add(const Duration(seconds: 1)))) {
+        response.statusCode = HttpStatus.PRECONDITION_FAILED;
+        return false;
+      }
+    } catch (e) { //ignore it silently
+    }
+  }
+  return true;
+}
+
+///Returns false if no need to send the content
 bool _setHeaders(HttpConnect connect, File file,
     DateTime lastModified, int filesize,
     FileCache cache, List<_Range> ranges) {
@@ -218,7 +296,7 @@ class _RangeWriter {
     if (j >= ranges.length) { //no more
       response
         ..writeln()
-        ..writeln(_MIME_BOUNDARY_END);
+        ..write(_MIME_BOUNDARY_END);
       return null; //done
     }
 
@@ -261,6 +339,7 @@ Future _outFileInRanges(HttpResponse response, List<_Range> ranges,
       range != null && range.length != filesize ? 
         file.openRead(range.start, range.end): file.openRead());
   } else {
+    //TODO: a better algorithm for reading multiparts of the file
     return new _RangeWriter(response, ranges, contentType, filesize,
         (_Range range)
         => response.addStream(file.openRead(range.start, range.end)))

@@ -156,17 +156,16 @@ bool _checkHeaders(HttpConnect connect, _AssetDetail detail) {
       response.statusCode = HttpStatus.PRECONDITION_FAILED;
       return false;
     }
-  }
-
-  //Check If-Modified-Since
-  //Note: ignore if If-None-Match specified (since ETag differs)
-  final DateTime ifModifiedSince = rqheaders.ifModifiedSince;
-  if (ifModifiedSince != null && ifNoneMatch == null
-  && detail.lastModified.isBefore(ifModifiedSince.add(_ONE_SECOND))) {
-    response.statusCode = HttpStatus.NOT_MODIFIED;
-    if (etag != null)
-      response.headers.set(HttpHeaders.ETAG, etag);
-    return false;
+  } else { //Note: ignore if If-None-Match specified (since ETag differs)
+    //Check If-Modified-Since
+    final DateTime ifModifiedSince = rqheaders.ifModifiedSince;
+    if (ifModifiedSince != null 
+    && detail.lastModified.isBefore(ifModifiedSince.add(_ONE_SECOND))) {
+      response.statusCode = HttpStatus.NOT_MODIFIED;
+      if (etag != null)
+        response.headers.set(HttpHeaders.ETAG, etag);
+      return false;
+    }
   }
 
   //Check If-Unmodified-Since
@@ -241,6 +240,7 @@ final _textSubtypes = const<String, bool> {
   "xhtml+xml": true, "xslt+xml": true,  "rss+xml": true,
   "atom+xml": true, "mathml+xml": true, "svg+xml": true
 };
+///used to adjust truncation error when converting to internet time
 const Duration _ONE_SECOND = const Duration(seconds: 1);
 
 //--- Range Handling ---//

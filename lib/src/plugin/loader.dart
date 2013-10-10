@@ -49,7 +49,11 @@ abstract class Asset {
    */
   Future<int> length();
 
-  ///Create a new independent Stream for the contents of this asset.
+  /** Create a new independent Stream for the contents of this asset.
+   *
+   * * [start] - the starting offset (inclusive)
+   * * [end] - the ending offset (exclusive)
+   */
   Stream<List<int>> openRead([int start, int end]);
   ///Read the entire asset's contents as a list of bytes.
   Future<List<int>> readAsBytes();
@@ -201,47 +205,45 @@ Future loadAsset(HttpConnect connect, Asset asset, [AssetCache cache]) {
     }
   }
 
+  DateTime lastModified;
+  List<int> content;
+
   return asset.lastModified()
   .catchError((ex) {
     throw new Http404.fromConnect(connect);
   })
-  .then((DateTime lastModified) {
-    _AssetDetail detail;
-    List<_Range> ranges;
+  .then((_) {
+    lastModified = _;
     if (cache != null) {
-      final List<int> content = cache.getContent(asset, lastModified);
-      if (content != null) {
-        detail = new _AssetDetail(asset, lastModified, content.length, cache);
-        if (!isIncluded) {
-          if (!_checkHeaders(connect, detail))
-            return;
+      content = cache.getContent(asset, lastModified);
+      if (content != null)
+        return content.length;
+    }
+    return asset.length();
+  })
+  .then((int assetSize) {
+    List<_Range> ranges;
 
-          ranges = _parseRange(connect, detail);
-          if (!_setHeaders(connect, detail, ranges))
-            return; //done
-        }
-        return _outContentInRanges(response, ranges, contentType, content);
-      }
+    if (!isIncluded) {
+      final _AssetDetail detail =
+        new _AssetDetail(asset, lastModified, assetSize, cache);
+      if (!_checkHeaders(connect, detail))
+        return;
+
+      ranges = _parseRange(connect, detail);
+      if (!_setHeaders(connect, detail, ranges))
+        return; //done
     }
 
-    return asset.length().then((int assetSize) {
-      detail = new _AssetDetail(asset, lastModified, assetSize, cache);
-      if (!isIncluded) {
-        if (!_checkHeaders(connect, detail))
-          return;
+    if (content != null)
+      return _outContentInRanges(response, ranges, contentType, content);
 
-        ranges = _parseRange(connect, detail);
-        if (!_setHeaders(connect, detail, ranges))
-          return; //done
-      }
+    if (cache != null && cache.shallCache(asset, assetSize))
+      return asset.readAsBytes().then((List<int> content) {
+        cache.setContent(asset, lastModified, content);
+        return _outContentInRanges(response, ranges, contentType, content);
+      });
 
-      if (cache != null && cache.shallCache(asset, assetSize))
-        return asset.readAsBytes().then((List<int> content) {
-          cache.setContent(asset, lastModified, content);
-          return _outContentInRanges(response, ranges, contentType, content);
-        });
-
-      return _outAssetInRanges(response, ranges, contentType, asset, assetSize);
-    });
+    return _outAssetInRanges(response, ranges, contentType, asset, assetSize);
   });
 }

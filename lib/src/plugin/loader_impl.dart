@@ -3,94 +3,111 @@
 // Author: tomyeh
 part of stream_plugin;
 
-//--- Cache and File Loading ---//
+//--- Cache and Asset Loading ---//
 //--- ---//
 
-class _FileDetail {
-  final File file;
-  final DateTime lastModified;
-  final int filesize;
-  final FileCache cache;
+class _FileAsset implements Asset {
+  _FileAsset(this.file);
 
-  _FileDetail(this.file, this.lastModified, this.filesize, this.cache);
+  final File file;
+
+  @override
+  String get path => file.path;
+  @override
+  Future<DateTime> lastModified() => file.lastModified();
+  @override
+  Future<int> length() => file.length();
+  @override
+  Stream<List<int>> openRead([int start, int end]) => file.openRead(start, end);
+  @override
+  Future<List<int>> readAsBytes() => file.readAsBytes();
+}
+
+class _AssetDetail {
+  final Asset asset;
+  final DateTime lastModified;
+  final int assetSize;
+  final AssetCache cache;
+
+  _AssetDetail(this.asset, this.lastModified, this.assetSize, this.cache);
 
   //Returns the ETAG value, or null if not available.
   String get etag
   => _etag != null ? _etag:
-    (_etag = cache != null ? cache.getETag(file, lastModified, filesize):
-        _getETag(lastModified, filesize));
+    (_etag = cache != null ? cache.getETag(asset, lastModified, assetSize):
+        _getETag(lastModified, assetSize));
   String _etag;
 }
 
 class _CacheEntry {
   final List<int> content;
-  final int filesize;
+  final int assetSize;
   final DateTime lastModified;
 
-  _CacheEntry(this.content, this.lastModified, this.filesize);
+  _CacheEntry(this.content, this.lastModified, this.assetSize);
 }
 
-class _FileCache implements FileCache {
-  final FileLoader _loader;
+class _AssetCache implements AssetCache {
+  final AssetLoader _loader;
   final Map<String, _CacheEntry> _cache = new LinkedHashMap();
   int _cacheSize = 0;
 
-  _FileCache(this._loader);
+  _AssetCache(this._loader);
 
   @override
-  String getETag(File file, DateTime lastModified, int filesize)
-  => _loader.getETag(file, lastModified, filesize);
+  String getETag(Asset asset, DateTime lastModified, int assetSize)
+  => _loader.getETag(asset, lastModified, assetSize);
   @override
-  Duration getExpires(File file)
-  => _loader.getExpires(file);
+  Duration getExpires(Asset asset)
+  => _loader.getExpires(asset);
 
   @override
-  bool shallCache(File file, int filesize)
-  => _loader.shallCache(file, filesize);
+  bool shallCache(Asset asset, int assetSize)
+  => _loader.shallCache(asset, assetSize);
   @override
-  List<int> getContent(File file, DateTime lastModified) {
-    final String path = file.path;
+  List<int> getContent(Asset asset, DateTime lastModified) {
+    final String path = asset.path;
     final _CacheEntry entry = _cache[path];
     if (entry != null) {
       if (entry.lastModified == lastModified)
         return entry.content;
 
       _cache.remove(path);
-      _cacheSize -= entry.filesize;
+      _cacheSize -= entry.assetSize;
     }
   }
   @override
-  void setContent(File file, DateTime lastModified, List<int> content) {
-    final int filesize = content.length;
-    if (shallCache(file, filesize)) {
-      final String path = file.path;
+  void setContent(Asset asset, DateTime lastModified, List<int> content) {
+    final int assetSize = content.length;
+    if (shallCache(asset, assetSize)) {
+      final String path = asset.path;
       final _CacheEntry entry = _cache[path];
-      _cache[path] = new _CacheEntry(content, lastModified, filesize);
-      _cacheSize += filesize;
+      _cache[path] = new _CacheEntry(content, lastModified, assetSize);
+      _cacheSize += assetSize;
       if (entry != null)
-        _cacheSize -= entry.filesize;
+        _cacheSize -= entry.assetSize;
 
       //reduce the cache's size if necessary
       while (_cacheSize > _loader.cacheSize)
-        _cacheSize -= _cache.remove(_cache.keys.first).filesize;
+        _cacheSize -= _cache.remove(_cache.keys.first).assetSize;
     }
   }
 }
 
 Future _loadFileAt(HttpConnect connect, String uri, String dir,
-    List<String> names, int j, [FileCache cache]) {
+    List<String> names, int j, [AssetCache cache]) {
   if (j >= names.length)
     throw new Http404(uri);
 
   final File file = new File(Path.join(dir, names[j]));
   return file.exists().then((exists) {
-    return exists ? loadFile(connect, file, cache):
+    return exists ? loadAsset(connect, new _FileAsset(file), cache):
       _loadFileAt(connect, uri, dir, names, j + 1, cache);
   });
 }
 
 ///Returns false if no need to send the content
-bool _checkHeaders(HttpConnect connect, _FileDetail detail) {
+bool _checkHeaders(HttpConnect connect, _AssetDetail detail) {
   final HttpResponse response = connect.response;
   final HttpRequest request = connect.request;
   final HttpHeaders rqheaders = request.headers;
@@ -142,8 +159,9 @@ bool _checkHeaders(HttpConnect connect, _FileDetail detail) {
   }
 
   //Check If-Modified-Since
+  //Note: ignore if If-None-Match specified (since ETag differs)
   final DateTime ifModifiedSince = rqheaders.ifModifiedSince;
-  if (ifModifiedSince != null
+  if (ifModifiedSince != null && ifNoneMatch == null
   && detail.lastModified.isBefore(ifModifiedSince.add(_ONE_SECOND))) {
     response.statusCode = HttpStatus.NOT_MODIFIED;
     if (etag != null)
@@ -167,7 +185,7 @@ bool _checkHeaders(HttpConnect connect, _FileDetail detail) {
 }
 
 ///Returns false if no need to send the content
-bool _setHeaders(HttpConnect connect, _FileDetail detail, List<_Range> ranges) {
+bool _setHeaders(HttpConnect connect, _AssetDetail detail, List<_Range> ranges) {
   final HttpResponse response = connect.response;
   final HttpHeaders headers = response.headers;
   headers
@@ -178,7 +196,7 @@ bool _setHeaders(HttpConnect connect, _FileDetail detail, List<_Range> ranges) {
     final String etag = detail.etag;
     if (etag != null)
       headers.set(HttpHeaders.ETAG, etag);
-    final Duration dur = detail.cache.getExpires(detail.file);
+    final Duration dur = detail.cache.getExpires(detail.asset);
     if (dur != null) {
       headers
         ..set(HttpHeaders.EXPIRES, detail.lastModified.add(dur))
@@ -191,14 +209,14 @@ bool _setHeaders(HttpConnect connect, _FileDetail detail, List<_Range> ranges) {
     return false; //no more processing
 
   if (ranges == null) {
-    response.contentLength = detail.filesize;
+    response.contentLength = detail.assetSize;
   } else {
     response.statusCode = HttpStatus.PARTIAL_CONTENT;
     if (ranges.length == 1) {
       final _Range range = ranges[0];
       response.contentLength = range.length;
       headers.set(HttpHeaders.CONTENT_RANGE,
-        "bytes ${range.start}-${range.end - 1}/${detail.filesize}");
+        "bytes ${range.start}-${range.end - 1}/${detail.assetSize}");
     } else {
       headers.contentType = _multipartBytesType;
     }
@@ -210,8 +228,8 @@ bool _setHeaders(HttpConnect connect, _FileDetail detail, List<_Range> ranges) {
   return true;
 }
 
-String _getETag(DateTime lastModified, int filesize)
-=> 'W/"$filesize-${lastModified.millisecondsSinceEpoch}"';
+String _getETag(DateTime lastModified, int assetSize)
+=> 'W/"$assetSize-${lastModified.millisecondsSinceEpoch}"';
 
 bool _isTextType(ContentType ctype) {
   String ptype;
@@ -234,22 +252,22 @@ class _Range {
   final int end;
   final int length;
 
-  factory _Range(int start, int end, int filesize) {
+  factory _Range(int start, int end, int assetSize) {
     if (start == null) {
-      start = end == null ? 0: filesize - end;
-      end = filesize;
+      start = end == null ? 0: assetSize - end;
+      end = assetSize;
     } else {
-      end = end == null ? filesize: end + 1; //from inclusive to exclusive
+      end = end == null ? assetSize: end + 1; //from inclusive to exclusive
     }
     return new _Range._(start, end, end - start);
   }
   _Range._(this.start, this.end, this.length);
 
-  bool validate(int filesize)
-  => start >= 0 && length >= 0 && end <= filesize;
+  bool validate(int assetSize)
+  => start >= 0 && length >= 0 && end <= assetSize;
 }
 
-List<_Range> _parseRange(HttpConnect connect, _FileDetail detail) {
+List<_Range> _parseRange(HttpConnect connect, _AssetDetail detail) {
   final HttpHeaders rqheaders = connect.request.headers;
   final String ifRange = rqheaders.value(HttpHeaders.IF_RANGE);
   if (ifRange != null) {
@@ -289,10 +307,10 @@ List<_Range> _parseRange(HttpConnect connect, _FileDetail detail) {
         }
     }
 
-    final _Range range = new _Range(values[0], values[1], detail.filesize);
-    if (!range.validate(detail.filesize)) {
+    final _Range range = new _Range(values[0], values[1], detail.assetSize);
+    if (!range.validate(detail.assetSize)) {
       connect.response.headers.set(
-          HttpHeaders.CONTENT_RANGE, "bytes */${detail.filesize}");
+          HttpHeaders.CONTENT_RANGE, "bytes */${detail.assetSize}");
       return _rangeError(connect, HttpStatus.REQUESTED_RANGE_NOT_SATISFIABLE);
     }
     ranges.add(range);
@@ -315,11 +333,11 @@ class _RangeWriter {
   final HttpResponse response;
   final List<_Range> ranges;
   final String contentType;
-  final int filesize;
+  final int assetSize;
   final _WriteRange output;
 
   _RangeWriter(this.response, this.ranges, ContentType contentType,
-    this.filesize, this.output): this.contentType = contentType != null ?
+    this.assetSize, this.output): this.contentType = contentType != null ?
       "${HttpHeaders.CONTENT_TYPE}: ${contentType}": null;
 
   Future write([int j = 0]) {
@@ -338,7 +356,7 @@ class _RangeWriter {
 
     final _Range range = ranges[j];
     response
-      ..writeln("${HttpHeaders.CONTENT_RANGE}: bytes ${range.start}-${range.end - 1}/$filesize")
+      ..writeln("${HttpHeaders.CONTENT_RANGE}: bytes ${range.start}-${range.end - 1}/$assetSize")
       ..writeln();
     return output(range).then((_) => write(j + 1));
   }
@@ -346,14 +364,14 @@ class _RangeWriter {
 
 Future _outContentInRanges(HttpResponse response, List<_Range> ranges,
     ContentType contentType, List<int> content) {
-  final int filesize = content.length;
+  final int assetSize = content.length;
   if (ranges == null || ranges.length == 1) {
     final _Range range = ranges != null ? ranges[0]: null;
     response.add(
-      range != null && range.length != filesize ?
+      range != null && range.length != assetSize ?
         content.sublist(range.start, range.end): content);
   } else {
-    return new _RangeWriter(response, ranges, contentType, filesize,
+    return new _RangeWriter(response, ranges, contentType, assetSize,
       (_Range range) {
         response.add(content.sublist(range.start, range.end));
         return new Future.value();
@@ -361,18 +379,18 @@ Future _outContentInRanges(HttpResponse response, List<_Range> ranges,
   }
 }
 
-Future _outFileInRanges(HttpResponse response, List<_Range> ranges,
-    ContentType contentType, File file, int filesize) {
+Future _outAssetInRanges(HttpResponse response, List<_Range> ranges,
+    ContentType contentType, Asset asset, int assetSize) {
   if (ranges == null || ranges.length == 1) {
     final _Range range = ranges != null ? ranges[0]: null;
     return response.addStream(
-      range != null && range.length != filesize ? 
-        file.openRead(range.start, range.end): file.openRead());
+      range != null && range.length != assetSize ? 
+        asset.openRead(range.start, range.end): asset.openRead());
   } else {
-    //TODO: a better algorithm for reading multiparts of the file
-    return new _RangeWriter(response, ranges, contentType, filesize,
+    //TODO: a better algorithm for reading multiparts of the asset
+    return new _RangeWriter(response, ranges, contentType, assetSize,
         (_Range range)
-        => response.addStream(file.openRead(range.start, range.end)))
+        => response.addStream(asset.openRead(range.start, range.end)))
       .write();
   }
 }

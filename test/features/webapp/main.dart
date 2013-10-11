@@ -11,6 +11,7 @@ part "fragView.rsp.dart";
 part "searchResult.rsp.dart";
 part "forwarderView.rsp.dart";
 part 'json.rsp.dart'; //auto-inject from test/features/json.rsp.html
+part 'lastModified.rsp.dart'; //auto-inject from ../lastModified.rsp.html
 
 void main() {
   new StreamServer(
@@ -65,7 +66,8 @@ var _uriMapping = {
       socket.add("Server received: $evt");
     });
     return socket.done;
-  }
+  },
+  "/lastModified": lastModified
 };
 
 //Error mapping

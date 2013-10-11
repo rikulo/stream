@@ -227,7 +227,7 @@ Future loadAsset(HttpConnect connect, Asset asset, [AssetCache cache]) {
     if (!isIncluded) {
       final _AssetDetail detail =
         new _AssetDetail(asset, lastModified, assetSize, cache);
-      if (!_checkHeaders(connect, detail))
+      if (!checkIfHeaders(connect, lastModified, detail.etag))
         return;
 
       ranges = _parseRange(connect, detail);
@@ -246,4 +246,72 @@ Future loadAsset(HttpConnect connect, Asset asset, [AssetCache cache]) {
 
     return _outAssetInRanges(response, ranges, contentType, asset, assetSize);
   });
+}
+
+/**
+ * Check if the conditions specified in the optional If headers are
+ * satisfied, such as `If-Modified-Since` and `If-None-Match` headers.
+ *
+ * If false is returned, the caller shall stop from generating further content.
+ *
+ * * [lastModified] - when it was last modified. Ignored if null.
+ * * [etag] - the ETag. Ignored if null.
+ */
+bool checkIfHeaders(HttpConnect connect, DateTime lastModified, String etag) {
+  final HttpResponse response = connect.response;
+  final HttpRequest request = connect.request;
+  final HttpHeaders rqheaders = request.headers;
+
+  //Check If-Match
+  final String ifMatch = rqheaders.value(HttpHeaders.IF_MATCH);
+  if (ifMatch != null && ifMatch != "*"
+  && (etag == null || !_matchETag(ifMatch, etag))) { //not match
+    response.statusCode = HttpStatus.PRECONDITION_FAILED;
+    return false;
+  }
+
+  //Check If-None-Match
+  //Note: it shall be checked before If-Modified-Since
+  final String ifNoneMatch = rqheaders.value(HttpHeaders.IF_NONE_MATCH);
+  if (ifNoneMatch != null) {
+    if (ifNoneMatch == "*"
+    || (etag != null && _matchETag(ifNoneMatch, etag))) { //match
+      final String method = request.method;
+      if (method == "GET" || method == "HEAD") {
+        response.statusCode = HttpStatus.NOT_MODIFIED;
+        if (etag != null)
+          response.headers.set(HttpHeaders.ETAG, etag);
+        return false;
+      }
+      response.statusCode = HttpStatus.PRECONDITION_FAILED;
+      return false;
+    }
+  }
+
+  if (lastModified != null) {
+    //Check If-Modified-Since
+    //Ignored, if If-None-Match specified (since ETag differs)
+    final DateTime ifModifiedSince = rqheaders.ifModifiedSince;
+    if (ifModifiedSince != null && ifNoneMatch == null
+    && lastModified.isBefore(ifModifiedSince.add(_ONE_SECOND))) {
+      response.statusCode = HttpStatus.NOT_MODIFIED;
+      if (etag != null)
+        response.headers.set(HttpHeaders.ETAG, etag);
+      return false;
+    }
+
+    //Check If-Unmodified-Since
+    final String value = rqheaders.value(HttpHeaders.IF_UNMODIFIED_SINCE);
+    if (value != null) {
+      try {
+        final DateTime ifUnmodifiedSince = HttpDate.parse(value);
+        if (lastModified.isAfter(ifUnmodifiedSince.add(_ONE_SECOND))) {
+          response.statusCode = HttpStatus.PRECONDITION_FAILED;
+          return false;
+        }
+      } catch (e) { //ignore it silently
+      }
+    }
+  }
+  return true;
 }

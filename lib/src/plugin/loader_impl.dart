@@ -106,81 +106,15 @@ Future _loadFileAt(HttpConnect connect, String uri, String dir,
   });
 }
 
-///Returns false if no need to send the content
-bool _checkHeaders(HttpConnect connect, _AssetDetail detail) {
-  final HttpResponse response = connect.response;
-  final HttpRequest request = connect.request;
-  final HttpHeaders rqheaders = request.headers;
-  final String etag = detail.etag;
-
-  //Check If-Match
-  final String ifMatch = rqheaders.value(HttpHeaders.IF_MATCH);
-  if (ifMatch != null && ifMatch != "*") {
-    bool matched = false;
-    if (etag != null) {
-      for (final String each in ifMatch.split(',')) {
-        if (each.trim() == etag) {
-          matched = true;
-          break;
-        }
-      }
-    }
-    if (!matched) {
-      response.statusCode = HttpStatus.PRECONDITION_FAILED;
+bool _matchETag(String value, String etag) {
+  for (int i = 0;;) {
+    final int j = value.indexOf(',', i);
+    if (etag == (j >= 0 ? value.substring(i, j): value.substring(i)).trim())
+      return true;
+    if (j < 0)
       return false;
-    }
+    i = j + 1;
   }
-
-  //Check If-None-Match
-  //Note: it shall be checked before If-Modified-Since
-  final String ifNoneMatch = rqheaders.value(HttpHeaders.IF_NONE_MATCH);
-  if (ifNoneMatch != null) {
-    bool matched = ifNoneMatch == "*";
-    if (!matched && etag != null) {
-      for (final String each in ifNoneMatch.split(',')) {
-        if (each.trim() == etag) {
-          matched = true;
-          break;
-        }
-      }
-    }
-
-    if (matched) {
-      final String method = request.method;
-      if (method == "GET" || method == "HEAD") {
-        response.statusCode = HttpStatus.NOT_MODIFIED;
-        if (etag != null)
-          response.headers.set(HttpHeaders.ETAG, etag);
-        return false;
-      }
-      response.statusCode = HttpStatus.PRECONDITION_FAILED;
-      return false;
-    }
-  } else { //Note: ignore if If-None-Match specified (since ETag differs)
-    //Check If-Modified-Since
-    final DateTime ifModifiedSince = rqheaders.ifModifiedSince;
-    if (ifModifiedSince != null 
-    && detail.lastModified.isBefore(ifModifiedSince.add(_ONE_SECOND))) {
-      response.statusCode = HttpStatus.NOT_MODIFIED;
-      if (etag != null)
-        response.headers.set(HttpHeaders.ETAG, etag);
-      return false;
-    }
-  }
-
-  //Check If-Unmodified-Since
-  final String value = rqheaders.value(HttpHeaders.IF_UNMODIFIED_SINCE);
-  if (value != null) {
-    try {
-      final DateTime ifUnmodifiedSince = HttpDate.parse(value);
-      if (detail.lastModified.isAfter(ifUnmodifiedSince.add(_ONE_SECOND))) {
-        response.statusCode = HttpStatus.PRECONDITION_FAILED;
-        return false;
-      }
-    } catch (e) { //ignore it silently
-    }
-  }
-  return true;
 }
 
 ///Returns false if no need to send the content

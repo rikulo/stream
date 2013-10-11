@@ -6,6 +6,7 @@
 * Issue 54: Support If-Match, If-None-Match, If-Modified-Since and If-Unmodified-Since
 * Issue 55: Support If-Range
 * Issue 56: Generalize FileLoader to support the loading from different resources, such as database
+* Issue 57: RSP supports etag (and HttpStatus.NOT_MODIFIED)
 
 **0.8.4**
 

@@ -1,4 +1,9 @@
-[:page lastModified="compile" args="input"]
+[:page args="input"
+  dart="
+  DateTime lastModified() => new DateTime.now();
+  String etag() => '1234ab';
+  "
+  lastModified="[=lastModified()]" etag="[=etag()]"]
 <html>
   <head>
     <title></title>

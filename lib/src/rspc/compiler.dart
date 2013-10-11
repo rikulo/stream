@@ -24,7 +24,7 @@ class Compiler {
   final List _lookAhead = [];
   final List<_IncInfo> _incs = []; //included
   String _extra = ""; //extra whitespaces
-  String _lastModified;
+  String _lastModified, _etag;
   int _nextVar = 0; //used to implement TagContext.nextVar()
 
   Compiler(String source, this.destination, {
@@ -124,7 +124,7 @@ class Compiler {
         }
         _error("Unclosed tag(s): $sb");
       }
-      _writeln("\n$_extra  return Rsp.nnf();");
+      _writeln("\n$_extra  return new Future.value();");
       while (!_incs.isEmpty) {
         _extra = _extra.substring(2);
         _writeln("$_extra  ${_incs.removeLast().invocation} //end-of-include");
@@ -219,23 +219,33 @@ class Compiler {
       "  var _t0_, _cs_ = new List<HttpConnect>();\n" //_t0_ is reserved for tags
       "  HttpRequest request = connect.request;\n"
       "  HttpResponse response = connect.response;\n"
-      "  Rsp.init(connect, ${toEL(_contentType)}");
+      "  if (!Rsp.init(connect, ${toEL(_contentType)}");
 
     if (_lastModified != null) {
-      _write(',\n    () => ');
+      _write(',\n  lastModified: ');
       if (_lastModified == "compile")
         _write("new DateTime.fromMillisecondsSinceEpoch(${new DateTime.now().millisecondsSinceEpoch})");
-      else
+      else if (_lastModified == "start")
         _write("connect.channel.startedSince");
+      else
+        _write("${toEL(_lastModified)}");
+    }
+    if (_etag != null) {
+      _write(',\n  etag: ');
+      if (_etag == "true")
+        _write('"${_random.nextInt(1000000)}"');
+      else
+        _write("${toEL(_etag)}");
     }
 
-    _writeln(');');
+    _writeln('))\n    return new Future.value();');
   }
 
   ///Sets the page information.
   void setPage(String partOf, String parts, String imports,
       String name, String description, String args,
-      String contentType, String lastModified, String dart, [int line]) {
+      String contentType, String dart, String lastModified, String etag,
+      [int line]) {
     _partOf = partOf;
     _noEL(partOf, "the partOf attribute", line);
     _parts = parts;
@@ -252,13 +262,21 @@ class Compiler {
     _noEL(dart, "the dart attribute", line);
     _contentType = contentType;
 
-    _noEL(lastModified, "the lastModified attribute", line);
-    if (lastModified != null)
-      if (lastModified.isEmpty)
-        lastModified = null;
-      else if (lastModified != "compile" && lastModified != "start")
-        _error("Unknown lastModified attribute: $lastModified");
+    _etag = etag;
+    if (_etag != null) {
+      if (_etag.isEmpty)
+        _etag = null;
+      else if (lastModified == null)
+        lastModified = "start"; //enable it if etag specified
+    }
+
     _lastModified = lastModified;
+    if (_lastModified != null)
+      if (_lastModified.isEmpty)
+        _lastModified = null;
+      else if (_lastModified != "compile" && _lastModified != "start"
+      && !isEL(_lastModified))
+        _error("Unknown lastModified attribute: $lastModified");
   }
 
   ///Include the given URI.
@@ -807,3 +825,5 @@ String _shorten(String path, String reference) {
 
 String _unipath(String path)
 => Path.separator == '\\' ? path.replaceAll('\\', '/'): path;
+
+final Random _random = new Random();

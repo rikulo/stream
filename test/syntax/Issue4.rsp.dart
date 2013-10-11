@@ -11,7 +11,8 @@ Future Issue4(HttpConnect connect) { //#1
   var _t0_, _cs_ = new List<HttpConnect>();
   HttpRequest request = connect.request;
   HttpResponse response = connect.response;
-  Rsp.init(connect, "text/html; charset=utf-8");
+  if (!Rsp.init(connect, "text/html; charset=utf-8"))
+    return new Future.value();
 var foo = "test";
 render(HttpConnect connect, {more, less}) {
 }
@@ -34,7 +35,7 @@ abc/"""); //#5
 
       return Rsp.nnf(render(new HttpConnect.chain(connect), more: "abc/${Rsp.nns(foo)}", less: foo)).then((_) { //include#10
 
-        return Rsp.nnf();
+        return new Future.value();
       }); //end-of-include
     }); //end-of-include
   }); //end-of-include

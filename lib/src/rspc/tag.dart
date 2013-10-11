@@ -104,50 +104,54 @@ Map<String, Tag> _tags;
 class PageTag extends Tag {
   @override
   void begin(TagContext tc, String data) {
-    String partOf, parts, imports, name, desc, args, ctype, lastModified, dart;
+    String partOf, parts, imports, name, desc, args, ctype, dart, lastModified, etag;
     final attrs = parseArgs(data);
     for (final nm in attrs.keys) {
+      final val = attrs[nm];
       switch (nm) {
         case "partOf":
         case "part-of":
-          partOf = attrs[nm];
+          partOf = val;
           break;
         case "part":
-          parts = attrs[nm];
+          parts = val;
           break;
         case "import":
-          imports = attrs[nm];
+          imports = val;
           break;
         case "name":
-          name = attrs[nm];
+          name = val;
           break;
         case "content-type":
         case "contentType":
-          ctype = attrs[nm];
+          ctype = val;
           break;
         case "args":
         case "arguments":
-          args = attrs[nm];
+          args = val;
           if (args.trim().isEmpty)
             args = null;
           break;
         case "description":
-          desc = attrs[nm];
+          desc = val;
+          break;
+        case "dart":
+          dart = val;
           break;
         case "last-modified":
         case "lastModified":
-          lastModified = attrs[nm];
+          lastModified = val;
           break;
-        case "dart":
-          dart = attrs[nm];
+        case "etag":
+          etag = val;
           break;
         default:
           tc.warning("Unknow attribute, $nm");
           break;
       }
     }
-    tc.compiler.setPage(partOf, parts, imports, name, desc, args, ctype,
-      lastModified, dart);
+    tc.compiler.setPage(partOf, parts, imports, name, desc, args, ctype, dart,
+      lastModified, etag);
   }
   @override
   bool get hasClosing => false;

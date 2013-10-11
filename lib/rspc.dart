@@ -7,7 +7,8 @@ library stream_rspc;
 
 import "dart:io";
 import "dart:convert";
-import "dart:collection";
+import "dart:collection" show HashMap, LinkedHashMap, LinkedHashSet;
+import "dart:math" show Random;
 import 'package:meta/meta.dart';
 import "package:args/args.dart";
 import 'package:path/path.dart' as Path;

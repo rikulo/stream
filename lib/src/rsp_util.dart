@@ -11,8 +11,12 @@ part of stream;
 class Rsp {
   /** Initializes a RSP page.
    * It is used by generated RSP dart code. You don't need to invoke it.
+   * 
+   * It returns false if the content shall not be generated.
+   * The caller shall stop immediately if this method returns false.
    */
-  static void init(HttpConnect connect, String contentType, [DateTime lastModified()]) {
+  static bool init(HttpConnect connect, String contentType,
+    {DateTime lastModified, String etag}) {
     if (!connect.isIncluded) {
       final headers = connect.response.headers;
       headers.chunkedTransferEncoding = connect.server.chunkedTransferEncoding;
@@ -20,8 +24,15 @@ class Rsp {
       if (contentType != null && !contentType.isEmpty)
         headers.contentType = ContentType.parse(contentType);
       if (lastModified != null)
-        headers.set(HttpHeaders.LAST_MODIFIED, lastModified());
+        headers.set(HttpHeaders.LAST_MODIFIED, lastModified);
+      String realETag;
+      if (etag != null)
+        headers.set(HttpHeaders.ETAG, realETag = _getETag(lastModified, etag));
+
+      if (lastModified != null || realETag != null)
+        return checkIfHeaders(connect, lastModified, realETag);
     }
+    return true;
   }
 
   /** Converts the given value to a non-null string.
@@ -144,3 +155,6 @@ class Rsp {
       s + '<script src="$prefix/packages/browser/dart.js"></script>\n': s;
   }
 }
+
+String _getETag(DateTime lastModified, String etagId)
+=> 'W/"$etagId-${lastModified != null ? lastModified.millisecondsSinceEpoch: 0}"';

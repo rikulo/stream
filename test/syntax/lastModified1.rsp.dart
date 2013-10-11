@@ -6,29 +6,36 @@ import 'dart:async';
 import 'dart:io';
 import 'package:stream/stream.dart';
 
+
+  DateTime lastModified() => new DateTime.now();
+  String etag() => '1234ab';
+  
+
 /** Template, lastModified1, for rendering the view. */
-Future lastModified1(HttpConnect connect, {input}) { //#2
+Future lastModified1(HttpConnect connect, {input}) { //#7
   var _t0_, _cs_ = new List<HttpConnect>();
   HttpRequest request = connect.request;
   HttpResponse response = connect.response;
-  Rsp.init(connect, "text/html; charset=utf-8",
-    () => new DateTime.fromMillisecondsSinceEpoch(1374221474294));
+  if (!Rsp.init(connect, "text/html; charset=utf-8",
+  lastModified: lastModified(),
+  etag: etag()))
+    return new Future.value();
 
   response.write("""<html>
   <head>
     <title></title>
   </head>
   <body>
-    """); //#2
+    """); //#7
 
-  response.write(Rsp.nnx(input.whatever * input.another, encode: 'none', maxlength: 20)); //#7
+  response.write(Rsp.nnx(input.whatever * input.another, encode: 'none', maxlength: 20)); //#12
 
 
   response.write("""
 
   </body>
 </html>
-"""); //#7
+"""); //#12
 
-  return Rsp.nnf();
+  return new Future.value();
 }

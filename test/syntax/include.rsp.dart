@@ -11,7 +11,8 @@ Future include(HttpConnect connect, {foo, more, less}) { //#3
   var _t0_, _cs_ = new List<HttpConnect>();
   HttpRequest request = connect.request;
   HttpResponse response = connect.response;
-  Rsp.init(connect, "text/html; charset=utf-8");
+  if (!Rsp.init(connect, "text/html; charset=utf-8"))
+    return new Future.value();
 
   var less = new StringBuffer(); _cs_.add(connect); //var#3
   connect = new HttpConnect.stringBuffer(connect, less); response = connect.response;
@@ -38,7 +39,7 @@ Future include(HttpConnect connect, {foo, more, less}) { //#3
 
     return Rsp.nnf(include(new HttpConnect.chain(connect), foo: true, less: less, more: _0.toString())).then((_) { //include#7
 
-      return Rsp.nnf();
+      return new Future.value();
     }); //end-of-include
   }); //end-of-include
 }

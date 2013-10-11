@@ -5,6 +5,7 @@ library syntax_rsp;
 import 'dart:async';
 import 'dart:io';
 import 'package:stream/stream.dart';
+import 'dart:collection' show LinkedHashMap;
 
 var someExternal = 123;
 
@@ -13,7 +14,8 @@ Future syntax(HttpConnect connect, {foo, bool c:false}) { //#5
   var _t0_, _cs_ = new List<HttpConnect>();
   HttpRequest request = connect.request;
   HttpResponse response = connect.response;
-  Rsp.init(connect, foo.contentType);
+  if (!Rsp.init(connect, foo.contentType))
+    return new Future.value();
 
   response.headers..add("age", "129")
     ..add("accept-ranges", foo.acceptRanges); //header#5
@@ -188,7 +190,7 @@ Future syntax(HttpConnect connect, {foo, bool c:false}) { //#5
 
 """); //#73
 
-      return Rsp.nnf();
+      return new Future.value();
     }); //end-of-include
   }); //end-of-include
 }

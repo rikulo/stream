@@ -7,6 +7,7 @@
 * Issue 55: Support If-Range
 * Issue 56: Generalize FileLoader to support the loading from different resources, such as database
 * Issue 57: RSP supports etag (and HttpStatus.NOT_MODIFIED)
+* Issue 58: HttpConnect supports method to retrieve the locale(s) of the request
 
 **0.8.4**
 

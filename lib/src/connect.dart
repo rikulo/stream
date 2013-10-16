@@ -210,11 +210,22 @@ abstract class HttpConnect {
    */
   Future include(String uri, {HttpRequest request, HttpResponse response});
 
-  /** Returns the browser information.
+  /** The browser information.
    *
    * * See also [Browser](http://api.rikulo.org/commons/latest/rikulo_browser/Browser.html).
    */
   Browser get browser;
+
+  /** The preferred Locale that the client will accept content in,
+   * based on the Accept-Language header.
+   */
+  String get locale;
+  /** A readonly list of Locales indicating, in decreasing order starting with
+  * the preferred locale, the locales that are acceptable to the client based
+  * on the Accept-Language header
+  */
+  List<String> get locales;
+
   /** The error detailed information, or null if no error occurs.
    */
   ErrorDetail errorDetail;
@@ -266,6 +277,10 @@ class HttpConnectWrapper implements HttpConnect {
 
   @override
   Browser get browser => origin.browser;
+  @override
+  String get locale => origin.locale;
+  @override
+  List<String> get locales => origin.locales;
   @override
   ErrorDetail get errorDetail => origin.errorDetail;
   @override

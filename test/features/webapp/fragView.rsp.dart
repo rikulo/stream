@@ -58,19 +58,25 @@ Future fragView(HttpConnect connect, {Map infos: const {}, header, footer}) { //
 
 
   response.write("""</li>
+  <li>Locales are """); //#16
+
+  response.write(Rsp.nnx(connect.locales)); //#17
+
+
+  response.write("""</li>
 </ul>
-"""); //#16
+"""); //#17
 
-  if (footer != null) { //if#18
+  if (footer != null) { //if#19
 
-    response.write("""  """); //#19
+    response.write("""  """); //#20
 
-    response.write(Rsp.nnx(footer, encode: 'none')); //#19
+    response.write(Rsp.nnx(footer, encode: 'none')); //#20
 
 
     response.write("""
 
-"""); //#19
+"""); //#20
   } //if
 
   return new Future.value();

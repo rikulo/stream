@@ -82,6 +82,7 @@ abstract class _AbstractConnect implements HttpConnect {
 ///The default implementation of HttpConnect
 class _HttpConnect extends _AbstractConnect {
   Browser _browser;
+  List<String> _locales;
 
   _HttpConnect(this.channel, HttpRequest request, HttpResponse response):
       super(request, response);
@@ -99,12 +100,68 @@ class _HttpConnect extends _AbstractConnect {
     }
     return _browser;
   }
+  @override
+  String get locale {
+    final List<String> ls = locales;
+    return ls.isEmpty ? "en_US": ls[0];
+  }
+  @override
+  List<String> get locales {
+    if (_locales == null) {
+      _locales = [];
+      final List<String> langs = request.headers[HttpHeaders.ACCEPT_LANGUAGE];
+      if (langs != null) {
+        final Map<num, List<String>> infos = new HashMap();
+        for (final lang in langs) {
+          _parseLocales(lang, infos);
+        }
+
+        if (!infos.isEmpty) {
+          final List<num> qs = new List.from(infos.keys)..sort();
+          for (int i = qs.length; --i >= 0;) //higher quality first
+            _locales.addAll(infos[qs[i]]);
+        }
+      }
+    }
+    return _locales;
+  }
 
   @override
   ErrorDetail errorDetail;
   @override
   Map<String, dynamic> get dataset
   => _dataset != null ? _dataset: MapUtil.onDemand(() => _dataset = new HashMap());
+}
+
+//Parse Accept-Language into locales
+void _parseLocales(String lang, Map<num, List<String>> infos) {
+  for (int i = 0;;) {
+    final int j = lang.indexOf(',', i);
+    final String val = j >= 0 ? lang.substring(i, j): lang.substring(i);
+    int k = val.indexOf(';');
+    final String locale =
+      (k >= 0 ? val.substring(0, k): val).trim().replaceAll('-', '_');
+
+    num quality = 1;
+    if (k >= 0) {
+      k = val.indexOf('=', k + 1);
+      if (k >= 0) {
+        try {
+          quality = double.parse(val.substring(k + 1).trim());
+        } catch (e) { //ignore silently
+        }
+      }
+    }
+
+    List<String> locales = infos[quality];
+    if (locales == null)
+      infos[quality] = locales = [];
+    locales.add(locale);
+
+    if (j < 0)
+      break;
+    i = j + 1;
+  }
 }
 
 class _ProxyConnect extends _AbstractConnect {
@@ -119,6 +176,10 @@ class _ProxyConnect extends _AbstractConnect {
   HttpChannel get channel => _origin.channel;
   @override
   Browser get browser => _origin.browser;
+  @override
+  String get locale => _origin.locale;
+  @override
+  List<String> get locales => _origin.locales;
   @override
   ErrorDetail get errorDetail => _origin.errorDetail;
   @override

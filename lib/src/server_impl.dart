@@ -96,9 +96,7 @@ class _StreamServer implements StreamServer {
       return new Future.error(e, st);
     }
   }
-  void _handleErr(HttpConnect connect, error, [stackTrace]) {
-    if (stackTrace == null)
-      stackTrace = getAttachedStackTrace(error);
+  void _handleErr(HttpConnect connect, error, stackTrace) {
     if (connect == null) {
       _shout(null, error, stackTrace);
       return;
@@ -209,8 +207,8 @@ class _StreamServer implements StreamServer {
     if (address == null)
       address = InternetAddress.ANY_IP_V4;
     return HttpServer.bind(address, port, backlog: backlog)
-    .catchError((err) {
-      _handleErr(null, err);
+    .catchError((err, stackTrace) {
+      _handleErr(null, err, stackTrace);
     })
     .then((iserver) {
       final channel = new _HttpChannel(this, iserver, address, iserver.port, false);
@@ -227,8 +225,8 @@ class _StreamServer implements StreamServer {
       address = InternetAddress.ANY_IP_V4;
     return HttpServer.bindSecure(address, port, certificateName: certificateName,
         requestClientCertificate: requestClientCertificate, backlog: backlog)
-    .catchError((err) {
-      _handleErr(null, err);
+    .catchError((err, stackTrace) {
+      _handleErr(null, err, stackTrace);
     })
     .then((iserver) {
       final channel = new _HttpChannel(this, iserver, address, iserver.port, true);
@@ -264,11 +262,11 @@ class _StreamServer implements StreamServer {
 
       //protect from aborted connection
       final connect = new _HttpConnect(channel, req, req.response);
-      req.response.done.catchError((err) {
+      req.response.done.catchError((err, stackTrace) {
         if (err is SocketException)
           logger.fine("${connect.request.uri}: $err"); //nothing to do
         else
-          _handleErr(connect, err);
+          _handleErr(connect, err, stackTrace);
       });
 
       //TODO: use runZoned if it is available (then we don't need try/catch
@@ -276,11 +274,11 @@ class _StreamServer implements StreamServer {
 
       _handle(connect, 0).then((_) { //0 means filter from beginning
         _close(connect);
-      }).catchError((err) {
-        _handleErr(connect, err);
+      }).catchError((err, stackTrace) {
+        _handleErr(connect, err, stackTrace);
       });
-    }, onError: (err) {
-      _handleErr(null, err);
+    }, onError: (err, stackTrace) {
+      _handleErr(null, err, stackTrace);
     });
     _channels.add(channel);
   }

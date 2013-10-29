@@ -1,5 +1,5 @@
 name: stream
-version: 0.8.5
+version: 0.8.6
 description: > 
   Lightweight Dart web server supporting request routing, filtering,
   template engine, MVC design pattern, and file-based static resources.
@@ -11,7 +11,6 @@ dependencies:
   rikulo_commons: any
   logging: any
   args: any
-  meta: any
   path: any
 environment:
-  sdk: ">=0.8.5"
+  sdk: ">=0.8.7"

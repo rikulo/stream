@@ -228,11 +228,11 @@ Future loadAsset(HttpConnect connect, Asset asset, [AssetCache cache]) {
       final _AssetDetail detail =
         new _AssetDetail(asset, lastModified, assetSize, cache);
       if (!checkIfHeaders(connect, lastModified, detail.etag))
-        return;
+        return null;
 
       ranges = _parseRange(connect, detail);
       if (!_setHeaders(connect, detail, ranges))
-        return; //done
+        return null; //done
     }
 
     if (content != null)

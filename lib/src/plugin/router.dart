@@ -190,7 +190,7 @@ class DefaultRouter implements Router {
       if (cache.length > _cacheSize)
         cache.remove(cache.keys.first);
     } else if (identical(handler, _NOT_FOUND)) {
-      return;
+      return null;
     } else if (handler is _UriMapping) { //hasGroup
       handler.match(connect, uri); //prepare connect.dataset
       handler = handler.handler;

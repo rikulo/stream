@@ -214,10 +214,9 @@ typedef void _Output(TagContext tc, String id, Map<String, String> args);
 
 /** A tag simplifies the implementation of simple tags. For example,
  *
- *     import 'dart:io' show Options;
  *     import 'package:stream/rspc.dart';
  *     
- *     void main() {
+ *     void main(List<String> arguments) {
  *       tags["m"] = new SimpleTag("m",
  *         (TagContext tc, String id, Map<String, String> args) {
  *           if (id == null)
@@ -230,7 +229,7 @@ typedef void _Output(TagContext tc, String id, Map<String, String> args);
  *           tc.writeln("));");
  *         });
  *     
- *       build(new Options().arguments,
+ *       build(arguments,
  *         imports: ["package:foo/server/intl.dart"]);
  *     }
  *

@@ -9,4 +9,4 @@ library rspc;
 
 import "package:stream/rspc.dart" as rspc;
 
-void main() => rspc.main();
+void main(List<String> arguments) => rspc.main(arguments);

@@ -8,6 +8,7 @@ import "dart:io";
 import "dart:async";
 import "dart:collection" show HashMap, LinkedHashMap;
 import "dart:convert" show JSON;
+import "dart:platform" as platform;
 import "package:logging/logging.dart" show Logger;
 import 'package:path/path.dart' as Path;
 

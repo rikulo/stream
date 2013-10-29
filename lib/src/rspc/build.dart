@@ -94,7 +94,7 @@ File _locate(String flnm) {
 }
 
 /** Compile changed RSP files. This method shall be called within build.dart,
- * with new Options().arguments as its [arguments].
+ * with the arguments passed to `main()` as its [arguments].
  *
  * Notice that it accepts files ending with `.rsp.whatever`.
  *

@@ -7,7 +7,6 @@ import "dart:async";
 import "dart:io";
 import "dart:collection";
 import "dart:mirrors";
-import "package:meta/meta.dart";
 import "package:logging/logging.dart";
 import 'package:path/path.dart' as Path;
 

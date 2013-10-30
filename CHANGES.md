@@ -1,5 +1,9 @@
 #CHANGES
 
+**0.8.6+2**
+
+* Issue 59: error mapping not work
+
 **0.8.5**
 
 * Issue 53: FileLoader supports multipart/byteranges

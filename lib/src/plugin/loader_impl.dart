@@ -121,24 +121,27 @@ bool _matchETag(String value, String etag) {
 bool _setHeaders(HttpConnect connect, _AssetDetail detail, List<_Range> ranges) {
   final HttpResponse response = connect.response;
   final HttpHeaders headers = response.headers;
-  headers
-      ..set(HttpHeaders.ACCEPT_RANGES, "bytes")
-      ..set(HttpHeaders.LAST_MODIFIED, detail.lastModified);
+  headers.set(HttpHeaders.ACCEPT_RANGES, "bytes");
 
-  if (detail.cache != null) {
-    final String etag = detail.etag;
-    if (etag != null)
-      headers.set(HttpHeaders.ETAG, etag);
-    final Duration dur = detail.cache.getExpires(detail.asset);
-    if (dur != null) {
-      headers
-        ..set(HttpHeaders.EXPIRES, detail.lastModified.add(dur))
-        ..set(HttpHeaders.CACHE_CONTROL, "max-age=${dur.inSeconds}");
+  final bool isPreconditionFailed = response.statusCode == HttpStatus.PRECONDITION_FAILED;
+    //Set by checkIfHeaders (see also Issue 59)
+  if (isPreconditionFailed || response.statusCode < HttpStatus.BAD_REQUEST) {
+      headers.set(HttpHeaders.LAST_MODIFIED, detail.lastModified);
+
+    if (detail.cache != null) {
+      final String etag = detail.etag;
+      if (etag != null)
+        headers.set(HttpHeaders.ETAG, etag);
+      final Duration dur = detail.cache.getExpires(detail.asset);
+      if (dur != null) {
+        headers
+          ..set(HttpHeaders.EXPIRES, detail.lastModified.add(dur))
+          ..set(HttpHeaders.CACHE_CONTROL, "max-age=${dur.inSeconds}");
+      }
     }
   }
 
-  if (connect.request.method == "HEAD"
-  || response.statusCode >= HttpStatus.BAD_REQUEST) //error
+  if (connect.request.method == "HEAD" || isPreconditionFailed) 
     return false; //no more processing
 
   if (ranges == null) {

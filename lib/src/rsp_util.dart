@@ -18,19 +18,32 @@ class Rsp {
   static bool init(HttpConnect connect, String contentType,
     {DateTime lastModified, String etag}) {
     if (!connect.isIncluded) {
-      final headers = connect.response.headers;
+      final HttpResponse response = connect.response;
+      final HttpHeaders headers = response.headers;
       headers.chunkedTransferEncoding = connect.server.chunkedTransferEncoding;
 
       if (contentType != null && !contentType.isEmpty)
         headers.contentType = ContentType.parse(contentType);
-      if (lastModified != null)
-        headers.set(HttpHeaders.LAST_MODIFIED, lastModified);
-      String realETag;
-      if (etag != null)
-        headers.set(HttpHeaders.ETAG, realETag = _getETag(lastModified, etag));
 
-      if (lastModified != null || realETag != null)
-        return checkIfHeaders(connect, lastModified, realETag);
+      final String realETag  = etag != null ? _getETag(lastModified, etag): null;
+      bool isPreconditionFailed = false;
+      if (realETag != null || lastModified != null) {
+        if (!checkIfHeaders(connect, lastModified, realETag))
+          return false;
+
+        isPreconditionFailed = response.statusCode == HttpStatus.PRECONDITION_FAILED;
+            //Set by checkIfHeaders (see also Issue 59)
+        if (isPreconditionFailed || response.statusCode < HttpStatus.BAD_REQUEST) {
+          if (lastModified != null)
+            headers.set(HttpHeaders.LAST_MODIFIED, lastModified);
+          if (realETag != null)
+            headers.set(HttpHeaders.ETAG, realETag);
+        }
+
+      }
+
+      if (connect.request.method == "HEAD" || isPreconditionFailed) 
+        return false; //no more processing
     }
     return true;
   }

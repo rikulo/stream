@@ -341,9 +341,11 @@ String _status2msg(int code, String cause)
 
 ///A map of content types. For example, `contentTypes['js']` is `ContentType.parse("text/javascript;charset=utf-8")`.
 Map<String, ContentType> get contentTypes {
-  if (_ctypes == null) {
-    final Map<String, ContentType> parsed = new HashMap(); //for reuse
-    final Map<String, String> rawmap = {
+  if (_ctypes != null)
+    return _ctypes;
+
+  final Map<String, ContentType> parsed = new HashMap(); //for reuse
+  final Map<String, String> rawmap = {
   'aac': 'audio/aac',
   'ai': 'application/postscript',
   'aif': 'audio/x-aiff',
@@ -417,16 +419,15 @@ Map<String, ContentType> get contentTypes {
   'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
   'xml': 'text/xml;charset=utf-8',
   'zip': 'application/zip'
-    };
+  };
 
-    _ctypes = new HashMap();
-    for (final String key in rawmap.keys) {
-      final String value = rawmap[key];
-      ContentType ctype = parsed[value];
-      if (ctype == null)
-        parsed[value] = ctype = ContentType.parse(value);
-      _ctypes[key] = ctype;
-    }
+  _ctypes = new HashMap();
+  for (final String key in rawmap.keys) {
+    final String value = rawmap[key];
+    ContentType ctype = parsed[value];
+    if (ctype == null)
+      parsed[value] = ctype = ContentType.parse(value);
+    _ctypes[key] = ctype;
   }
   return _ctypes;
 }
@@ -434,9 +435,11 @@ Map<String, ContentType> _ctypes;
 
 ///A map of HTTP status code to messages.
 Map<int, String> get statusMessages {
-  if (_stmsgs == null) {
-    _stmsgs = new HashMap();
-    for (List inf in [
+  if (_stmsgs != null)
+    return _stmsgs;
+
+  _stmsgs = new HashMap();
+  for (List inf in [
   //http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
   [100, "Continue"],
   [101, "Switching Protocols"],
@@ -478,8 +481,7 @@ Map<int, String> get statusMessages {
   [503, "Service Unavailable"],
   [504, "Gateway Timeout"],
   [505, "HTTP Version Not Supported"]]) {
-      _stmsgs[inf[0]] = inf[1];
-    }
+    _stmsgs[inf[0]] = inf[1];
   }
   return _stmsgs;
 }

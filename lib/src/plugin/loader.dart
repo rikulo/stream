@@ -259,6 +259,9 @@ Future loadAsset(HttpConnect connect, Asset asset, [AssetCache cache]) {
  */
 bool checkIfHeaders(HttpConnect connect, DateTime lastModified, String etag) {
   final HttpResponse response = connect.response;
+  if (response.statusCode >= 300)
+    return true; //Ignore If, since caused by forward-by-error (see also Issue 59)
+
   final HttpRequest request = connect.request;
   final HttpHeaders rqheaders = request.headers;
 

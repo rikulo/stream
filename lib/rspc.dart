@@ -21,4 +21,4 @@ part "src/rspc/compiler.dart";
 part "src/rspc/tag.dart";
 part "src/rspc/tag_util.dart";
 
-const VERSION = "0.8.6";
+const VERSION = "0.8.7";

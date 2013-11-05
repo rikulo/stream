@@ -5,6 +5,7 @@ import "dart:io";
 import "dart:async";
 import "package:stream/stream.dart";
 import "package:rikulo_commons/mirrors.dart" show ObjectUtil;
+import "package:rikulo_commons/io.dart" show contentTypes;
 
 part "includerView.rsp.dart";
 part "fragView.rsp.dart";

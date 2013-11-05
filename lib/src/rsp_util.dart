@@ -23,7 +23,7 @@ class Rsp {
       headers.chunkedTransferEncoding = connect.server.chunkedTransferEncoding;
 
       if (contentType != null && !contentType.isEmpty)
-        headers.contentType = ContentType.parse(contentType);
+        headers.contentType = parseContentType(contentType);
 
       final String realETag  = etag != null ? _getETag(lastModified, etag): null;
       bool isPreconditionFailed = false;

@@ -11,8 +11,9 @@ import "package:logging/logging.dart";
 import 'package:path/path.dart' as Path;
 
 import "package:rikulo_commons/util.dart";
-import "package:rikulo_commons/mirrors.dart";
+import "package:rikulo_commons/mirrors.dart" show ClassUtil;
 import "package:rikulo_commons/logging.dart";
+import "package:rikulo_commons/io.dart" show contentTypes;
 
 import "stream.dart";
 

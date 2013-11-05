@@ -3,6 +3,7 @@ library hello_dynamic;
 
 import "dart:convert" show JSON;
 import "package:stream/stream.dart";
+import "package:rikulo_commons/io.dart" show contentTypes;
 
 //URI mapping
 var _mapping = {

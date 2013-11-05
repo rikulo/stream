@@ -1,5 +1,9 @@
 #CHANGES
 
+**0.8.7**
+
+* The global variables, contentTypes and statusMessages, are moved to Rikulo Commons.
+
 **0.8.6+2**
 
 * Issue 59: error mapping not work

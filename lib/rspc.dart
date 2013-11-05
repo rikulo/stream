@@ -14,8 +14,6 @@ import 'package:path/path.dart' as Path;
 import "package:rikulo_commons/util.dart";
 import "package:rikulo_commons/io.dart" show contentTypes;
 
-import "stream.dart" show contentTypes;
-
 part "src/rspc/main.dart";
 part "src/rspc/build.dart";
 part "src/rspc/compiler.dart";

@@ -36,7 +36,7 @@ class _StreamServer implements StreamServer {
     _resLoader = new ResourceLoader(_homeDir);
   }
   static String _getRootPath() {
-    String path = Platform.script.toString();
+    String path = Platform.script.toFilePath();
     path = path == null ? Path.current:
       Path.absolute(Path.normalize(Path.dirname(path)));
 

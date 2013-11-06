@@ -158,7 +158,7 @@ class Compiler {
     if (_contentType == null && sourceName != null) {
       final i = sourceName.lastIndexOf('.');
       if (i >= 0) {
-        final ctype = contentTypes[sourceName.substring(i + 1)];
+        final ctype = getContentType(sourceName.substring(i + 1));
         if (ctype != null)
           _contentType = ctype.toString();
       }

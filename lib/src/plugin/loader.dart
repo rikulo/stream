@@ -199,7 +199,7 @@ Future loadAsset(HttpConnect connect, Asset asset, [AssetCache cache]) {
   if (!isIncluded) {
     final ext = Path.extension(asset.path);
     if (!ext.isEmpty) {
-      contentType = contentTypes[ext.substring(1)];
+      contentType = getContentType(ext.substring(1));
       if (contentType != null)
         response.headers.contentType = contentType;
     }

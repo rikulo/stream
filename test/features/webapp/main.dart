@@ -5,7 +5,6 @@ import "dart:io";
 import "dart:async";
 import "package:stream/stream.dart";
 import "package:rikulo_commons/mirrors.dart" show ObjectUtil;
-import "package:rikulo_commons/io.dart" show contentTypes;
 
 part "includerView.rsp.dart";
 part "fragView.rsp.dart";
@@ -28,13 +27,13 @@ var _uriMapping = {
   "/search": search,
   "/(group:g[a-z]*p)/(matching:ma[a-z]*)": (HttpConnect connect) {
     connect.response
-      ..headers.contentType = contentTypes["text/plain"]
+      ..headers.contentType = ContentType.parse("text/plain")
       ..write("Group Matching: ${connect.dataset['group']} and ${connect.dataset['matching']}");
   },
   "/old-link(extra:.*)": "/new-link(extra)/more",
   "/new-link(option:.*)?": (HttpConnect connect) {
     connect.response
-      ..headers.contentType = contentTypes["text/plain"]
+      ..headers.contentType = ContentType.parse("text/plain")
       ..write("old-link forwarded to ${connect.request.uri}"
         "(option ${connect.dataset['option']})");
   },
@@ -46,12 +45,12 @@ var _uriMapping = {
   },
   "/log5": (HttpConnect connect) {
     connect.response
-      ..headers.contentType = contentTypes["text/plain"]
+      ..headers.contentType = ContentType.parse("text/plain")
       ..write("You see two logs shown on the console");
   },
   "/longop": (HttpConnect connect) {
     connect.response
-      ..headers.contentType = contentTypes["text/html"]
+      ..headers.contentType = ContentType.parse("text/html")
       ..write("<html><body><p>This is used to test if client aborts the connection</p>"
         "<p>Close the browser tab as soon as possible (in 10 secs)</p>");
     return new Future.delayed(const Duration(seconds: 10), () {
@@ -76,7 +75,7 @@ var _errMapping = {
   "404": "/404.html",
   "500": (HttpConnect connect) {
     connect.response
-      ..headers.contentType = contentTypes["text/html"]
+      ..headers.contentType = ContentType.parse("text/html")
       ..write("""
 <html>
 <head><title>500: ${connect.errorDetail.error.runtimeType}</title></head>
@@ -90,7 +89,7 @@ var _errMapping = {
   "features.RecoverError": (HttpConnect connect) {
     connect.errorDetail = null; //clear error
     connect.response
-      ..headers.contentType = contentTypes["text/plain"]
+      ..headers.contentType = ContentType.parse("text/plain")
       ..write("Recovered from an error");
   }
 };

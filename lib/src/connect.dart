@@ -63,7 +63,7 @@ typedef Future RequestFilter(HttpConnect connect, Future chain(HttpConnect conn)
  *     void serverInfo(HttpConnect connect) {
  *       final info = {"name": "Rikulo Stream", "version": connect.server.version};
  *       connect.response
- *         ..headers.contentType = contentTypes["json"]
+ *         ..headers.contentType = getContentType("json")
  *         ..write(JSON.encode(info));
  *     }
  *
@@ -304,12 +304,8 @@ class HttpStatusException extends HttpException {
   final int statusCode;
 
   factory HttpStatusException(int statusCode, {String message, Uri uri}) {
-    if (message == null) {
-      message = httpStatusMessages[statusCode];
-      if (message == null)
-        message = "Unknown error";
-    }
-    return new HttpStatusException._(statusCode, message, uri: uri);
+    return new HttpStatusException._(statusCode,
+      message != null ? message: "Status $statusCode", uri: uri);
   }
   HttpStatusException._(this.statusCode, String message, {Uri uri}):
     super(message, uri: uri);
@@ -318,23 +314,26 @@ class HttpStatusException extends HttpException {
 }
 /// HTTP 403 exception.
 class Http403 extends HttpStatusException {
-  Http403([String path]): super._(403, _status2msg(403, path));
-  Http403.fromUri(Uri uri): super._(403, _status2msg(403, uri.path), uri: uri);
+  Http403([String path]): super._(403, _status2msg(_M403, path));
+  Http403.fromUri(Uri uri): super._(403, _status2msg(_M403, uri.path), uri: uri);
   Http403.fromConnect(HttpConnect connect): this.fromUri(connect.request.uri);
 }
 /// HTTP 404 exception.
 class Http404 extends HttpStatusException {
-  Http404([String path]): super._(404, _status2msg(404, path));
-  Http404.fromUri(Uri uri): super._(404, _status2msg(404, uri.path), uri: uri);
+  Http404([String path]): super._(404, _status2msg(_M404, path));
+  Http404.fromUri(Uri uri): super._(404, _status2msg(_M404, uri.path), uri: uri);
   Http404.fromConnect(HttpConnect connect): this.fromUri(connect.request.uri);
 }
 /// HTTP 500 exception.
 class Http500 extends HttpStatusException {
-  Http500([String cause]): super._(500, _status2msg(500, cause));
+  Http500([String cause]): super._(500, _status2msg(_M500, cause));
   Http500.fromUri(Uri uri, [String cause]): super._(500,
-      _status2msg(500, cause != null ? "${uri.path}: $cause": uri.path), uri: uri);
+      _status2msg(_M500, cause != null ? "${uri.path}: $cause": uri.path), uri: uri);
   Http500.fromConnect(HttpConnect connect, [String cause]):
       this.fromUri(connect.request.uri, cause);
 }
-String _status2msg(int code, String cause)
-=> cause != null ? "${httpStatusMessages[code]}: $cause": null;
+
+const _M403 = "Forbidden", _M404 = "Not Found", _M500 = "Internal Server Error";
+
+String _status2msg(String reason, String cause)
+=> cause != null ? "$reason: $cause": reason;

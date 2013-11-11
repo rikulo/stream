@@ -16,7 +16,7 @@ void main(List<String> arguments) {
   if (!_parseArgs(arguments, env))
     return;
 
-  for (var name in env.sources)
+  for (final String name in env.sources)
     compileFile(name, encoding: env.encoding, verbose: env.verbose);
 }
 

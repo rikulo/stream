@@ -173,14 +173,14 @@ class FileLoader extends AssetLoader {
 
   @override
   Future load(HttpConnect connect, String uri) {
-    var path = uri.substring(1); //must start with '/'
+    String path = uri.substring(1); //must start with '/'
     path = Path.join(rootDir, path);
 
     final File file = new File(path);
-    return file.exists().then((exists) {
+    return file.exists().then((bool exists) {
       if (exists)
         return loadAsset(connect, new _FileAsset(file), _cache);
-      return new Directory(path).exists().then((exists) {
+      return new Directory(path).exists().then((bool exists) {
         if (exists)
           return _loadFileAt(connect, uri, path, connect.server.indexNames, 0, _cache);
         throw new Http404(uri);

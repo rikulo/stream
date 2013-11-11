@@ -100,7 +100,7 @@ class Compiler {
           }
         } else if (token is _Closing) {
           final _Closing closing = token;
-          var tagnm;
+          String tagnm;
           if (_current.tag == null || (tagnm = _current.tag.name) != closing.name) {
             String msg = "Unexpected [/${closing.name}]";
             if (tagnm != null)
@@ -177,7 +177,7 @@ class Compiler {
 
     if (_partOf == null || _partOf.isEmpty) { //independent library
       String lib = Path.basename(sourceName);
-      var i = lib.lastIndexOf('.'); //remove only one extension
+      int i = lib.lastIndexOf('.'); //remove only one extension
       if (i >= 0) lib = lib.substring(0, i);
 
       final sb = new StringBuffer(), len = lib.length;

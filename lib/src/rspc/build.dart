@@ -47,7 +47,7 @@ void compileFile(String sourceName, {String destinationName, bool verbose : fals
     print("Compile ${source.path} to ${i > 0 ? dest.path.substring(i) : dest.path}");
   }
   
-  source.readAsString(encoding: encoding).then((text) {
+  source.readAsString(encoding: encoding).then((String text) {
     final out = dest.openWrite(encoding: encoding);
     try {
       compile(text, out, sourceName: sourceName,
@@ -151,7 +151,7 @@ void build(List<String> arguments, {String filenameMapper(String source),
 }
 int _rspSource(String name) {
   if (!name.endsWith(".rsp.dart")) {
-    var i = name.indexOf(".rsp.");
+    int i = name.indexOf(".rsp.");
     if (i >= 0 && name.indexOf('/', i += 5) < 0 && name.indexOf('.', i) < 0)
       return i;
   }

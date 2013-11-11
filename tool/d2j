@@ -47,7 +47,7 @@ function d2j {
 				if [ "$minify" = "--minify" ] ; then
 					rm $f.js.map
 					rm $f.js.deps
-					rm $f.dart.precompiled.js
+					rm $f.precompiled.js
 				fi
 			else
 				exit 1

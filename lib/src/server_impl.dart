@@ -210,7 +210,7 @@ class _StreamServer implements StreamServer {
     .catchError((err, stackTrace) {
       _handleErr(null, err, stackTrace);
     })
-    .then((iserver) {
+    .then((HttpServer iserver) {
       final channel = new _HttpChannel(this, iserver, address, iserver.port, false);
       _startChannel(channel);
       _logHttpStarted(channel);
@@ -228,7 +228,7 @@ class _StreamServer implements StreamServer {
     .catchError((err, stackTrace) {
       _handleErr(null, err, stackTrace);
     })
-    .then((iserver) {
+    .then((HttpServer iserver) {
       final channel = new _HttpChannel(this, iserver, address, iserver.port, true);
       _startChannel(channel);
       _logHttpStarted(channel);

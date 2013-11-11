@@ -100,7 +100,7 @@ Future _loadFileAt(HttpConnect connect, String uri, String dir,
     throw new Http404(uri);
 
   final File file = new File(Path.join(dir, names[j]));
-  return file.exists().then((exists) {
+  return file.exists().then((bool exists) {
     return exists ? loadAsset(connect, new _FileAsset(file), cache):
       _loadFileAt(connect, uri, dir, names, j + 1, cache);
   });

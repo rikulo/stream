@@ -75,7 +75,7 @@ typedef Future RequestFilter(HttpConnect connect, Future chain(HttpConnect conn)
  *       final res = connect.response;
  *       new File("some_file").openRead().listen((data) {res.writeBytes(data);},
  *         onDone: () => completer.complete(),
- *         onError: (err) => completer.completeError(err));
+ *         onError: (err, stackTrace) => completer.completeError(err, stackTrace));
  *       return completer.future;
  *     }
  *

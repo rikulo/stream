@@ -4,6 +4,7 @@ args.src.usage
 logging
 meta
 metadata
+mime
 options
 path
 rikulo_async

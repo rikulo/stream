@@ -8,7 +8,7 @@ typedef void _ConnectErrorCallback(HttpConnect connect, err, [stackTrace]);
 
 class _StreamServer implements StreamServer {
   @override
-  final String version = "0.8.7";
+  final String version = "1.0.0";
   @override
   final Logger logger;
 
@@ -97,11 +97,6 @@ class _StreamServer implements StreamServer {
     }
   }
   void _handleErr(HttpConnect connect, error, stackTrace) {
-    if (connect == null) {
-      _shout(null, error, stackTrace);
-      return;
-    }
-
     try {
       if (_onError != null)
         _onError(connect, error, stackTrace);
@@ -135,10 +130,12 @@ class _StreamServer implements StreamServer {
         _ensureFuture(handler(connect), true): forward(connect, handler))
       .then((_) {
         _close(connect);
-      }).catchError((err) {
+      })
+      .catchError((err, st) {
         if (!shouted)
           _shout(connect, error, stackTrace);
-        _shout(connect, "Unable to handle the error with $handler. Reason: $err");
+        _shout(connect, "Unable to handle the error with $handler. "
+          "Reason: $err${st != null ? '\n$st': ''}");
         _close(connect);
       });
     } catch (e) {
@@ -146,10 +143,9 @@ class _StreamServer implements StreamServer {
     }
   }
   void _shout(HttpConnect connect, err, [st]) {
-    final buf = new StringBuffer();
-    if (connect != null)
-      buf..write("(")..write(connect.request.uri)..write(") ");
-    buf.write(err);
+    final buf = new StringBuffer()
+      ..write("(")..write(connect.request.uri)..write(") ")
+      ..write(err);
     if (st != null)
       buf..write("\n")..write(st);
     logger.shout(buf.toString());
@@ -207,9 +203,6 @@ class _StreamServer implements StreamServer {
     if (address == null)
       address = InternetAddress.ANY_IP_V4;
     return HttpServer.bind(address, port, backlog: backlog)
-    .catchError((err, stackTrace) {
-      _handleErr(null, err, stackTrace);
-    })
     .then((HttpServer iserver) {
       final channel = new _HttpChannel(this, iserver, address, iserver.port, false);
       _startChannel(channel);
@@ -225,9 +218,6 @@ class _StreamServer implements StreamServer {
       address = InternetAddress.ANY_IP_V4;
     return HttpServer.bindSecure(address, port, certificateName: certificateName,
         requestClientCertificate: requestClientCertificate, backlog: backlog)
-    .catchError((err, stackTrace) {
-      _handleErr(null, err, stackTrace);
-    })
     .then((HttpServer iserver) {
       final channel = new _HttpChannel(this, iserver, address, iserver.port, true);
       _startChannel(channel);
@@ -269,16 +259,14 @@ class _StreamServer implements StreamServer {
           _handleErr(connect, err, stackTrace);
       });
 
-      //TODO: use runZoned if it is available (then we don't need try/catch
-      //in _handle and _handleErr)
+      //CONSIDER: use runZoned
+      //Current spec: it is the handler's job to call runZoned if necessary.
 
       _handle(connect, 0).then((_) { //0 means filter from beginning
         _close(connect);
       }).catchError((err, stackTrace) {
         _handleErr(connect, err, stackTrace);
       });
-    }, onError: (err, stackTrace) {
-      _handleErr(null, err, stackTrace);
     });
     _channels.add(channel);
   }

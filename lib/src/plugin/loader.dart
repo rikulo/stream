@@ -130,7 +130,7 @@ abstract class AssetLoader implements ResourceLoader {
    * If null is returned, ETag header won't be generated.
    *
    * Default: a string combining [lastModified] and [assetSize]
-   * if [useEtag] is true.
+   * if [useETag] is true.
    * You can override this method if necessary.
    */
   String getETag(Asset asset, DateTime lastModified, int assetSize)

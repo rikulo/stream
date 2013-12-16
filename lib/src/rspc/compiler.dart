@@ -23,6 +23,7 @@ class Compiler {
   //Look-ahead tokens
   final List _lookAhead = [];
   final List<_IncInfo> _incs = []; //included
+  final List<_QuedTag> _headers = []; //the queued headers
   String _extra = ""; //extra whitespaces
   String _lastModified, _etag;
   int _nextVar = 0; //used to implement TagContext.nextVar()
@@ -76,6 +77,13 @@ class Compiler {
         outText(_current, text, prevln);
       } else {
         if (!started) {
+          if (token is Tag && (token as Tag).name == "header") {
+            assert(!(token as Tag).hasClosing);
+            final int line = _line;
+            _headers.add(new _QuedTag(token, _tagData(tag: token), line));
+            continue;
+          }
+
           started = true;
           _start();
         }
@@ -218,9 +226,20 @@ class Compiler {
     _write(") { //#$line\n"
       "  var _t0_, _cs_ = new List<HttpConnect>();\n" //_t0_ is reserved for tags
       "  HttpRequest request = connect.request;\n"
-      "  HttpResponse response = connect.response;\n"
-      "  if (!Rsp.init(connect, ${toEL(_contentType)}");
+      "  HttpResponse response = connect.response;\n");
 
+    if (!_headers.isEmpty) {
+      for (final _QuedTag qt in _headers) {
+        push(qt.tag, qt.line);
+        qt.tag
+          ..begin(_current, qt.data)
+          ..end(_current);
+        pop();
+      }
+      _writeln();
+    }
+
+    _write("  if (!Rsp.init(connect, ${toEL(_contentType)}");
     if (_lastModified != null) {
       _write(',\n  lastModified: ');
       if (_lastModified == "compile")
@@ -724,8 +743,9 @@ class Compiler {
     print("$sourceName:${line != null ? line: _current.line}: $message");
   }
 
-  void push(Tag tag) {
-    _tagCtxs.add(_current = new _TagContext.child(_current, tag, _line));
+  void push(Tag tag, [int line]) {
+    _tagCtxs.add(_current =
+      new _TagContext.child(_current, tag, line != null ? line: _line));
   }
   void pop() {
     final prev = _tagCtxs.removeLast();
@@ -790,9 +810,10 @@ class _IncInfo {
 }
 ///Queued tag
 class _QuedTag {
-  Tag tag;
-  String data;
-  _QuedTag(this.tag, this.data);
+  final Tag tag;
+  final String data;
+  final int line;
+  _QuedTag(this.tag, this.data, this.line);
 }
 
 int _startsWith(String data, int i, String pattern) {

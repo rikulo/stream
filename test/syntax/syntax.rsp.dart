@@ -10,17 +10,18 @@ import 'dart:collection' show LinkedHashMap;
 var someExternal = 123;
 
 /** Template, syntax, for rendering the view. */
-Future syntax(HttpConnect connect, {foo, bool c:false}) { //#5
+Future syntax(HttpConnect connect, {foo, bool c:false}) { //#7
   var _t0_, _cs_ = new List<HttpConnect>();
   HttpRequest request = connect.request;
   HttpResponse response = connect.response;
-  if (!Rsp.init(connect, foo.contentType))
-    return new Future.value();
 
   response.headers..add("age", "129")
     ..add("accept-ranges", foo.acceptRanges); //header#5
 
   response.headers..add("Cache-Control", "no-cache"); //header#6
+
+  if (!Rsp.init(connect, foo.contentType))
+    return new Future.value();
 
   response.write("""<!DOCTYPE html>
 <html>

@@ -2,6 +2,10 @@
 
 ##1.0.0
 
+*December 16, 2013*
+
+* Issue 67: RSP's header directives shall be generated before handling ETAG and Last-Modified
+
 *November 20, 2013*
 
 * Issue 61: HttpServer.bind(address, port, backlog: backlog) return null

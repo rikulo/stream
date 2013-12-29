@@ -1,0 +1,13 @@
+*.dart text eol=lf
+*.html text eol=lf
+*.css text eof=lf
+*.less text eof=lf
+*.xml text eol=lf
+*.md text eol=lf
+*.yaml text eol=lf
+*.txt text eol=lf
+*.js text eof=lf
+*.lst text eof=lf
+d2d text eof=lf
+d2j text eof=lf
+l2c text eof=lf

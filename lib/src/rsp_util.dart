@@ -14,6 +14,8 @@ class Rsp {
    * 
    * It returns false if the content shall not be generated.
    * The caller shall stop immediately if this method returns false.
+   *
+   * * [contentType] - ignored if null or empty.
    */
   static bool init(HttpConnect connect, String contentType,
     {DateTime lastModified, String etag}) {
@@ -169,5 +171,9 @@ class Rsp {
   }
 }
 
-String _getETag(DateTime lastModified, String etagId)
-=> 'W/"$etagId-${lastModified != null ? lastModified.millisecondsSinceEpoch: 0}"';
+String _getETag(DateTime lastModified, String etagId) {
+  final int val = lastModified == null ? 0:
+    lastModified.millisecondsSinceEpoch
+      & (etagId.length > 7 ? 0xfff: etagId.length > 4 ? 0xffffff: 0x7fffffff);
+  return 'W/"$etagId-${val.toRadixString(16)}"';
+}

@@ -165,7 +165,7 @@ bool _setHeaders(HttpConnect connect, _AssetDetail detail, List<_Range> ranges) 
 }
 
 String _getETag(DateTime lastModified, int assetSize)
-=> 'W/"$assetSize-${lastModified.millisecondsSinceEpoch}"';
+=> 'W/"$assetSize-${lastModified.millisecondsSinceEpoch.toRadixString(16)}"';
 
 bool _isTextType(ContentType ctype) {
   String ptype;

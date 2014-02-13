@@ -69,7 +69,7 @@ abstract class _AbstractConnect implements HttpConnect {
   @override
   void redirect(String uri, {int status: HttpStatus.MOVED_TEMPORARILY}) {
     response.statusCode = status;
-    response.headers.set("Location", _toCompleteUrl(request, uri));
+    response.headers.set(HttpHeaders.LOCATION, _toCompleteUrl(request, uri));
   }
   @override
   Future forward(String uri, {HttpRequest request, HttpResponse response})

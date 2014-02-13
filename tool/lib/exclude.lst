@@ -2,6 +2,7 @@ args
 args.src.parser
 args.src.usage
 dart.collection_helpers.wrappers
+dart.pkg.collection.wrappers
 logging
 meta
 metadata

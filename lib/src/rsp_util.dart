@@ -66,7 +66,7 @@ class Rsp {
    *`xml` (for HTML/XML) and `query` (for query string).
    * If omitted, `xml` is assumed, i.e, < will be converted to &amp; and so on.
    *
-   * * [maxlength]: limit the number of characters being output.
+   * * [maxLength]: limit the number of characters being output.
    * If non positive (default), the whole string will be output.
    * 
    * * [firstLine]: output only the first non-empty line (default: false).
@@ -74,7 +74,7 @@ class Rsp {
    * * [pre]: whether to replace whitespace with `&nbsp;` (default: false).
    * It is meaningful only if encode is `xml`.
    */
-  static String nnx(value, {String encode, int maxlength: 0, bool firstLine: false,
+  static String nnx(value, {String encode, int maxLength: 0, bool firstLine: false,
     pre: false}) {
     String str = value != null ? value.toString(): "";
     if (firstLine) {
@@ -92,8 +92,8 @@ class Rsp {
       }
     }
 
-    if (maxlength > 0 && maxlength > str.length)
-      str = str.substring(0, maxlength) + "...";
+    if (maxLength > 0 && maxLength > str.length)
+      str = maxLength < 3 ? "...": str.substring(0, maxLength - 3) + "...";
 
     switch (encode) {
       case "none":
@@ -127,7 +127,7 @@ class Rsp {
   /** Serializes the given object into a JSON string by use of
    * [JSON.encode](http://api.dartlang.org/docs/releases/latest/dart_convert.html#JSON).
    */
-  static String json(data) => JSON.encode(data).replaceAll(_scriptPtn, "<\\/");
+  static String json(data) => JSON.encode(data).replaceAll(_scriptPtn, r"<\/");
   static final RegExp _scriptPtn = new RegExp(r"</(?=script>)", caseSensitive: false);
     //it is possible that a string contains </script>
 

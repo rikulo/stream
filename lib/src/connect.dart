@@ -300,15 +300,16 @@ class ErrorDetail {
 
 /** A HTTP status exception.
  */
-class HttpStatusException extends HttpException {
+class HttpStatusException implements HttpException {
+  final String message;
   final int statusCode;
+  final Uri uri;
 
   factory HttpStatusException(int statusCode, {String message, Uri uri}) {
     return new HttpStatusException._(statusCode,
       message != null ? message: "Status $statusCode", uri: uri);
   }
-  HttpStatusException._(this.statusCode, String message, {Uri uri}):
-    super(message, uri: uri);
+  HttpStatusException._(this.statusCode, this.message, {Uri this.uri});
 
   String toString() => "HttpStatusException($statusCode: $message)";
 }
@@ -327,13 +328,14 @@ class Http404 extends HttpStatusException {
 /// HTTP 500 exception.
 class Http500 extends HttpStatusException {
   Http500([String cause]): super._(500, _status2msg(_M500, cause));
-  Http500.fromUri(Uri uri, [String cause]): super._(500,
-      _status2msg(_M500, cause != null ? "${uri.path}: $cause": uri.path), uri: uri);
+  Http500.fromUri(Uri uri, [String cause]):
+      super._(500, _status2msg(_M500,
+          cause != null ? "${uri.path}: $cause": uri.path), uri: uri);
   Http500.fromConnect(HttpConnect connect, [String cause]):
       this.fromUri(connect.request.uri, cause);
 }
 
-const _M403 = "Forbidden", _M404 = "Not Found", _M500 = "Internal Server Error";
+const String _M403 = "Forbidden", _M404 = "Not Found", _M500 = "Internal Server Error";
 
 String _status2msg(String reason, String cause)
 => cause != null ? "$reason: $cause": reason;

@@ -1,5 +1,10 @@
 #CHANGES
 
+##1.1.0
+
+* The `maxlength` argument of `RspUtil.nnx()` is renamed to `maxLength`.
+* `Server.onIdle()` and `Server.connectionCount` are added.
+
 ##1.0.0
 
 *December 16, 2013*

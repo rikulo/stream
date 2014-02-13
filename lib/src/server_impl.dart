@@ -3,8 +3,10 @@
 // Author: tomyeh
 part of stream;
 
-/** The error handler for HTTP connection. */
+///The error handler for HTTP connection.
 typedef void _ConnectErrorCallback(HttpConnect connect, err, [stackTrace]);
+///The callback of onIdle
+typedef void _OnIdleCallback();
 
 class _StreamServer implements StreamServer {
   @override
@@ -18,6 +20,8 @@ class _StreamServer implements StreamServer {
   ResourceLoader _resLoader;
   final Router _router;
   _ConnectErrorCallback _onError;
+  _OnIdleCallback _onIdle;
+  int _connectionCount = 0;
   final bool _futureOnly;
 
   _StreamServer(this._router, String homeDir, LoggingConfigurer loggingConfigurer,
@@ -112,7 +116,8 @@ class _StreamServer implements StreamServer {
         if (error is! HttpStatusException) {
           _shout(connect, error, stackTrace);
           shouted = true;
-          error = new Http500(error);
+          error = new Http500.fromConnect(connect,
+            error != null ? error.toString(): "");
         }
 
         final code = error.statusCode;
@@ -151,8 +156,13 @@ class _StreamServer implements StreamServer {
     logger.shout(buf.toString());
   }
   void _close(HttpConnect connect) {
-    connect.response.close();
-      //no need to catch since close() is asynchronous
+    try {
+      connect.response.close();
+        //no need to catch since close() is asynchronous
+    } finally {
+      if (--_connectionCount == 0 && _onIdle != null)
+        _onIdle();
+    }
   }
 
   @override
@@ -195,6 +205,12 @@ class _StreamServer implements StreamServer {
   void onError(void onError(HttpConnect connect, err, [stackTrace])) {
     _onError = onError;
   }
+  @override
+  void onIdle(void onIdle()) {
+    _onIdle = onIdle;
+  }
+  @override
+  int get connectionCount => _connectionCount;
 
   @override
   bool get isRunning => !_channels.isEmpty;
@@ -249,6 +265,8 @@ class _StreamServer implements StreamServer {
       (req = _unVersionPrefix(req, uriVersionPrefix)).response.headers
         ..set(HttpHeaders.SERVER, serverInfo)
         ..date = new DateTime.now();
+
+      ++_connectionCount;
 
       //protect from aborted connection
       final connect = new _HttpConnect(channel, req, req.response);

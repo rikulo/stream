@@ -324,6 +324,27 @@ abstract class StreamServer {
    */
   void onError(void onError(HttpConnect connect, error, [stackTrace]));
 
+  /** Specifies a callback called when the server is idle, i.e.,
+   * not serving any requests ([connectionCount] is 0).
+   *
+   * It is useful if you'd like to stop the server *gracefully*:
+   *
+   *     server.onIdle(() => server.stop());
+   *
+   * In additions, you can do some house cleaning here too.
+   *
+   * * See also [connectionCount]
+   */
+  void onIdle(void onIdle());
+
+  /** The number of active connections.
+   * It is also the number of requests in processing.
+   * If zero, it means the server is idle.
+   *
+   * * See also [onIdle].
+   */
+  int get connectionCount;
+
   /** Maps the given URI to the given handler.
    *
    * * [uri] - a regular expression used to match the request URI.

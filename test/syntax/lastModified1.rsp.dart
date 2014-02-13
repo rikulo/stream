@@ -28,7 +28,7 @@ Future lastModified1(HttpConnect connect, {input}) { //#7
   <body>
     """); //#7
 
-  response.write(Rsp.nnx(input.whatever * input.another, encode: 'none', maxlength: 20)); //#12
+  response.write(Rsp.nnx(input.whatever * input.another, encode: 'none', maxLength: 20)); //#12
 
 
   response.write("""

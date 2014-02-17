@@ -10,7 +10,7 @@ typedef void _OnIdleCallback();
 
 class _StreamServer implements StreamServer {
   @override
-  final String version = "1.0.0";
+  final String version = "1.1.0";
   @override
   final Logger logger;
 

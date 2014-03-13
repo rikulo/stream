@@ -40,6 +40,15 @@ var _uriMapping = {
   "/500": (HttpConnect connect) {
     throw new Exception("something wrong");
   },
+  "/async-err": (HttpConnect connect) {
+    new Future(() {
+      throw new Exception("in async operation");
+    });
+
+    connect.response
+      ..headers.contentType = ContentType.parse("text/html")
+      ..write("<html><body><p>Check the server console if the server stays alive and log the error.</p></body></html>");
+  },
   "/recoverable-error": (HttpConnect connect) {
     throw new RecoverError();
   },

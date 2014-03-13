@@ -316,11 +316,17 @@ abstract class StreamServer {
    */
   ResourceLoader resourceLoader;
 
-  /** The application-specific error handler to listen all errors that
-   * ever happen in this server.
+  /** The application-specific error handler to listen all uncaught errors
+   * that ever happen in this server.
    *
-   * If the [connect] argument is null, it means it is a server error.
+   * If the [connect] argument is null, it means it is a server error,
+   * or a uncaught error happening in an asynchronous operation.
    * If not null, it means it is caused by an event handler or an event filter.
+   *
+   * Notice: all uncaught error will be handled automatically, such as
+   * closing up the connection, if any, and log the error message,
+   * in additions to invoking [onError] you registered.
+   * Thus, you rarely need to register an error handler.
    */
   void onError(void onError(HttpConnect connect, error, [stackTrace]));
 

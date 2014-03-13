@@ -1,5 +1,9 @@
 #CHANGES
 
+##1.1.1
+
+* Issue 74: StreamServer.onError shall catch all uncaught errors
+
 ##1.1.0
 
 * The `maxlength` argument of `RspUtil.nnx()` is renamed to `maxLength`.

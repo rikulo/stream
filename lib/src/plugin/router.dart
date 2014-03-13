@@ -215,6 +215,7 @@ class DefaultRouter implements Router {
     for (; iFilter < _filterMapping.length; ++iFilter)
       if (_filterMapping[iFilter].match(connect, uri))
         return iFilter;
+    return null;
   }
   @override
   RequestFilter getFilterAt(int iFilter) {

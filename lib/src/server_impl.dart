@@ -3,6 +3,9 @@
 // Author: tomyeh
 part of stream;
 
+const String _VERSION = "1.1.1";
+const String _SERVER_HEADER = "Stream/$_VERSION";
+
 ///The error handler for HTTP connection.
 typedef void _ConnectErrorCallback(HttpConnect connect, err, [stackTrace]);
 ///The callback of onIdle
@@ -10,7 +13,7 @@ typedef void _OnIdleCallback();
 
 class _StreamServer implements StreamServer {
   @override
-  final String version = "1.1.0";
+  final String version = _VERSION;
   @override
   final Logger logger;
 
@@ -102,8 +105,19 @@ class _StreamServer implements StreamServer {
   }
   void _handleErr(HttpConnect connect, error, stackTrace) {
     try {
-      if (_onError != null)
-        _onError(connect, error, stackTrace);
+      if (_onError != null) {
+        try {
+          _onError(connect, error, stackTrace);
+        } catch (err, st) {
+          _shout(connect, "Error in $_onError. " + _errorToString(err, st));
+        }
+      }
+
+      if (connect == null) {
+        _shout(null, "Uncaught error. " + _errorToString(error, stackTrace));
+        return;
+      }
+
       if (connect.errorDetail != null) { //called twice; ignore 2nd one
         _shout(connect, error, stackTrace);
         return; //done
@@ -139,18 +153,23 @@ class _StreamServer implements StreamServer {
       .catchError((err, st) {
         if (!shouted)
           _shout(connect, error, stackTrace);
-        _shout(connect, "Unable to handle the error with $handler. "
-          "Reason: $err${st != null ? '\n$st': ''}");
+        _shout(connect, "Error in $handler. " + _errorToString(err, st));
         _close(connect);
       });
-    } catch (e) {
-      _close(connect);
+    } catch (err, st) {
+      _shout(connect, "Error in _handleErr(). " + _errorToString(err, st));
+      if (connect != null)
+        _close(connect);
     }
   }
+
+  static String _errorToString(err, st) => "$err${st != null ? '\n$st': ''}";
+
   void _shout(HttpConnect connect, err, [st]) {
-    final buf = new StringBuffer()
-      ..write("(")..write(connect.request.uri)..write(") ")
-      ..write(err);
+    final StringBuffer buf = new StringBuffer();
+    if (connect != null)
+      buf..write("[")..write(connect.request.uri)..write("] ");
+    buf..write(err);
     if (st != null)
       buf..write("\n")..write(st);
     logger.shout(buf.toString());
@@ -160,8 +179,13 @@ class _StreamServer implements StreamServer {
       connect.response.close();
         //no need to catch since close() is asynchronous
     } finally {
-      if (--_connectionCount == 0 && _onIdle != null)
-        _onIdle();
+      if (--_connectionCount == 0 && _onIdle != null) {
+        try {
+          _onIdle();
+        } catch (err, st) {
+          _shout(connect, "Error in $_onIdle. " + _errorToString(err, st));
+        }
+      }
     }
   }
 
@@ -244,7 +268,7 @@ class _StreamServer implements StreamServer {
   void _logHttpStarted(HttpChannel channel) {
     final address = channel.address, port = channel.port;
     logger.info(
-      "Rikulo Stream Server $version starting${channel.isSecure ? ' HTTPS': ''} on "
+      "Rikulo Stream Server $_VERSION starting${channel.isSecure ? ' HTTPS': ''} on "
       "${address is InternetAddress ? (address as InternetAddress).address: address}:$port\n"
       "Home: ${homeDir}");
   }
@@ -253,40 +277,41 @@ class _StreamServer implements StreamServer {
     final channel = new _HttpChannel.fromSocket(
         this, new HttpServer.listenOn(socket), socket);
     _startChannel(channel);
-    logger.info("Rikulo Stream Server $version starting on $socket\n"
+    logger.info("Rikulo Stream Server $_VERSION starting on $socket\n"
       "Home: ${homeDir}");
     return channel;
   }
   void _startChannel(_HttpChannel channel) {
-    final String serverInfo = "Stream/$version";
-    channel._iserver
-    ..sessionTimeout = sessionTimeout
-    ..listen((HttpRequest req) {
-      (req = _unVersionPrefix(req, uriVersionPrefix)).response.headers
-        ..set(HttpHeaders.SERVER, serverInfo)
-        ..date = new DateTime.now();
+    runZoned(() {
+      channel._iserver
+      ..sessionTimeout = sessionTimeout
+      ..listen((HttpRequest req) {
+        (req = _unVersionPrefix(req, uriVersionPrefix)).response.headers
+          ..set(HttpHeaders.SERVER, _SERVER_HEADER)
+          ..date = new DateTime.now();
 
-      ++_connectionCount;
+        ++_connectionCount;
 
-      //protect from aborted connection
-      final connect = new _HttpConnect(channel, req, req.response);
-      req.response.done.catchError((err, stackTrace) {
-        if (err is SocketException)
-          logger.fine("${connect.request.uri}: $err"); //nothing to do
-        else
+        //protect from aborted connection
+        final connect = new _HttpConnect(channel, req, req.response);
+        req.response.done.catchError((err, stackTrace) {
+          if (err is SocketException)
+            logger.fine("${connect.request.uri}: $err"); //nothing to do
+          else
+            _handleErr(connect, err, stackTrace);
+        });
+
+        _handle(connect, 0).then((_) { //0 means filter from beginning
+          _close(connect);
+        }).catchError((err, stackTrace) {
           _handleErr(connect, err, stackTrace);
+        });
       });
-
-      //CONSIDER: use runZoned
-      //Current spec: it is the handler's job to call runZoned if necessary.
-
-      _handle(connect, 0).then((_) { //0 means filter from beginning
-        _close(connect);
-      }).catchError((err, stackTrace) {
-        _handleErr(connect, err, stackTrace);
-      });
+      _channels.add(channel);
+    },
+    onError: (err, stackTrace) {
+      _handleErr(null, err, stackTrace);
     });
-    _channels.add(channel);
   }
   @override
   void stop() {

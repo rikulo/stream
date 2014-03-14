@@ -167,12 +167,24 @@ class _StreamServer implements StreamServer {
 
   void _shout(HttpConnect connect, err, [st]) {
     final StringBuffer buf = new StringBuffer();
-    if (connect != null)
-      buf..write("[")..write(connect.request.uri)..write("] ");
-    buf..write(err);
-    if (st != null)
-      buf..write("\n")..write(st);
-    logger.shout(buf.toString());
+    try {
+      if (connect != null) {
+        final String uri = connect.request.uri.path;
+        buf..write("[")..write(uri)..write("] ");
+      }
+      buf..write(err);
+      if (st != null)
+        buf..write("\n")..write(st);
+        logger.shout(buf.toString());
+    } catch (e) {
+      if (buf.isEmpty) {
+        print(err);
+        if (st != null)
+          print(st);
+      } else {
+        print(buf);
+      }
+    }
   }
   void _close(HttpConnect connect) {
     try {
@@ -293,7 +305,7 @@ class _StreamServer implements StreamServer {
         ++_connectionCount;
 
         //protect from aborted connection
-        final connect = new _HttpConnect(channel, req, req.response);
+        final HttpConnect connect = new _HttpConnect(channel, req, req.response);
         req.response.done.catchError((err, stackTrace) {
           if (err is SocketException)
             logger.fine("${connect.request.uri}: $err"); //nothing to do

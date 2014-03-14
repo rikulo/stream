@@ -109,12 +109,12 @@ class _StreamServer implements StreamServer {
         try {
           _onError(connect, error, stackTrace);
         } catch (err, st) {
-          _shout(connect, "Error in $_onError. " + _errorToString(err, st));
+          _shout(connect, _errorToString(err, st));
         }
       }
 
       if (connect == null) {
-        _shout(null, "Uncaught error. " + _errorToString(error, stackTrace));
+        _shout(null, "Uncaught " + _errorToString(error, stackTrace));
         return;
       }
 
@@ -153,17 +153,17 @@ class _StreamServer implements StreamServer {
       .catchError((err, st) {
         if (!shouted)
           _shout(connect, error, stackTrace);
-        _shout(connect, "Error in $handler. " + _errorToString(err, st));
+        _shout(connect, _errorToString(err, st));
         _close(connect);
       });
     } catch (err, st) {
-      _shout(connect, "Error in _handleErr(). " + _errorToString(err, st));
+      _shout(connect, _errorToString(err, st));
       if (connect != null)
         _close(connect);
     }
   }
 
-  static String _errorToString(err, st) => "$err${st != null ? '\n$st': ''}";
+  static String _errorToString(err, st) => st != null ? "$err\n$st": "$err";
 
   void _shout(HttpConnect connect, err, [st]) {
     final StringBuffer buf = new StringBuffer();
@@ -175,7 +175,8 @@ class _StreamServer implements StreamServer {
       buf..write(err);
       if (st != null)
         buf..write("\n")..write(st);
-        logger.shout(buf.toString());
+      logger.shout(buf.toString());
+
     } catch (e) {
       if (buf.isEmpty) {
         print(err);
@@ -195,7 +196,7 @@ class _StreamServer implements StreamServer {
         try {
           _onIdle();
         } catch (err, st) {
-          _shout(connect, "Error in $_onIdle. " + _errorToString(err, st));
+          _shout(connect, _errorToString(err, st));
         }
       }
     }
@@ -306,13 +307,6 @@ class _StreamServer implements StreamServer {
 
         //protect from aborted connection
         final HttpConnect connect = new _HttpConnect(channel, req, req.response);
-        req.response.done.catchError((err, stackTrace) {
-          if (err is SocketException)
-            logger.fine("${connect.request.uri}: $err"); //nothing to do
-          else
-            _handleErr(connect, err, stackTrace);
-        });
-
         _handle(connect, 0).then((_) { //0 means filter from beginning
           _close(connect);
         }).catchError((err, stackTrace) {

@@ -1,6 +1,6 @@
 #CHANGES
 
-##1.1.1
+##1.2.0
 
 * Issue 74: StreamServer.onError shall catch all uncaught errors
 

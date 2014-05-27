@@ -266,7 +266,7 @@ class _IncludedResponse extends HttpResponseWrapper {
   }
 
   @override
-  Future<Socket> detachSocket() {
+  Future<Socket> detachSocket({bool writeHeaders: true}) {
     throw new HttpException("Not allowed in an included connection");
   }
 }

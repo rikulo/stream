@@ -75,6 +75,7 @@ class _AssetCache implements AssetCache {
       _cache.remove(path);
       _cacheSize -= entry.assetSize;
     }
+    return null;
   }
   @override
   void setContent(Asset asset, DateTime lastModified, List<int> content) {
@@ -307,6 +308,7 @@ Future _outContentInRanges(HttpResponse response, List<_Range> ranges,
     response.add(
       range != null && range.length != assetSize ?
         content.sublist(range.start, range.end): content);
+    return null;
   } else {
     return new _RangeWriter(response, ranges, contentType, assetSize,
       (_Range range) {

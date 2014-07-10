@@ -3,7 +3,7 @@
 // Author: tomyeh
 part of stream;
 
-const String _VERSION = "1.2.1";
+const String _VERSION = "1.2.2";
 const String _SERVER_HEADER = "Stream/$_VERSION";
 
 ///The error handler for HTTP connection.
@@ -252,13 +252,14 @@ class _StreamServer implements StreamServer {
   @override
   bool get isRunning => !_channels.isEmpty;
   @override
-  Future<HttpChannel> start({address, int port: 8080, int backlog: 0}) {
+  Future<HttpChannel> start({address, int port: 8080,
+      int backlog: 0, bool zoned: false}) {
     if (address == null)
       address = InternetAddress.ANY_IP_V4;
     return HttpServer.bind(address, port, backlog: backlog)
     .then((HttpServer iserver) {
       final channel = new _HttpChannel(this, iserver, address, iserver.port, false);
-      _startChannel(channel);
+      _startChannel(channel, zoned);
       _logHttpStarted(channel);
       return channel;
     });
@@ -266,14 +267,14 @@ class _StreamServer implements StreamServer {
   @override
   Future<HttpChannel> startSecure({address, int port: 8443, 
       String certificateName, bool requestClientCertificate: false,
-      int backlog: 0}) {
+      int backlog: 0, bool zoned: false}) {
     if (address == null)
       address = InternetAddress.ANY_IP_V4;
     return HttpServer.bindSecure(address, port, certificateName: certificateName,
         requestClientCertificate: requestClientCertificate, backlog: backlog)
     .then((HttpServer iserver) {
       final channel = new _HttpChannel(this, iserver, address, iserver.port, true);
-      _startChannel(channel);
+      _startChannel(channel, zoned);
       _logHttpStarted(channel);
       return channel;
     });
@@ -286,39 +287,48 @@ class _StreamServer implements StreamServer {
       "Home: ${homeDir}");
   }
   @override
-  HttpChannel startOn(ServerSocket socket) {
+  HttpChannel startOn(ServerSocket socket, {bool zoned: false}) {
     final channel = new _HttpChannel.fromSocket(
         this, new HttpServer.listenOn(socket), socket);
-    _startChannel(channel);
+    _startChannel(channel, zoned);
     logger.info("Rikulo Stream Server $_VERSION starting on $socket\n"
       "Home: ${homeDir}");
     return channel;
   }
-  void _startChannel(_HttpChannel channel) {
-    runZoned(() {
-      channel._iserver
-      ..sessionTimeout = sessionTimeout
-      ..listen((HttpRequest req) {
-        (req = _unVersionPrefix(req, uriVersionPrefix)).response.headers
-          ..set(HttpHeaders.SERVER, _SERVER_HEADER)
-          ..date = new DateTime.now();
 
-        ++_connectionCount;
-
-        //protect from aborted connection
-        final HttpConnect connect = new _HttpConnect(channel, req, req.response);
-        _handle(connect, 0).then((_) { //0 means filter from beginning
-          _close(connect);
-        }).catchError((err, stackTrace) {
-          _handleErr(connect, err, stackTrace);
-        });
+  void _startChannel(_HttpChannel channel, bool zoned) {
+    if (zoned) {
+      runZoned(() {
+        _startNow(channel);
+      },
+      onError: (err, stackTrace) {
+        _handleErr(null, err, stackTrace);
       });
-      _channels.add(channel);
-    },
-    onError: (err, stackTrace) {
-      _handleErr(null, err, stackTrace);
-    });
+    } else {
+      _startNow(channel);
+    }
   }
+  void _startNow(_HttpChannel channel) {
+    channel._iserver
+    ..sessionTimeout = sessionTimeout
+    ..listen((HttpRequest req) {
+      (req = _unVersionPrefix(req, uriVersionPrefix)).response.headers
+        ..set(HttpHeaders.SERVER, _SERVER_HEADER)
+        ..date = new DateTime.now();
+
+      ++_connectionCount;
+
+      //protect from aborted connection
+      final HttpConnect connect = new _HttpConnect(channel, req, req.response);
+      _handle(connect, 0).then((_) { //0 means filter from beginning
+        _close(connect);
+      }).catchError((err, stackTrace) {
+        _handleErr(connect, err, stackTrace);
+      });
+    });
+    _channels.add(channel);
+  }
+
   @override
   void stop() {
     if (!isRunning)

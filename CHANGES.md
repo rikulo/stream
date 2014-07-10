@@ -1,5 +1,9 @@
 #CHANGES
 
+##1.2.2
+
+* Add an option to start the server with runZoned() (see also https://code.google.com/p/dart/issues/detail?id=17468)
+
 ##1.2.0
 
 * Issue 74: StreamServer.onError shall catch all uncaught errors

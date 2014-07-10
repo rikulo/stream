@@ -195,8 +195,10 @@ abstract class StreamServer {
    * * [backlog] - specify the listen backlog for the underlying OS listen setup.
    * If backlog has the value of 0 (the default) a reasonable value will be chosen
    * by the system.
+   * * [zoned] - whether to start the server within a zone (i.e., `runZoned()`)
    */
-  Future<HttpChannel> start({address, int port: 8080, int backlog: 0});
+  Future<HttpChannel> start({address, int port: 8080, int backlog: 0,
+    bool zoned: false});
   /** Starts the server listening for HTTPS request.
    *
    * Notice that you can invoke [start], [startSecure] and [startOn] multiple
@@ -217,10 +219,11 @@ abstract class StreamServer {
    * * [port] - the port. Default: 8443.
    * If port has the value 0 an ephemeral port will be chosen by the system.
    * The actual port used can be retrieved using [HttpChannel.port].
+   * * [zoned] - whether to start the server within a zone (i.e., `runZoned()`)
    */
   Future<HttpChannel> startSecure({address, int port: 8443,
       String certificateName, bool requestClientCertificate: false,
-      int backlog: 0});
+      int backlog: 0, bool zoned: false});
   /** Starts the server to an existing socket.
    *
    * Notice that you can invoke [start], [startSecure] and [startOn] multiple
@@ -236,8 +239,10 @@ abstract class StreamServer {
    *
    * Unlike [start], when the channel or the server is closed, the server
    * will just detach itself, but not closing [socket].
+   * 
+   * * [zoned] - whether to start the server within a zone (i.e., `runZoned()`)
    */
-  HttpChannel startOn(ServerSocket socket);
+  HttpChannel startOn(ServerSocket socket, {bool zoned: false});
   /** Stops the server. It will close all [channels].
    *
    * To close an individual channel, please use [HttpChannel.close] instead.

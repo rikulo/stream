@@ -16,7 +16,7 @@ part 'lastModified.rsp.dart'; //auto-inject from ../lastModified.rsp.html
 void main() {
   new StreamServer(
     uriMapping: _uriMapping, errorMapping: _errMapping, filterMapping: _filterMapping)
-    .start();
+    .start(zoned: true);
 }
 
 //URI mapping

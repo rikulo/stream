@@ -120,6 +120,7 @@ bool _matchETag(String value, String etag) {
 
 ///Returns false if no need to send the content
 bool _setHeaders(HttpConnect connect, _AssetDetail detail, List<_Range> ranges) {
+  final HttpRequest request = connect.request;
   final HttpResponse response = connect.response;
   final HttpHeaders headers = response.headers;
   headers.set(HttpHeaders.ACCEPT_RANGES, "bytes");
@@ -142,7 +143,7 @@ bool _setHeaders(HttpConnect connect, _AssetDetail detail, List<_Range> ranges) 
     }
   }
 
-  if (connect.request.method == "HEAD" || isPreconditionFailed) 
+  if (request.method == "HEAD" || isPreconditionFailed) 
     return false; //no more processing
 
   if (ranges == null) {
@@ -160,8 +161,10 @@ bool _setHeaders(HttpConnect connect, _AssetDetail detail, List<_Range> ranges) 
   }
 
   if (connect.server.chunkedTransferEncoding
-  && _isTextType(headers.contentType)) //we compress only text files
+  && request.protocolVersion != "1.0" //1.1 or later
+  && _isTextType(headers.contentType)) { //we compress only text files
     headers.chunkedTransferEncoding = true;
+  }
   return true;
 }
 

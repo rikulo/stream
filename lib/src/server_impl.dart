@@ -3,7 +3,7 @@
 // Author: tomyeh
 part of stream;
 
-const String _VERSION = "1.2.2";
+const String _VERSION = "1.2.3";
 const String _SERVER_HEADER = "Stream/$_VERSION";
 
 ///The error handler for HTTP connection.

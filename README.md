@@ -65,6 +65,6 @@ Please be aware that one of Stream's design goals is to keep the sphere of API a
 
 If you are new to Git or GitHub, please read [this guide](https://help.github.com/) first.
 
-##Example Application
+##Who Uses
 
 * [Quire](https://quire.io) - a simple, collaborative, multi-level task management tool.

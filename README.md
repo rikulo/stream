@@ -64,3 +64,7 @@ If you'd like to contribute back to the core, you can [fork this repository](htt
 Please be aware that one of Stream's design goals is to keep the sphere of API as neat and consistency as possible. Strong enhancement always demands greater consensus.
 
 If you are new to Git or GitHub, please read [this guide](https://help.github.com/) first.
+
+##Example Application
+
+* [Quire](https://quire.io) - a simple, collaborative, multi-level task management tool.

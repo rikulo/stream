@@ -20,10 +20,6 @@ Add this to your `pubspec.yaml` (or create it):
     dependencies:
       stream:
 
-Then run the [Pub Package Manager](http://pub.dartlang.org/doc) (comes with the Dart SDK):
-
-    pub install
-
 
 ##Usage
 

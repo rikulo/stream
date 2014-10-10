@@ -172,15 +172,15 @@ String _getETag(DateTime lastModified, int assetSize)
 => 'W/"$assetSize-${lastModified.millisecondsSinceEpoch.toRadixString(16)}"';
 
 bool _isTextType(ContentType ctype) {
-  String ptype;
+  String ptype, subType;
   return ctype == null || (ptype = ctype.primaryType) == "text"
-    || (ptype == "application" && _textSubtypes.containsKey(ctype.subType));
+    || ((subType = ctype.subType) != null && subType.endsWith("+xml"))
+    || (ptype == "application" && _TEXT_SUBTYPE.containsKey(subType));
 }
-final _textSubtypes = const<String, bool> {
+const Map<String, bool> _TEXT_SUBTYPE = const<String, bool> {
   "json": true, "javascript": true, "dart": true, "xml": true,
-  "xhtml+xml": true, "xslt+xml": true,  "rss+xml": true,
-  "atom+xml": true, "mathml+xml": true, "svg+xml": true
 };
+
 ///used to adjust truncation error when converting to internet time
 const Duration _ONE_SECOND = const Duration(seconds: 1);
 

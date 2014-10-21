@@ -293,7 +293,7 @@ bool checkIfHeaders(HttpConnect connect, DateTime lastModified, String etag) {
 
   if (lastModified != null) {
     //Check If-Modified-Since
-    //Ignored, if If-None-Match specified (since ETag differs)
+    //Ignored it if If-None-Match specified (since ETag differs)
     final DateTime ifModifiedSince = rqheaders.ifModifiedSince;
     if (ifModifiedSince != null && ifNoneMatch == null
     && lastModified.isBefore(ifModifiedSince.add(_ONE_SECOND))) {

@@ -448,19 +448,16 @@ abstract class ControlTag extends Tag {
       beg = needsVar_ ? "(var ": "(";
       end = ")";
     }
-    tc.writeln("\n${tc.pre}$control $beg$data$end { //$name#${tc.line}");
+    tc.writeln("\n${tc.pre}$name $beg$data$end { //$name#${tc.line}");
     tc.indent();
   }
   @override
   void end(TagContext tc) {
     tc.unindent();
-    tc.writeln("${tc.pre}} //$control");
+    tc.writeln("${tc.pre}} //$name");
   }
   @override
   bool get hasClosing => true;
-  ///The name of the control, such as `if` and `while`. Default: [name].
-  @override
-  String get control => name;
   ///Whether `var` is required in front of the condition
   bool get needsVar_ => false;
 }

@@ -161,15 +161,14 @@ bool _setHeaders(HttpConnect connect, _AssetDetail detail, List<_Range> ranges) 
   }
 
   if (connect.server.chunkedTransferEncoding
-  && request.protocolVersion != "1.0" //1.1 or later
-  && _isTextType(headers.contentType)) { //we compress only text files
+  && request.protocolVersion != "1.0") { //1.1 or later
     headers.chunkedTransferEncoding = true;
   }
   return true;
 }
 
 String _getETag(DateTime lastModified, int assetSize)
-=> 'W/"$assetSize-${lastModified.millisecondsSinceEpoch.toRadixString(16)}"';
+=> '"$assetSize-${lastModified.millisecondsSinceEpoch.toRadixString(16)}"';
 
 bool _isTextType(ContentType ctype) {
   String ptype, subType;

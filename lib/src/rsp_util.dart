@@ -22,8 +22,9 @@ class Rsp {
     if (!connect.isIncluded) {
       final HttpResponse response = connect.response;
       final HttpHeaders headers = response.headers;
-      if (connect.request.protocolVersion != "1.0") //1.1 or later
-        headers.chunkedTransferEncoding = connect.server.chunkedTransferEncoding;
+      if (connect.server.chunkedTransferEncoding
+      && connect.request.protocolVersion != "1.0") //1.1 or later
+        headers.chunkedTransferEncoding = true;
 
       if (contentType != null && !contentType.isEmpty)
         headers.contentType = parseContentType(contentType);
@@ -176,5 +177,5 @@ String _getETag(DateTime lastModified, String etagId) {
   final int val = lastModified == null ? 0:
     lastModified.millisecondsSinceEpoch
       & (etagId.length > 7 ? 0xfff: etagId.length > 4 ? 0xffffff: 0x7fffffff);
-  return 'W/"$etagId-${val.toRadixString(16)}"';
+  return '"$etagId-${val.toRadixString(16)}"';
 }

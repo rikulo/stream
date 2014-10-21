@@ -499,6 +499,7 @@ class Compiler {
       }
     }
     _error("Expect '$until'", line);
+    return null;
   }
   int _skipTagId(int from) {
     for (; from < _len; ++from) {
@@ -538,6 +539,7 @@ class Compiler {
       }
     }
     _error("Expect ']'", line);
+    return null;
   }
   ///Note: [tag] is required if `tag.hasClosing` is 
   String _tagData({Tag tag, skipFollowingSpaces: true}) {

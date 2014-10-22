@@ -26,8 +26,15 @@ abstract class HttpChannel {
    */
   bool get isClosed;
 
-  ///The server for serving this channel.
+  ///The Stream server for serving this channel.
   StreamServer get server;
+
+  /** The internal HTTP server for serving this channel.
+   * 
+   * Note: [server] starts one or multiple [HttpServer] instances to serve
+   * one or multiple channels. Each channel is served by one [HttpServer] instance.
+   */
+  HttpServer get httpServer;
 
   ///The socket that this channel is bound to.
   ///It is available only if the channel is started by [StreamServer.startOn].

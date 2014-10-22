@@ -22,10 +22,6 @@ class Rsp {
     if (!connect.isIncluded) {
       final HttpResponse response = connect.response;
       final HttpHeaders headers = response.headers;
-      if (connect.server.chunkedTransferEncoding
-      && connect.request.protocolVersion != "1.0") //1.1 or later
-        headers.chunkedTransferEncoding = true;
-
       if (contentType != null && !contentType.isEmpty)
         headers.contentType = parseContentType(contentType);
 

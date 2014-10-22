@@ -121,12 +121,9 @@ abstract class StreamServer {
    */
   int sessionTimeout;
 
-  /** Whether the response is default to the chunked transfer encoding
-   * mode. If true, RSP pages and static resources will be sent in
-   * the chucked transfer encoding mode.
-   *
-   * Default: true.
+  /** Deprecated. Use [HttpChannel.httpServer.defaultResponseHeader] instead.
    */
+  @deprecated
   bool chunkedTransferEncoding;
 
   /** The prefix used to denote a different version of JavaScript or Dart code,

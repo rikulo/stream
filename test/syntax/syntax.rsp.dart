@@ -190,6 +190,11 @@ Future syntax(HttpConnect connect, {foo, bool c:false}) { //#7
       response.write("""
 
 """); //#73
+new LinkedHashMap();
+
+      response.write("""
+
+"""); //#78
 
       return new Future.value();
     }); //end-of-include

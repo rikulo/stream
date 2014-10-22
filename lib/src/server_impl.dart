@@ -3,7 +3,7 @@
 // Author: tomyeh
 part of stream;
 
-const String _VERSION = "1.2.3";
+const String _VERSION = "1.3.0";
 const String _SERVER_HEADER = "Stream/$_VERSION";
 
 ///The error handler for HTTP connection.
@@ -213,10 +213,11 @@ class _StreamServer implements StreamServer {
   void set sessionTimeout(int timeout) {
     _sessTimeout = timeout;
     for (final _HttpChannel channel in channels)
-      channel._iserver.sessionTimeout = _sessTimeout;
+      channel.httpServer.sessionTimeout = _sessTimeout;
   }
 
   @override
+  @deprecated
   bool chunkedTransferEncoding = true;
 
   @override
@@ -309,7 +310,7 @@ class _StreamServer implements StreamServer {
     }
   }
   void _startNow(_HttpChannel channel) {
-    channel._iserver
+    channel.httpServer
     ..sessionTimeout = sessionTimeout
     ..listen((HttpRequest req) {
       (req = _unVersionPrefix(req, uriVersionPrefix)).response.headers

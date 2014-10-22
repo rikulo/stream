@@ -160,9 +160,8 @@ bool _setHeaders(HttpConnect connect, _AssetDetail detail, List<_Range> ranges) 
     }
   }
 
-  if (connect.server.chunkedTransferEncoding
-  && request.protocolVersion != "1.0") { //1.1 or later
-    headers.chunkedTransferEncoding = true;
+  if (request.protocolVersion != "1.0") { //1.1 or later
+    headers.chunkedTransferEncoding = _isTextType(headers.contentType); //gzip text only
   }
   return true;
 }

@@ -1,5 +1,9 @@
 #CHANGES
 
+##1.3.0
+
+* Issue 78: `StreamServer.chunkedTransferEncoding` deprecated.
+
 ##1.2.2
 
 * Add an option to start the server with runZoned() (see also https://code.google.com/p/dart/issues/detail?id=17468)

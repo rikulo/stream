@@ -5,7 +5,8 @@ part of stream;
 
 ///The implementation of channel.
 class _HttpChannel implements HttpChannel {
-  final HttpServer _iserver;
+  @override
+  final HttpServer httpServer;
   @override
   final StreamServer server;
   @override
@@ -13,19 +14,19 @@ class _HttpChannel implements HttpChannel {
 
   bool _closed = false;
 
-  _HttpChannel(this.server, this._iserver, this.address, this.port,
+  _HttpChannel(this.server, this.httpServer, this.address, this.port,
       this.isSecure): startedSince = new DateTime.now(), socket = null;
-  _HttpChannel.fromSocket(this.server, this._iserver, ServerSocket socket):
+  _HttpChannel.fromSocket(this.server, this.httpServer, ServerSocket socket):
     startedSince = new DateTime.now(), this.socket = socket,
     isSecure = socket is SecureServerSocket,
     address = null, port = socket.port;
 
   @override
-  HttpConnectionsInfo get connectionsInfo => _iserver.connectionsInfo();
+  HttpConnectionsInfo get connectionsInfo => httpServer.connectionsInfo();
   @override
   void close() {
     _closed = true;
-    _iserver.close();
+    httpServer.close();
 
     final List<HttpChannel> channels = server.channels;
     for (int i = channels.length; --i >= 0;)
@@ -304,9 +305,6 @@ class _ReadOnlyHeaders extends HttpHeadersWrapper {
   }
   @override
   void set contentType(ContentType contentType) {
-  }
-  @override
-  void set chunkedTransferEncoding(bool chunkedTransferEncoding) {
   }
 }
 

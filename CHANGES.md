@@ -3,6 +3,7 @@
 ##1.3.0
 
 * Issue 78: `StreamServer.chunkedTransferEncoding` deprecated.
+* The server will be started with `runZoned()` by default.
 
 ##1.2.2
 

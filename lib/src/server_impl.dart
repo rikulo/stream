@@ -217,10 +217,6 @@ class _StreamServer implements StreamServer {
   }
 
   @override
-  @deprecated
-  bool chunkedTransferEncoding = true;
-
-  @override
   String get uriVersionPrefix => _uriVerPrefix;
   @override
   void set uriVersionPrefix(String prefix) {
@@ -254,7 +250,7 @@ class _StreamServer implements StreamServer {
   bool get isRunning => !_channels.isEmpty;
   @override
   Future<HttpChannel> start({address, int port: 8080,
-      int backlog: 0, bool zoned: false}) {
+      int backlog: 0, bool zoned: true}) {
     if (address == null)
       address = InternetAddress.ANY_IP_V4;
     return HttpServer.bind(address, port, backlog: backlog)
@@ -268,7 +264,7 @@ class _StreamServer implements StreamServer {
   @override
   Future<HttpChannel> startSecure({address, int port: 8443, 
       String certificateName, bool requestClientCertificate: false,
-      int backlog: 0, bool zoned: false}) {
+      int backlog: 0, bool zoned: true}) {
     if (address == null)
       address = InternetAddress.ANY_IP_V4;
     return HttpServer.bindSecure(address, port, certificateName: certificateName,
@@ -288,7 +284,7 @@ class _StreamServer implements StreamServer {
       "Home: ${homeDir}");
   }
   @override
-  HttpChannel startOn(ServerSocket socket, {bool zoned: false}) {
+  HttpChannel startOn(ServerSocket socket, {bool zoned: true}) {
     final channel = new _HttpChannel.fromSocket(
         this, new HttpServer.listenOn(socket), socket);
     _startChannel(channel, zoned);

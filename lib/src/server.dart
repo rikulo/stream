@@ -121,11 +121,6 @@ abstract class StreamServer {
    */
   int sessionTimeout;
 
-  /** Deprecated. Use [HttpChannel.httpServer.defaultResponseHeader] instead.
-   */
-  @deprecated
-  bool chunkedTransferEncoding;
-
   /** The prefix used to denote a different version of JavaScript or Dart code,
    * such that the browser will reload the JavaScript files automatically.
    * It will be removed before the URI mapping and  it is not visible to
@@ -189,9 +184,10 @@ abstract class StreamServer {
    * If backlog has the value of 0 (the default) a reasonable value will be chosen
    * by the system.
    * * [zoned] - whether to start the server within a zone (i.e., `runZoned()`)
+   * Default: true.
    */
   Future<HttpChannel> start({address, int port: 8080, int backlog: 0,
-    bool zoned: false});
+    bool zoned: true});
   /** Starts the server listening for HTTPS request.
    *
    * Notice that you can invoke [start], [startSecure] and [startOn] multiple
@@ -213,10 +209,11 @@ abstract class StreamServer {
    * If port has the value 0 an ephemeral port will be chosen by the system.
    * The actual port used can be retrieved using [HttpChannel.port].
    * * [zoned] - whether to start the server within a zone (i.e., `runZoned()`)
+   * Default: true.
    */
   Future<HttpChannel> startSecure({address, int port: 8443,
       String certificateName, bool requestClientCertificate: false,
-      int backlog: 0, bool zoned: false});
+      int backlog: 0, bool zoned: true});
   /** Starts the server to an existing socket.
    *
    * Notice that you can invoke [start], [startSecure] and [startOn] multiple
@@ -234,8 +231,9 @@ abstract class StreamServer {
    * will just detach itself, but not closing [socket].
    * 
    * * [zoned] - whether to start the server within a zone (i.e., `runZoned()`)
+   * Default: true.
    */
-  HttpChannel startOn(ServerSocket socket, {bool zoned: false});
+  HttpChannel startOn(ServerSocket socket, {bool zoned: true});
   /** Stops the server. It will close all [channels].
    *
    * To close an individual channel, please use [HttpChannel.close] instead.

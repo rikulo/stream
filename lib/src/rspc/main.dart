@@ -37,7 +37,7 @@ bool _parseArgs(List<String> arguments, _Environ env) {
   if (args['help']) {
     print(usage);
     print("\nCompiles the RSP file to a Dart file.\n\nOptions:");
-    print(argParser.getUsage());
+    print(argParser.usage);
     return false;
   }
 

@@ -168,7 +168,7 @@ Future syntax(HttpConnect connect, {foo, bool c:false}) { //#7
         return connect.forward(Rsp.cat("/foo?abc", {'first': "1st", 'second': foo})); //forward#61
       } //if
 
-      response.write(Rsp.script(connect, "/script/foo.dart", true)); //script#63
+      response.write(Rsp.script(connect, "/script/foo.dart")); //script#63
 
       response.write("""    <script>
     \$("#j\\q");

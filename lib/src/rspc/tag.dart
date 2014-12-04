@@ -404,12 +404,16 @@ class JsonJsTag extends Tag {
  * or [Rsp.disableDartScript] is true, it always generate
  *
  *     <script src="/script/foo.dart.js"></script>
+ * 
+ * **Options**
+ * * [async] - whether JS code can be loaded asynchronously (default: false).
+ * * [bootstrap] - whether to generate the bootstrap JS code (default: true).
  */
 class ScriptTag extends Tag {
   @override
   void begin(TagContext tc, String data) {
     String src;
-    bool bootstrap = true;
+    bool bootstrap = true, basync = false;
     final attrs = parseArgs(data);
     for (final nm in attrs.keys) {
       switch (nm) {
@@ -417,7 +421,10 @@ class ScriptTag extends Tag {
           src = attrs[nm];
           break;
         case "bootstrap":
-          bootstrap = attrs[nm] == "true";
+          bootstrap = attrs[nm] == "true" || attrs[nm] == "";
+          break;
+        case "async":
+          basync = attrs[nm] == "true" || attrs[nm] == "";
           break;
         default:
           tc.warning("Unknow attribute, $nm");
@@ -426,7 +433,10 @@ class ScriptTag extends Tag {
     }
     if (src == null)
       tc.error("The src attribute is required");
-    tc.writeln('\n${tc.pre}response.write(Rsp.script(connect, ${toEL(src)}, $bootstrap)); //script#${tc.line}');
+    tc.write('\n${tc.pre}response.write(Rsp.script(connect, ${toEL(src)}');
+      if (!bootstrap || basync)
+        tc.write(', $bootstrap, $basync');
+    tc.writeln(')); //script#${tc.line}');
   }
   @override
   bool get hasClosing => false;

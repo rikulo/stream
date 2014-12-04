@@ -1,5 +1,9 @@
 #CHANGES
 
+##1.3.1
+
+* Issue 79: [:script] supports the async flag
+
 ##1.3.0
 
 * Issue 78: `StreamServer.chunkedTransferEncoding` deprecated.

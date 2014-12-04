@@ -153,16 +153,22 @@ class Rsp {
    *
    * + [bootstrap] - whether to generate `dart.js` if necessary.
    * Turn it off if you have multiple dart files in the same Web page.
+   * + [basync] - whether the JS code can be loaded asynchronously
+   * (i.e., whether to generate the async parameter to the script tag).
+   * Note: it is ignored for loading Dart code.
    */
-  static String script(HttpConnect connect, String src, [bool bootstrap=true]) {
+  static String script(HttpConnect connect, String src,
+      [bool bootstrap=true, bool basync=false]) {
+    final String sasync = basync ? " async": "";
     final String prefix = connect.server.uriVersionPrefix;
     int i = src.lastIndexOf('.dart'), j = i + 5;
     if (i < 0 || (j < src.length && src[j] != '?'))
-      return '<script src="$prefix$src"></script>\n';
+      return '<script$sasync src="$prefix$src"></script>\n';
 
     if (disableDartScript || !connect.browser.dart)
-      return '<script src="$prefix${src.substring(0,j)}.js${src.substring(j)}"></script>\n';
+      return '<script$sasync src="$prefix${src.substring(0,j)}.js${src.substring(j)}"></script>\n';
 
+    //To be safe, we don't generate async for Dart code.
     final s = '<script type="application/dart" src="$prefix$src"></script>\n';
     return bootstrap ?
       s + '<script src="$prefix/packages/browser/dart.js"></script>\n': s;

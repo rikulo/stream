@@ -17,6 +17,8 @@ import "package:rikulo_commons/browser.dart";
 
 import "plugin.dart";
 
+export "package:rikulo_commons/browser.dart" show Browser;
+
 part "src/connect.dart";
 part "src/server.dart";
 part "src/connect_impl.dart";

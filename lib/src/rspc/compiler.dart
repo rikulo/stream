@@ -750,7 +750,7 @@ class Compiler {
       new _TagContext.child(_current, tag, line != null ? line: _line));
   }
   void pop() {
-    final prev = _tagCtxs.removeLast();
+    _tagCtxs.removeLast();
     _current = _tagCtxs.last;
   }
 }

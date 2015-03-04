@@ -119,7 +119,7 @@ class Rsp {
       uri = uri.substring(0, i);
     }
     final query2 = HttpUtil.encodeQuery(parameters);
-    return uri + (query == null ? "?query2": "$query&query2");
+    return uri + (query == null ? "?$query2": "$query&$query2");
   }
 
   /** Serializes the given object into a JSON string by use of

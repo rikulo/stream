@@ -131,7 +131,7 @@ class _HttpConnect extends _AbstractConnect {
   ErrorDetail errorDetail;
   @override
   Map<String, dynamic> get dataset
-  => _dataset != null ? _dataset: MapUtil.onDemand(() => _dataset = new HashMap());
+  => _dataset != null ? _dataset: MapUtil.auto(() => _dataset = new HashMap());
 }
 
 //Parse Accept-Language into locales

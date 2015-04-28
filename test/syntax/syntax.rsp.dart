@@ -98,43 +98,45 @@ Future syntax(HttpConnect connect, {foo, bool c:false}) async { //#7
     response.write("""      *Custmer*
 """); //#35
 
-  } else if (c) { //else#36
+    await connect.include("/in-if"); //include#36
 
-    return connect.forward("/x/y/z"); //forward#37
+  } else if (c) { //else#37
 
-  } else if (foo.isEmployee) { //else#38
+    return connect.forward("/x/y/z"); //forward#38
+
+  } else if (foo.isEmployee) { //else#39
 
     response.write("""      *Employee*
-"""); //#39
+"""); //#40
 
-    return Rsp.nnf(syntax(connect, c: true, foo: "abc")); //forward#40
+    return Rsp.nnf(syntax(connect, c: true, foo: "abc")); //forward#41
 
-  } else { //else#41
+  } else { //else#42
 
     response.write("""      *Unknown* [/if] 
-"""); //#42
+"""); //#43
   } //if
 
   response.write("""
 
-"""); //#44
+"""); //#45
 
-  var whatever = new StringBuffer(); _cs_.add(connect); //var#45
+  var whatever = new StringBuffer(); _cs_.add(connect); //var#46
   connect = new HttpConnect.stringBuffer(connect, whatever); response = connect.response;
 
   response.write("""    define a variable
-"""); //#46
+"""); //#47
 
-  for (var fruit in ["apple", "orange"]) { //for#47
+  for (var fruit in ["apple", "orange"]) { //for#48
 
-    response.write("""        """); //#48
+    response.write("""        """); //#49
 
-    response.write(Rsp.nnx(fruit)); //#48
+    response.write(Rsp.nnx(fruit)); //#49
 
 
     response.write("""
 
-"""); //#48
+"""); //#49
   } //for
 
   connect = _cs_.removeLast(); response = connect.response;
@@ -142,59 +144,59 @@ Future syntax(HttpConnect connect, {foo, bool c:false}) async { //#7
 
   response.write("""
 
-"""); //#51
+"""); //#52
 
-  await connect.include("/abc"); //include#52
+  await connect.include("/abc"); //include#53
 
-  var _0 = new StringBuffer(); _cs_.add(connect); //var#54
+  var _0 = new StringBuffer(); _cs_.add(connect); //var#55
   connect = new HttpConnect.stringBuffer(connect, _0); response = connect.response;
 
   response.write("""      The content for foo
-"""); //#55
+"""); //#56
 
   connect = _cs_.removeLast(); response = connect.response;
 
-  await Rsp.nnf(syntax(new HttpConnect.chain(connect), c: true, foo: _0.toString())); //include#53
+  await Rsp.nnf(syntax(new HttpConnect.chain(connect), c: true, foo: _0.toString())); //include#54
 
   response.write("""
 
-"""); //#58
+"""); //#59
 
-  if (foo.isMeaningful) { //if#59
+  if (foo.isMeaningful) { //if#60
 
     response.write("""      something is meaningful
-"""); //#60
+"""); //#61
 
-    return connect.forward(Rsp.cat("/foo?abc", {'first': "1st", 'second': foo})); //forward#61
+    return connect.forward(Rsp.cat("/foo?abc", {'first': "1st", 'second': foo})); //forward#62
   } //if
 
-  response.write(Rsp.script(connect, "/script/foo.dart")); //script#63
+  response.write(Rsp.script(connect, "/script/foo.dart")); //script#64
 
   response.write("""    <script>
     \$("#j\\q");
     </script>
   </body>
 </html>
-"""); //#64
+"""); //#65
 
-  response..write("<script>")..write("foo1")..write("=") //json-js#69
+  response..write("<script>")..write("foo1")..write("=") //json-js#70
    ..write(Rsp.json(foo.name.length ~/ 2))..writeln('</script>');
-  response..write('<script type="text/plain" id="') //json#70
+  response..write('<script type="text/plain" id="') //json#71
    ..write("foo2")..write('">')
    ..write(Rsp.json(foo.name.length ~/ 2 * "/]".length))..writeln('</script>');
 
   response.write("""
 
-"""); //#71
+"""); //#72
 
   response.write("""
 
-"""); //#73
+"""); //#74
 new LinkedHashMap();
 
   response.write("""
 
-"""); //#78
+"""); //#79
 
   return new Future.value();
 }

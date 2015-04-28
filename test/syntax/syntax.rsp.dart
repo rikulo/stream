@@ -10,7 +10,7 @@ import 'dart:collection' show LinkedHashMap;
 var someExternal = 123;
 
 /** Template, syntax, for rendering the view. */
-Future syntax(HttpConnect connect, {foo, bool c:false}) { //#7
+Future syntax(HttpConnect connect, {foo, bool c:false}) async { //#7
   var _t0_, _cs_ = new List<HttpConnect>();
   HttpRequest request = connect.request;
   HttpResponse response = connect.response;
@@ -144,59 +144,57 @@ Future syntax(HttpConnect connect, {foo, bool c:false}) { //#7
 
 """); //#51
 
-  return connect.include("/abc").then((_) { //include#52
+  await connect.include("/abc"); //include#52
 
-    var _0 = new StringBuffer(); _cs_.add(connect); //var#54
-    connect = new HttpConnect.stringBuffer(connect, _0); response = connect.response;
+  var _0 = new StringBuffer(); _cs_.add(connect); //var#54
+  connect = new HttpConnect.stringBuffer(connect, _0); response = connect.response;
 
-    response.write("""      The content for foo
+  response.write("""      The content for foo
 """); //#55
 
-    connect = _cs_.removeLast(); response = connect.response;
+  connect = _cs_.removeLast(); response = connect.response;
 
-    return Rsp.nnf(syntax(new HttpConnect.chain(connect), c: true, foo: _0.toString())).then((_) { //include#53
+  await Rsp.nnf(syntax(new HttpConnect.chain(connect), c: true, foo: _0.toString())); //include#53
 
-      response.write("""
+  response.write("""
 
 """); //#58
 
-      if (foo.isMeaningful) { //if#59
+  if (foo.isMeaningful) { //if#59
 
-        response.write("""      something is meaningful
+    response.write("""      something is meaningful
 """); //#60
 
-        return connect.forward(Rsp.cat("/foo?abc", {'first': "1st", 'second': foo})); //forward#61
-      } //if
+    return connect.forward(Rsp.cat("/foo?abc", {'first': "1st", 'second': foo})); //forward#61
+  } //if
 
-      response.write(Rsp.script(connect, "/script/foo.dart")); //script#63
+  response.write(Rsp.script(connect, "/script/foo.dart")); //script#63
 
-      response.write("""    <script>
+  response.write("""    <script>
     \$("#j\\q");
     </script>
   </body>
 </html>
 """); //#64
 
-      response..write("<script>")..write("foo1")..write("=") //json-js#69
-       ..write(Rsp.json(foo.name.length ~/ 2))..writeln('</script>');
-      response..write('<script type="text/plain" id="') //json#70
-       ..write("foo2")..write('">')
-       ..write(Rsp.json(foo.name.length ~/ 2 * "/]".length))..writeln('</script>');
+  response..write("<script>")..write("foo1")..write("=") //json-js#69
+   ..write(Rsp.json(foo.name.length ~/ 2))..writeln('</script>');
+  response..write('<script type="text/plain" id="') //json#70
+   ..write("foo2")..write('">')
+   ..write(Rsp.json(foo.name.length ~/ 2 * "/]".length))..writeln('</script>');
 
-      response.write("""
+  response.write("""
 
 """); //#71
 
-      response.write("""
+  response.write("""
 
 """); //#73
 new LinkedHashMap();
 
-      response.write("""
+  response.write("""
 
 """); //#78
 
-      return new Future.value();
-    }); //end-of-include
-  }); //end-of-include
+  return new Future.value();
 }

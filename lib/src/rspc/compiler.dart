@@ -22,9 +22,7 @@ class Compiler {
   int _pos = 0, _len, _line = 1;
   //Look-ahead tokens
   final List _lookAhead = [];
-  final List<_IncInfo> _incs = []; //included
   final List<_QuedTag> _headers = []; //the queued headers
-  String _extra = ""; //extra whitespaces
   String _lastModified, _etag;
   int _nextVar = 0; //used to implement TagContext.nextVar()
 
@@ -132,12 +130,7 @@ class Compiler {
         }
         _error("Unclosed tag(s): $sb");
       }
-      _writeln("\n$_extra  return new Future.value();");
-      while (!_incs.isEmpty) {
-        _extra = _extra.substring(2);
-        _writeln("$_extra  ${_incs.removeLast().invocation} //end-of-include");
-      }
-      _writeln("}");
+      _writeln("\n  return new Future.value();\n}");
     }
   }
   void _start([int line]) {
@@ -223,7 +216,7 @@ class Compiler {
     _write("\n/** $_desc */\nFuture $_name(HttpConnect connect");
     if (_args != null)
       _write(", {$_args}");
-    _write(") { //#$line\n"
+    _write(") async { //#$line\n"
       "  var _t0_, _cs_ = new List<HttpConnect>();\n" //_t0_ is reserved for tags
       "  HttpRequest request = connect.request;\n"
       "  HttpResponse response = connect.response;\n");
@@ -300,10 +293,9 @@ class Compiler {
 
   ///Include the given URI.
   void includeUri(String uri, [Map args, int line]) {
-    _checkInclude(line);
     if (verbose) _info("Include $uri", line);
 
-    _write("\n${_current.pre}return connect.include(");
+    _write("\n${_current.pre}await connect.include(");
     final emptyArgs = args == null || args.isEmpty;
     if (!emptyArgs)
       _write("Rsp.cat(");
@@ -312,32 +304,15 @@ class Compiler {
       _catArgs(args);
       _write(')');
     }
-    _writeln(").then((_) { //include#$line");
-    _extra = "  $_extra";
-    _incs.add(new _IncInfo("});"));
+    _writeln("); //include#$line");
   }
   ///Include the output of the given renderer
   void include(String method, [Map args, int line]) {
-    _checkInclude(line);
     if (verbose) _info("Include $method", line);
 
-    _write("\n${_current.pre}return Rsp.nnf($method(new HttpConnect.chain(connect)");
+    _write("\n${_current.pre}await Rsp.nnf($method(new HttpConnect.chain(connect)");
     _outArgs(args);
-    _writeln(")).then((_) { //include#$line");
-    _extra = "  $_extra";
-    _incs.add(new _IncInfo("});"));
-  }
-  ///Check if the include tag is allowed.
-  ///It can be not put inside while/for/if...
-  void _checkInclude(int line) {
-    for (TagContext tc = _current; (tc = tc.parent) != null; ) {
-      final tag = tc.tag;
-      if (tag != null && tag is! IncludeTag && tag is! VarTag) {
-        final pline = _tagCtxs[_tagCtxs.length - 2].line;
-        _error("The include tag can't be under the [${tag.name}] tag (at ${pline})."
-          "Try to split into multiple files.", line);
-      }
-    }
+    _writeln(")); //include#$line");
   }
 
   ///Forward to the given URI.
@@ -783,7 +758,7 @@ class _TagContext extends TagContext {
   @override
   String nextVar() => "_${compiler._nextVar++}";
   @override
-  String get pre => compiler._extra.isEmpty ? _pre: "${compiler._extra}$_pre";
+  String get pre => _pre;
   @override
   String indent() => _pre = "$_pre  ";
   @override

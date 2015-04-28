@@ -3,7 +3,7 @@
 part of features;
 
 /** Template, lastModified, for rendering the view. */
-Future lastModified(HttpConnect connect) { //#2
+Future lastModified(HttpConnect connect) async { //#2
   var _t0_, _cs_ = new List<HttpConnect>();
   HttpRequest request = connect.request;
   HttpResponse response = connect.response;

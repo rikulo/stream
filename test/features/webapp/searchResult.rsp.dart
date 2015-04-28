@@ -3,7 +3,7 @@
 part of features;
 
 /** Template, searchResult, for rendering the view. */
-Future searchResult(HttpConnect connect, {criteria}) { //#2
+Future searchResult(HttpConnect connect, {criteria}) async { //#2
   var _t0_, _cs_ = new List<HttpConnect>();
   HttpRequest request = connect.request;
   HttpResponse response = connect.response;

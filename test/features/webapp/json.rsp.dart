@@ -3,7 +3,7 @@
 part of features;
 
 /** Template, json, for rendering the view. */
-Future json(HttpConnect connect) { //#2
+Future json(HttpConnect connect) async { //#2
   var _t0_, _cs_ = new List<HttpConnect>();
   HttpRequest request = connect.request;
   HttpResponse response = connect.response;

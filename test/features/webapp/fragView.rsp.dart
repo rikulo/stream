@@ -3,7 +3,7 @@
 part of features;
 
 /** Template, fragView, for rendering the view. */
-Future fragView(HttpConnect connect, {Map infos: const {}, header, footer}) { //#2
+Future fragView(HttpConnect connect, {Map infos: const {}, header, footer}) async { //#2
   var _t0_, _cs_ = new List<HttpConnect>();
   HttpRequest request = connect.request;
   HttpResponse response = connect.response;

@@ -206,8 +206,7 @@ class HeaderTag extends Tag {
  *
  * where `uri`, `value0` and `value1` can be an expression.
  *
- * Notice that the include tag must be top-level. In other words, it can be
- * placed inside others.
+ * > Notice: since 1.5, you can use `[include]` inside whatever tags.
  */
 class IncludeTag extends Tag {
   @override

@@ -7,7 +7,7 @@ import 'dart:io';
 import 'package:stream/stream.dart';
 
 /** Template, lastModified2, for rendering the view. */
-Future lastModified2(HttpConnect connect) { //#2
+Future lastModified2(HttpConnect connect) async { //#2
   var _t0_, _cs_ = new List<HttpConnect>();
   HttpRequest request = connect.request;
   HttpResponse response = connect.response;

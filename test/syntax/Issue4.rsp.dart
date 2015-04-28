@@ -7,7 +7,7 @@ import 'dart:io';
 import 'package:stream/stream.dart';
 
 /** Template, Issue4, for rendering the view. */
-Future Issue4(HttpConnect connect) { //#1
+Future Issue4(HttpConnect connect) async { //#1
   var _t0_, _cs_ = new List<HttpConnect>();
   HttpRequest request = connect.request;
   HttpResponse response = connect.response;
@@ -29,14 +29,11 @@ abc/"""); //#5
 
 """); //#7
 
-  return connect.include("${Rsp.nns(foo)}").then((_) { //include#8
+  await connect.include("${Rsp.nns(foo)}"); //include#8
 
-    return connect.include("abc/${Rsp.nns(foo)}").then((_) { //include#9
+  await connect.include("abc/${Rsp.nns(foo)}"); //include#9
 
-      return Rsp.nnf(render(new HttpConnect.chain(connect), more: "abc/${Rsp.nns(foo)}", less: foo)).then((_) { //include#10
+  await Rsp.nnf(render(new HttpConnect.chain(connect), more: "abc/${Rsp.nns(foo)}", less: foo)); //include#10
 
-        return new Future.value();
-      }); //end-of-include
-    }); //end-of-include
-  }); //end-of-include
+  return new Future.value();
 }

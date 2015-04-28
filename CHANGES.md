@@ -1,5 +1,9 @@
 #CHANGES
 
+##1.5.0
+
+* Issue 80: Allow [:include] inside[:for], [:if] and any tag 
+
 ##1.3.1
 
 * Issue 79: [:script] supports the async flag

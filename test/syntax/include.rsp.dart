@@ -7,7 +7,7 @@ import 'dart:io';
 import 'package:stream/stream.dart';
 
 /** Template, include, for rendering the view. */
-Future include(HttpConnect connect, {foo, more, less}) { //#3
+Future include(HttpConnect connect, {foo, more, less}) async { //#3
   var _t0_, _cs_ = new List<HttpConnect>();
   HttpRequest request = connect.request;
   HttpResponse response = connect.response;
@@ -33,13 +33,11 @@ Future include(HttpConnect connect, {foo, more, less}) { //#3
   response.write("""  More information
 """); //#9
 
-  return Rsp.nnf(include(new HttpConnect.chain(connect), more: "recursive")).then((_) { //include#10
+  await Rsp.nnf(include(new HttpConnect.chain(connect), more: "recursive")); //include#10
 
-    connect = _cs_.removeLast(); response = connect.response;
+  connect = _cs_.removeLast(); response = connect.response;
 
-    return Rsp.nnf(include(new HttpConnect.chain(connect), foo: true, less: less, more: _0.toString())).then((_) { //include#7
+  await Rsp.nnf(include(new HttpConnect.chain(connect), foo: true, less: less, more: _0.toString())); //include#7
 
-      return new Future.value();
-    }); //end-of-include
-  }); //end-of-include
+  return new Future.value();
 }

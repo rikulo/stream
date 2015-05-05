@@ -39,6 +39,11 @@ abstract class TagContext {
   ///Un-indent to end a block of code. It removes two spaces from [pre].
   String unindent();
 
+  ///Push a value into the stack.
+  void push(value);
+  ///Pops the value back
+  pop();
+
   ///Writes a string to [output] in the compiler's encoding.
   void write(String str) {
     output.write(str);
@@ -278,18 +283,20 @@ class VarTag extends Tag {
   void begin(TagContext tc, String data) {
     final argInfo = new ArgInfo(tc, data, stringFirst: false);
     final parentArgs = tc.parent.args;
-    var varnm = tc.data
-      = parentArgs != null ? (parentArgs[argInfo.first] = tc.nextVar()): argInfo.first;
+    var var1 = parentArgs != null ?
+          (parentArgs[argInfo.first] = tc.nextVar()): argInfo.first,
+      var2 = tc.nextVar();
+    tc..push(var1)..push(var2);
 
-    tc.writeln("\n${tc.pre}var $varnm = new StringBuffer(); _cs_.add(connect); //var#${tc.line}\n"
-      "${tc.pre}connect = new HttpConnect.stringBuffer(connect, $varnm); response = connect.response;");
+    tc.writeln("\n${tc.pre}var $var1 = new StringBuffer(), $var2 = connect; //var#${tc.line}\n"
+      "${tc.pre}connect = new HttpConnect.stringBuffer(connect, $var1); response = connect.response;");
   }
   @override
   void end(TagContext tc) {
-    tc.writeln("\n${tc.pre}connect = _cs_.removeLast(); response = connect.response;");
+    String var2 = tc.pop(), var1 = tc.pop();
+    tc.writeln("\n${tc.pre}connect = $var2; $var2 = null; response = connect.response;");
     if (tc.parent.args == null) {
-      String varnm = tc.data;
-      tc.writeln("${tc.pre}$varnm = $varnm.toString();");
+      tc.writeln("${tc.pre}$var1 = $var1.toString();");
     }
   }
   @override

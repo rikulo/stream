@@ -11,8 +11,6 @@ var someExternal = 123;
 
 /** Template, syntax, for rendering the view. */
 Future syntax(HttpConnect connect, {foo, bool c:false}) async { //#7
-  var _t0_, _cs_ = new List<HttpConnect>();
-  HttpRequest request = connect.request;
   HttpResponse response = connect.response;
 
   response.headers..add("age", "129")
@@ -121,7 +119,7 @@ Future syntax(HttpConnect connect, {foo, bool c:false}) async { //#7
 
 """); //#45
 
-  var whatever = new StringBuffer(); _cs_.add(connect); //var#46
+  var whatever = new StringBuffer(), _0 = connect; //var#46
   connect = new HttpConnect.stringBuffer(connect, whatever); response = connect.response;
 
   response.write("""    define a variable
@@ -139,7 +137,7 @@ Future syntax(HttpConnect connect, {foo, bool c:false}) async { //#7
 """); //#49
   } //for
 
-  connect = _cs_.removeLast(); response = connect.response;
+  connect = _0; _0 = null; response = connect.response;
   whatever = whatever.toString();
 
   response.write("""
@@ -148,15 +146,15 @@ Future syntax(HttpConnect connect, {foo, bool c:false}) async { //#7
 
   await connect.include("/abc"); //include#53
 
-  var _0 = new StringBuffer(); _cs_.add(connect); //var#55
-  connect = new HttpConnect.stringBuffer(connect, _0); response = connect.response;
+  var _1 = new StringBuffer(), _2 = connect; //var#55
+  connect = new HttpConnect.stringBuffer(connect, _1); response = connect.response;
 
   response.write("""      The content for foo
 """); //#56
 
-  connect = _cs_.removeLast(); response = connect.response;
+  connect = _2; _2 = null; response = connect.response;
 
-  await Rsp.nnf(syntax(new HttpConnect.chain(connect), c: true, foo: _0.toString())); //include#54
+  await Rsp.nnf(syntax(new HttpConnect.chain(connect), c: true, foo: _1.toString())); //include#54
 
   response.write("""
 

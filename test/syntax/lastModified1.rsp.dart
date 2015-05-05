@@ -13,8 +13,6 @@ import 'package:stream/stream.dart';
 
 /** Template, lastModified1, for rendering the view. */
 Future lastModified1(HttpConnect connect, {input}) async { //#7
-  var _t0_, _cs_ = new List<HttpConnect>();
-  HttpRequest request = connect.request;
   HttpResponse response = connect.response;
   if (!Rsp.init(connect, "text/html; charset=utf-8",
   lastModified: lastModified(),

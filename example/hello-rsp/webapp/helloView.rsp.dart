@@ -3,9 +3,7 @@
 part of hello_rsp;
 
 /** Template, helloView, for rendering the view. */
-Future helloView(HttpConnect connect) { //#3
-  var _t0_, _cs_ = new List<HttpConnect>();
-  HttpRequest request = connect.request;
+Future helloView(HttpConnect connect) async { //#3
   HttpResponse response = connect.response;
   if (!Rsp.init(connect, "text/html; charset=utf-8"))
     return new Future.value();

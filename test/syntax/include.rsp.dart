@@ -8,36 +8,34 @@ import 'package:stream/stream.dart';
 
 /** Template, include, for rendering the view. */
 Future include(HttpConnect connect, {foo, more, less}) async { //#3
-  var _t0_, _cs_ = new List<HttpConnect>();
-  HttpRequest request = connect.request;
   HttpResponse response = connect.response;
   if (!Rsp.init(connect, "text/html; charset=utf-8"))
     return new Future.value();
 
-  var less = new StringBuffer(); _cs_.add(connect); //var#3
+  var less = new StringBuffer(), _0 = connect; //var#3
   connect = new HttpConnect.stringBuffer(connect, less); response = connect.response;
 
   response.write("""less is more
 """); //#4
 
-  connect = _cs_.removeLast(); response = connect.response;
+  connect = _0; _0 = null; response = connect.response;
   less = less.toString();
 
   response.write("""
 
 """); //#6
 
-  var _0 = new StringBuffer(); _cs_.add(connect); //var#8
-  connect = new HttpConnect.stringBuffer(connect, _0); response = connect.response;
+  var _1 = new StringBuffer(), _2 = connect; //var#8
+  connect = new HttpConnect.stringBuffer(connect, _1); response = connect.response;
 
   response.write("""  More information
 """); //#9
 
   await Rsp.nnf(include(new HttpConnect.chain(connect), more: "recursive")); //include#10
 
-  connect = _cs_.removeLast(); response = connect.response;
+  connect = _2; _2 = null; response = connect.response;
 
-  await Rsp.nnf(include(new HttpConnect.chain(connect), foo: true, less: less, more: _0.toString())); //include#7
+  await Rsp.nnf(include(new HttpConnect.chain(connect), foo: true, less: less, more: _1.toString())); //include#7
 
   return new Future.value();
 }

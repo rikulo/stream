@@ -217,8 +217,6 @@ class Compiler {
     if (_args != null)
       _write(", {$_args}");
     _write(") async { //#$line\n"
-      "  var _t0_, _cs_ = new List<HttpConnect>();\n" //_t0_ is reserved for tags
-      "  HttpRequest request = connect.request;\n"
       "  HttpResponse response = connect.response;\n");
 
     if (!_headers.isEmpty) {
@@ -250,7 +248,7 @@ class Compiler {
         _write("${toEL(_etag)}");
     }
 
-    _writeln('))\n    return new Future.value();');
+    _writeln('))\n    return new Future.value();'); //end of if(!Rsp.init)
   }
 
   ///Sets the page information.
@@ -763,6 +761,14 @@ class _TagContext extends TagContext {
   String indent() => _pre = "$_pre  ";
   @override
   String unindent() => _pre = _pre.isEmpty ? _pre: _pre.substring(2);
+
+  @override
+  void push(value) {
+    _stack.add(value);
+  }
+  @override
+  pop() => _stack.removeLast();
+  final List _stack = [];
 
   @override
   void error(String message, [int line]) {

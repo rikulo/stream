@@ -3,9 +3,7 @@
 part of hello_templating;
 
 /** Template, sidebar, for rendering the view. */
-Future sidebar(HttpConnect connect) { //#2
-  var _t0_, _cs_ = new List<HttpConnect>();
-  HttpRequest request = connect.request;
+Future sidebar(HttpConnect connect) async { //#2
   HttpResponse response = connect.response;
   if (!Rsp.init(connect, "text/html; charset=utf-8"))
     return new Future.value();

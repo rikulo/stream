@@ -4,8 +4,6 @@ part of features;
 
 /** Template, forwarderView, for rendering the view. */
 Future forwarderView(HttpConnect connect) async { //#3
-  var _t0_, _cs_ = new List<HttpConnect>();
-  HttpRequest request = connect.request;
   HttpResponse response = connect.response;
   if (!Rsp.init(connect, "text/html; charset=utf-8"))
     return new Future.value();

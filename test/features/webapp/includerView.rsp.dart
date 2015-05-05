@@ -4,8 +4,6 @@ part of features;
 
 /** Template, includerView, for rendering the view. */
 Future includerView(HttpConnect connect) async { //#2
-  var _t0_, _cs_ = new List<HttpConnect>();
-  HttpRequest request = connect.request;
   HttpResponse response = connect.response;
   if (!Rsp.init(connect, "text/html; charset=utf-8"))
     return new Future.value();
@@ -40,7 +38,7 @@ final infos = {
     <div style="border: 1px solid red">
 """); //#22
 
-  var _0 = new StringBuffer(); _cs_.add(connect); //var#25
+  var _0 = new StringBuffer(), _1 = connect; //var#25
   connect = new HttpConnect.stringBuffer(connect, _0); response = connect.response;
 
   response.write("""  <h1>This is a header</h1>
@@ -52,10 +50,10 @@ final infos = {
   response.write("""</p>
 """); //#27
 
-  connect = _cs_.removeLast(); response = connect.response;
+  connect = _1; _1 = null; response = connect.response;
 
-  var _1 = new StringBuffer(); _cs_.add(connect); //var#29
-  connect = new HttpConnect.stringBuffer(connect, _1); response = connect.response;
+  var _2 = new StringBuffer(), _3 = connect; //var#29
+  connect = new HttpConnect.stringBuffer(connect, _2); response = connect.response;
 
   response.write("""  <h2>This is a footer</h2>
   <p>It also includes another page:</p>
@@ -63,9 +61,9 @@ final infos = {
 
   await connect.include("/frag.html"); //include#32
 
-  connect = _cs_.removeLast(); response = connect.response;
+  connect = _3; _3 = null; response = connect.response;
 
-  await Rsp.nnf(fragView(new HttpConnect.chain(connect), infos: infos, header: _0.toString(), footer: _1.toString())); //include#24
+  await Rsp.nnf(fragView(new HttpConnect.chain(connect), infos: infos, header: _0.toString(), footer: _2.toString())); //include#24
 
   response.write("""    </div>
   </body>

@@ -8,8 +8,6 @@ import 'package:stream/stream.dart';
 
 /** Template, Issue4, for rendering the view. */
 Future Issue4(HttpConnect connect) async { //#1
-  var _t0_, _cs_ = new List<HttpConnect>();
-  HttpRequest request = connect.request;
   HttpResponse response = connect.response;
   if (!Rsp.init(connect, "text/html; charset=utf-8"))
     return new Future.value();

@@ -15,8 +15,12 @@ abstract class HttpChannel {
   //handled in this channel.
   HttpConnectionsInfo get connectionsInfo;
   /** When the server started. It is null if never started.
+   * 
+   * > Note: we use [startedSince] to set LAST_MODIFIED if
+   * > `lastModified="start"`.
    */
   DateTime get startedSince;
+
   /** Closes the channel.
    *
    * To start all channels, please use [StreamServer.stop] instead.

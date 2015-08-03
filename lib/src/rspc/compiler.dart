@@ -276,8 +276,6 @@ class Compiler {
     if (_etag != null) {
       if (_etag.isEmpty)
         _etag = null;
-      else if (lastModified == null)
-        lastModified = "start"; //enable it if etag specified
     }
 
     _lastModified = lastModified;
@@ -692,11 +690,6 @@ class Compiler {
     else _current.writeln();
   }
 
-  String _toComment(String text) {
-    text = text.replaceAll("\n", "\\n");
-    return text.length > 30 ? "${text.substring(0, 27)}...": text;
-  }
-
   ///Throws an exception if the value is EL
   void _noEL(String val, String what, [int line]) {
     if (val != null && isEL(val))
@@ -780,17 +773,15 @@ class _TagContext extends TagContext {
   }
   String toString() => "($line: $tag)";
 }
+
 class _Expr {
 }
+
 class _Closing {
   final String name;
   _Closing(this.name);
 }
-class _IncInfo {
-  ///The statement to generate. If null, it means URI is included (rather than handler)
-  final String invocation;
-  _IncInfo(this.invocation);
-}
+
 ///Queued tag
 class _QuedTag {
   final Tag tag;

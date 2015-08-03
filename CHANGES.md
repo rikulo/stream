@@ -3,6 +3,7 @@
 ##1.5.0
 
 * Issue 80: Allow [:include] inside[:for], [:if] and any tag 
+* Specifying the etag attribute in the page tag won't imply `lastModified="start"`
 
 ##1.3.1
 

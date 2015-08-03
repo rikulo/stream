@@ -6,7 +6,6 @@ part of features;
 Future lastModified(HttpConnect connect) async { //#2
   HttpResponse response = connect.response;
   if (!Rsp.init(connect, "text/html; charset=utf-8",
-  lastModified: connect.channel.startedSince,
   etag: "abc123"))
     return new Future.value();
 

@@ -1,0 +1,63 @@
+#!/bin/bash
+# rspc
+#
+#	Purpose:
+#		Compiling RSP files
+#	Description:
+#		
+#	History:
+#		Sat Aug 29 18:14:33 CST 2015, Created by tomyeh
+#
+#Copyright (C) 2015 Potix Corporation. All Rights Reserved.
+#
+refdir=$0
+refdir=${refdir%/*}
+if [ "$refdir" = "." ] ; then
+  refdir=".."
+elif [ "$refdir" = "${refdir%/*}" ] ; then
+  refdir="."
+else
+  refdir=${refdir%/*}
+fi
+if [ "$TERM" = "cygwin" ] || [ "$OSTYPE" = "cygwin" ] ; then
+  refdir=$(cygpath -u $refdir)
+fi
+dartfl=$refdir/tool/rspc.dart
+
+if [ ! -f $dartfl ] ; then
+  echo $dartfl not found
+  exit 1
+fi
+
+if [ "$1" = "-h" ] || [ "$1" = "--help" ] ; then
+  echo "Usage: rspc [<flags>] <rsp-file> [<rsp-file>...]"
+  echo "Compiles the RSP file to a Dart file."
+  echo "Options:"
+  echo
+  echo "-h, --help   Display this message."
+  echo "-f           Force to compile all RSP files. Default: only newer files."
+  exit
+fi
+
+force=
+if [ "$1" = '-f' ] ; then
+  force=true
+fi
+
+count=0
+for fn in $(find . -name *.rsp.html) ; do
+  dst=${fn%.html}.dart
+  if [ "$force" = "true" ] || [ "$dst" -ot "$fn" ] ; then
+    if [ "$force" != "true" ] ; then
+      echo Compile $fn
+    fi
+    let count=count+1
+    $dartfl $fn
+  fi
+done
+
+if [ "$force" = "true" ] ; then
+  echo "$count files are compiled"
+elif [ "$count" = "0" ] ; then
+  echo "All files up to date"
+fi

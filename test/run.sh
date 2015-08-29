@@ -9,16 +9,16 @@ DIR=$( cd $( dirname "${BASH_SOURCE[0]}" ) && pwd )
 # canonicalization.
 pushd $DIR/..
 echo Compile RSP files
-find -name *.rsp.dart | xargs rm -rf
-dart bin/rspc.dart */*/*.rsp.html
+find . -name *.rsp.dart | xargs rm -rf
+dart tool/rspc.dart */*/*.rsp.html
 
 echo Analyzing library for warnings or type errors
-dartanalyzer --fatal-warnings --fatal-type-errors lib/*.dart \
+dartanalyzer --fatal-warnings lib/*.dart \
   || echo -e "Ignoring analyzer errors"
 
 for fn in `grep -l 'main[(][)]' */*/*/*.dart|grep -v packages/`; do
 	echo Analyzing $fn
-	dartanalyzer --fatal-warnings --fatal-type-errors lib/*.dart \
+	dartanalyzer --fatal-warnings lib/*.dart \
 	  || echo -e "Ignoring analyzer errors"
 done
 

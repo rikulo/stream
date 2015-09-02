@@ -43,14 +43,17 @@ abstract class StreamServer {
    * single argument and the argument type must be [WebSocket]. For example,
    *
    *     new StreamServer(uriMapping: {
-   *       socket.listen((event) {
-   *         //event is the message sent by the client
-   *         //you can handle it and return a message as follows:
-   *         socket.add("Server received: $evt");
-   *       });
-   *       return socket.done;
+   *       "ws:/foo": (WebSocket socket) {
+   *         socket.listen((event) {
+   *           //event is the message sent by the client
+   *           //you can handle it and return a message by use of socket.add()
+   *         });
+   *         return socket.done;
+   *       },
    *     }).start();
    *
+   * Note: The `ws:` prefix in the mapping table maps both "ws://" and "wss://".
+   * 
    * ##Arguments
    *
    * * [homeDir] - the home directory for holding static resources. If not specified,

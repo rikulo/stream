@@ -241,7 +241,7 @@ abstract class StreamServer {
    *
    * To close an individual channel, please use [HttpChannel.close] instead.
    */
-  void stop();
+  Future stop();
 
   /** Forward the given [connect] to the given [uri].
    *

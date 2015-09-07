@@ -1,5 +1,9 @@
 #CHANGES
 
+##1.5.1
+
+* [StreamServer.stop] and [HttpChannel.close] returns a Future instance.
+
 ##1.5.0
 
 * Issue 80: Allow [:include] inside[:for], [:if] and any tag 

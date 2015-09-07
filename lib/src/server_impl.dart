@@ -3,7 +3,7 @@
 // Author: tomyeh
 part of stream;
 
-const String _VERSION = "1.5.0";
+const String _VERSION = "1.5.1";
 const String _SERVER_HEADER = "Stream/$_VERSION";
 
 ///The error handler for HTTP connection.
@@ -327,11 +327,13 @@ class _StreamServer implements StreamServer {
   }
 
   @override
-  void stop() {
+  Future stop() {
     if (!isRunning)
       throw new StateError("Not running");
-    for (final HttpChannel channel in new List.from(channels))
-      channel.close();
+    final List<Future> ops = new List(channels.length);
+    for (int i = channels.length; --i >= 0;)
+      ops[i] = channels[i].close();
+    return Future.wait(ops);
   }
 
   @override

@@ -24,16 +24,18 @@ class _HttpChannel implements HttpChannel {
   @override
   HttpConnectionsInfo get connectionsInfo => httpServer.connectionsInfo();
   @override
-  void close() {
+  Future close() {
     _closed = true;
-    httpServer.close();
 
     final List<HttpChannel> channels = server.channels;
+    //reverse order, since [StreamServer.stop] handles it this way
     for (int i = channels.length; --i >= 0;)
       if (identical(this, channels[i])) {
         channels.removeAt(i);
         break;
       }
+
+    return httpServer.close();
   }
   @override
   bool get isClosed => _closed;

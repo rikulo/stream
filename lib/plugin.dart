@@ -7,17 +7,14 @@ import "dart:async";
 import "dart:io";
 import "dart:collection";
 import "dart:mirrors";
-import "package:logging/logging.dart";
 import 'package:path/path.dart' as Path;
 
 import "package:rikulo_commons/util.dart";
 import "package:rikulo_commons/mirrors.dart" show ClassUtil;
-import "package:rikulo_commons/logging.dart";
 import "package:rikulo_commons/io.dart" show getContentType;
 
 import "stream.dart";
 
-part "src/plugin/configurer.dart";
 part "src/plugin/router.dart";
 part "src/plugin/loader.dart";
 part "src/plugin/loader_impl.dart";

@@ -3,7 +3,7 @@
 // Author: tomyeh
 part of stream;
 
-const String _VERSION = "1.5.1";
+const String _VERSION = "1.5.2";
 const String _SERVER_HEADER = "Stream/$_VERSION";
 
 ///The error handler for HTTP connection.
@@ -27,10 +27,13 @@ class _StreamServer implements StreamServer {
   int _connectionCount = 0;
   final bool _futureOnly;
 
-  _StreamServer(this._router, String homeDir, LoggingConfigurer loggingConfigurer,
+  _StreamServer(this._router, String homeDir, bool disableLog,
     this._futureOnly): logger = new Logger("stream") {
-    (loggingConfigurer != null ? loggingConfigurer: new LoggingConfigurer())
-      .configure(logger);
+    if (!disableLog) {
+      Logger.root.level = Level.INFO;
+      logger.onRecord.listen(simpleLoggerHandler);
+    }
+
     _initDir(homeDir);
   }
 

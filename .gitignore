@@ -1,3 +1,5 @@
+/.idea
+/stream.iml
 .packages
 debug
 codegen

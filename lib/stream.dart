@@ -8,12 +8,13 @@ import "dart:io";
 import "dart:async";
 import "dart:collection" show HashMap, LinkedHashMap;
 import "dart:convert" show JSON;
-import "package:logging/logging.dart" show Logger;
+import "package:logging/logging.dart" show Logger, Level;
 import 'package:path/path.dart' as Path;
 
 import "package:rikulo_commons/util.dart";
 import "package:rikulo_commons/io.dart";
 import "package:rikulo_commons/browser.dart";
+import "package:rikulo_commons/logging.dart";
 
 import "plugin.dart";
 

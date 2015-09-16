@@ -83,6 +83,9 @@ abstract class StreamServer {
    * such as 404 and 500. The exception is used for matching the caught exception.
    * Notice that, if you specify the name of the exception to handle,
    * it must include the library name and the class name, such as `"stream.ServerError"`.
+   * * [disableLog] - whether to disable logs.
+   * If false (default), [Logger.root] will be set to [Level.INFO], and
+   * a listener will be added [logger].
    * * [futureOnly] - whether every request handler shall return a Future instance.
    * If false (default), a request handler can return null (or nothing) to indicate
    * the request has been served immediately. However, it is also a common error -- forget
@@ -92,18 +95,18 @@ abstract class StreamServer {
    */
   factory StreamServer({Map<String, dynamic> uriMapping,
       Map errorMapping, Map<String, RequestFilter> filterMapping,
-      String homeDir, LoggingConfigurer loggingConfigurer, bool futureOnly: false})
+      String homeDir, bool disableLog: false, bool futureOnly: false})
   => new _StreamServer(
       new DefaultRouter(uriMapping: uriMapping,
         errorMapping: errorMapping, filterMapping: filterMapping),
-      homeDir, loggingConfigurer, futureOnly);
+      homeDir, disableLog, futureOnly);
 
   /** Constructs a server with the given router.
    * It is used if you'd like to use your own router, rather than the default one.
    */
   factory StreamServer.router(Router router, {String homeDir,
-      LoggingConfigurer loggingConfigurer, bool futureOnly: false})
-  => new _StreamServer(router, homeDir, loggingConfigurer, futureOnly);
+      bool disableLog: false, bool futureOnly: false})
+  => new _StreamServer(router, homeDir, disableLog, futureOnly);
 
   /** The version.
    */
@@ -373,7 +376,6 @@ abstract class StreamServer {
   void filter(String uri, RequestFilter filter, {preceding: false});
 
   /** The logger for logging information.
-   * The default level is `INFO`.
    */
   Logger get logger;
 

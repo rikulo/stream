@@ -1,5 +1,10 @@
 #CHANGES
 
+##1.5.2
+
+* [LoggingConfigurer] is removed
+* [StreamServer]'s constructor is changed: disableLog replaces loggingConfigurer.
+
 ##1.5.1
 
 * [StreamServer.stop] and [HttpChannel.close] returns a Future instance.

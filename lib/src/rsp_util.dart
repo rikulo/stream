@@ -61,7 +61,7 @@ class Rsp {
   /** Converts the given value to a non-null string with the given conditions.
    *
    * * [encode] - the encoding method. It can be `none` (output directly),
-   *`xml` (for HTML/XML) and `query` (for query string).
+   * 'json', `xml` (for HTML/XML) and `query` (for query string).
    * If omitted, `xml` is assumed, i.e, < will be converted to &amp; and so on.
    *
    * * [maxLength]: limit the number of characters being output.
@@ -74,7 +74,8 @@ class Rsp {
    */
   static String nnx(value, {String encode, int maxLength: 0, bool firstLine: false,
     pre: false}) {
-    String str = value != null ? value.toString(): "";
+    String str = encode == "json" ? json(value):
+        value != null ? value.toString(): "";
     if (firstLine) {
       for (int i = 0;;) {
         final j = str.indexOf('\n', i);
@@ -95,6 +96,7 @@ class Rsp {
 
     switch (encode) {
       case "none":
+      case "json":
         break;
       case "query":
         str = Uri.encodeQueryComponent(str);

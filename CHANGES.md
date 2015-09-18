@@ -2,21 +2,22 @@
 
 ##1.5.2
 
-* [LoggingConfigurer] is removed
-* [StreamServer]'s constructor is changed: disableLog replaces loggingConfigurer.
+* `[=data, encode: 'json']` is supported
+* `LoggingConfigurer` is removed
+* `StreamServer`'s constructor is changed: disableLog replaces `loggingConfigurer`.
 
 ##1.5.1
 
-* [StreamServer.stop] and [HttpChannel.close] returns a Future instance.
+* `StreamServer.stop` and `HttpChannel.close` returns a Future instance.
 
 ##1.5.0
 
-* Issue 80: Allow [:include] inside[:for], [:if] and any tag 
+* Issue 80: Allow `[:include]` inside`[:for]`, `[:if]` and any tag 
 * Specifying the etag attribute in the page tag won't imply `lastModified="start"`
 
 ##1.3.1
 
-* Issue 79: [:script] supports the async flag
+* Issue 79: `[:script]` supports the async flag
 
 ##1.3.0
 
@@ -99,7 +100,7 @@
 
 ###0.7.4
 
-* Issue 36: Change the spec of [:json] to generate a JSON object that can be parse as Dart object directly
+* Issue 36: Change the spec of `[:json]` to generate a JSON object that can be parse as Dart object directly
 * Issue 35: A tag for generating the dart script for development, while generating only JS in production
 * HttpConnect.buffer is renamed to HttpConnect.stringBuffer, while HttpConnect.buffer reserved for bytes
 
@@ -107,7 +108,7 @@
 
 * Issue 32: HttpConnect provides API to retrieve the information of the browser
 * Issue 31: RSP supports last-modified as the time it has been compiled
-* Issue 33: The expression tag ([= expr]) supports the encoding option
+* Issue 33: The expression tag (`[= expr]`) supports the encoding option
 * Issue 34: Make the webapp directory optional
 
 ###0.7.2
@@ -143,8 +144,7 @@
 
 *Upgrade Note*
 
-* The syntax of a tag has been changed from [tag] to [:tag]. The old syntax still works
-but will be removed in the near future.
+* The syntax of a tag has been changed from `[tag]` to `[:tag]`. The old syntax still works but will be removed in the near future.
 
 ###0.6.1
 
@@ -158,7 +158,7 @@ but will be removed in the near future.
 * [dart] is always generated inside the render function
 * Issue 2: RSP files can be put in the client folder (i.e., not under the webapp folder)
 * Issue 3: [page] partOf accepts a dart file and maintains it automatically
-* Issue 4: Allow to mix expression ([=...]) with literal in tag attributes
+* Issue 4: Allow to mix expression (`[=...]`) with literal in tag attributes
 
 ###0.5.5
 

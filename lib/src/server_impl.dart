@@ -106,24 +106,19 @@ class _StreamServer implements StreamServer {
       return new Future.error(e, st);
     }
   }
-  void _handleErr(HttpConnect connect, error, stackTrace) {
+  Future _handleErr(HttpConnect connect, error, stackTrace) {
     try {
       if (_onError != null) {
         try {
           _onError(connect, error, stackTrace);
-        } catch (err, st) {
-          _shout(connect, _errorToString(err, st));
+        } catch (ex, st) {
+          _shout(connect, _errorToString(ex, st));
         }
-      }
-
-      if (connect == null) {
-        _shout(null, "Uncaught " + _errorToString(error, stackTrace));
-        return;
       }
 
       if (connect.errorDetail != null) { //called twice; ignore 2nd one
         _shout(connect, error, stackTrace);
-        return; //done
+        return null; //done
       }
 
       bool shouted = false;
@@ -141,28 +136,19 @@ class _StreamServer implements StreamServer {
         connect.response.statusCode = code;
           //spec: not to update reasonPhrase (it is up to error handler if any)
         handler = _router.getErrorHandlerByCode(code);
-        if (handler == null) {
-          //TODO: render a page
-          _close(connect);
-          return;
-        }
+        if (handler == null)
+          return null;
       }
 
-      (handler is Function ?
+      return (handler is Function ?
         _ensureFuture(handler(connect), true): forward(connect, handler))
-      .then((_) {
-        _close(connect);
-      })
-      .catchError((err, st) {
+      .catchError((ex, st) {
         if (!shouted)
           _shout(connect, error, stackTrace);
-        _shout(connect, _errorToString(err, st));
-        _close(connect);
+        _shout(connect, _errorToString(ex, st));
       });
-    } catch (err, st) {
-      _shout(connect, _errorToString(err, st));
-      if (connect != null)
-        _close(connect);
+    } catch (ex, st) {
+      _shout(connect, _errorToString(ex, st));
     }
   }
 
@@ -180,27 +166,13 @@ class _StreamServer implements StreamServer {
         buf..write("\n")..write(st);
       logger.shout(buf.toString());
 
-    } catch (e) {
+    } catch (_) {
       if (buf.isEmpty) {
         print(err);
         if (st != null)
           print(st);
       } else {
         print(buf);
-      }
-    }
-  }
-  void _close(HttpConnect connect) {
-    try {
-      connect.response.close();
-        //no need to catch since close() is asynchronous
-    } finally {
-      if (--_connectionCount == 0 && _onIdle != null) {
-        try {
-          _onIdle();
-        } catch (err, st) {
-          _shout(connect, _errorToString(err, st));
-        }
       }
     }
   }
@@ -301,8 +273,16 @@ class _StreamServer implements StreamServer {
       runZoned(() {
         _startNow(channel);
       },
-      onError: (err, stackTrace) {
-        _handleErr(null, err, stackTrace);
+      onError: (ex, st) {
+        if (_onError != null) {
+          try {
+            _onError(null, ex, st);
+          } catch (err, st) {
+            _shout(null, _errorToString(err, st));
+          }
+        }
+
+        _shout(null, "Uncaught " + _errorToString(ex, st));
       });
     } else {
       _startNow(channel);
@@ -316,14 +296,26 @@ class _StreamServer implements StreamServer {
         ..set(HttpHeaders.SERVER, _SERVER_HEADER)
         ..date = new DateTime.now();
 
-      ++_connectionCount;
-
       //protect from aborted connection
       final HttpConnect connect = new _HttpConnect(channel, req, req.response);
-      _handle(connect, 0).then((_) { //0 means filter from beginning
-        _close(connect);
-      }).catchError((err, stackTrace) {
-        _handleErr(connect, err, stackTrace);
+      ++_connectionCount;
+
+      _handle(connect, 0) //0 means filter from beginning
+      .catchError((ex, st) => _handleErr(connect, ex, st))
+      .whenComplete(() {
+        return connect.response.close()
+        .catchError((ex, st)
+            => _shout(connect, _errorToString(ex, st)))
+        .whenComplete(() {
+          if (--_connectionCount <= 0 && _onIdle != null) {
+            assert(_connectionCount == 0);
+            try {
+              _onIdle();
+            } catch (ex, st) {
+              _shout(connect, _errorToString(ex, st));
+            }
+          }
+        });
       });
     });
     _channels.add(channel);

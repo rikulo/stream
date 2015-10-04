@@ -149,6 +149,7 @@ class _StreamServer implements StreamServer {
       });
     } catch (ex, st) {
       _shout(connect, _errorToString(ex, st));
+      return null;
     }
   }
 

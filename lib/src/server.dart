@@ -172,7 +172,7 @@ abstract class StreamServer {
    *
    *     new StreamServer()
    *       ..start(port: 80)
-   *       ..startSecure(address: "11.22.33.44", port: 443);
+   *       ..startSecure(context, address: "11.22.33.44", port: 443);
    *
    * To know which channel a request is received, you can access
    * [HttpConnect.channel].
@@ -193,7 +193,7 @@ abstract class StreamServer {
    * Default: true.
    */
   Future<HttpChannel> start({address, int port: 8080, int backlog: 0,
-    bool zoned: true});
+    bool v6Only: false, bool shared: false, bool zoned: true});
   /** Starts the server listening for HTTPS request.
    *
    * Notice that you can invoke [start], [startSecure] and [startOn] multiple
@@ -201,7 +201,7 @@ abstract class StreamServer {
    *
    *     new StreamServer()
    *       ..start(port: 80)
-   *       ..startSecure(address: "11.22.33.44", port: 443);
+   *       ..startSecure(context, address: "11.22.33.44", port: 443);
    *
    * To know which channel a request is received, you can access
    * [HttpConnect.channel].
@@ -217,9 +217,10 @@ abstract class StreamServer {
    * * [zoned] - whether to start the server within a zone (i.e., `runZoned()`)
    * Default: true.
    */
-  Future<HttpChannel> startSecure({address, int port: 8443,
-      String certificateName, bool requestClientCertificate: false,
-      int backlog: 0, bool zoned: true});
+  Future<HttpChannel> startSecure(SecurityContext context,
+      {address, int port: 8443,
+      bool v6Only: false, bool requestClientCertificate: false,
+      int backlog: 0, bool shared: false, bool zoned: true});
   /** Starts the server to an existing socket.
    *
    * Notice that you can invoke [start], [startSecure] and [startOn] multiple

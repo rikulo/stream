@@ -225,11 +225,12 @@ class _StreamServer implements StreamServer {
   @override
   bool get isRunning => !_channels.isEmpty;
   @override
-  Future<HttpChannel> start({address, int port: 8080,
-      int backlog: 0, bool zoned: true}) {
+  Future<HttpChannel> start({address, int port: 8080, int backlog: 0,
+      bool v6Only: false, bool shared: false, bool zoned: true}) {
     if (address == null)
       address = InternetAddress.ANY_IP_V4;
-    return HttpServer.bind(address, port, backlog: backlog)
+    return HttpServer.bind(address, port, backlog: backlog, v6Only: v6Only,
+        shared: shared)
     .then((HttpServer iserver) {
       final channel = new _HttpChannel(this, iserver, address, iserver.port, false);
       _startChannel(channel, zoned);
@@ -238,13 +239,15 @@ class _StreamServer implements StreamServer {
     });
   }
   @override
-  Future<HttpChannel> startSecure({address, int port: 8443, 
-      String certificateName, bool requestClientCertificate: false,
-      int backlog: 0, bool zoned: true}) {
+  Future<HttpChannel> startSecure(SecurityContext context,
+      {address, int port: 8443,
+      bool v6Only: false, bool requestClientCertificate: false,
+      int backlog: 0, bool shared: false, bool zoned: true}) {
     if (address == null)
       address = InternetAddress.ANY_IP_V4;
-    return HttpServer.bindSecure(address, port, certificateName: certificateName,
-        requestClientCertificate: requestClientCertificate, backlog: backlog)
+    return HttpServer.bindSecure(address, port, context, v6Only: v6Only,
+        requestClientCertificate: requestClientCertificate,
+        backlog: backlog, shared: shared)
     .then((HttpServer iserver) {
       final channel = new _HttpChannel(this, iserver, address, iserver.port, true);
       _startChannel(channel, zoned);

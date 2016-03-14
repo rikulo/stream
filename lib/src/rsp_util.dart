@@ -25,10 +25,9 @@ class Rsp {
       if (contentType != null && !contentType.isEmpty)
         headers.contentType = parseContentType(contentType);
 
-      final String realETag  = etag != null ? _getETag(lastModified, etag): null;
       bool isPreconditionFailed = false;
-      if (realETag != null || lastModified != null) {
-        if (!checkIfHeaders(connect, lastModified, realETag))
+      if (etag != null || lastModified != null) {
+        if (!checkIfHeaders(connect, lastModified, etag))
           return false;
 
         isPreconditionFailed = response.statusCode == HttpStatus.PRECONDITION_FAILED;
@@ -36,8 +35,8 @@ class Rsp {
         if (isPreconditionFailed || response.statusCode < HttpStatus.BAD_REQUEST) {
           if (lastModified != null)
             headers.set(HttpHeaders.LAST_MODIFIED, lastModified);
-          if (realETag != null)
-            headers.set(HttpHeaders.ETAG, realETag);
+          if (etag != null)
+            headers.set(HttpHeaders.ETAG, etag);
         }
 
       }
@@ -175,11 +174,4 @@ class Rsp {
     return bootstrap ?
       s + '<script src="$prefix/packages/browser/dart.js"></script>\n': s;
   }
-}
-
-String _getETag(DateTime lastModified, String etagId) {
-  final int val = lastModified == null ? 0:
-    lastModified.millisecondsSinceEpoch
-      & (etagId.length > 7 ? 0xfff: etagId.length > 4 ? 0xffffff: 0x7fffffff);
-  return '"$etagId-${val.toRadixString(16)}"';
 }

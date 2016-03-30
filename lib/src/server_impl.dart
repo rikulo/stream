@@ -3,7 +3,7 @@
 // Author: tomyeh
 part of stream;
 
-const String _VERSION = "1.5.2";
+const String _VERSION = "1.5.5";
 const String _SERVER_HEADER = "Stream/$_VERSION";
 
 ///The error handler for HTTP connection.
@@ -204,6 +204,9 @@ class _StreamServer implements StreamServer {
   String _uriVerPrefix = "";
 
   @override
+  PathPreprocessor pathPreprocessor;
+
+  @override
   ResourceLoader get resourceLoader => _resLoader;
   void set resourceLoader(ResourceLoader loader) {
     if (loader == null)
@@ -286,7 +289,7 @@ class _StreamServer implements StreamServer {
           }
         }
 
-        _shout(null, "Uncaught " + _errorToString(ex, st));
+        _shout(null, "Uncaught!! " + _errorToString(ex, st));
       });
     } else {
       _startNow(channel);
@@ -296,7 +299,7 @@ class _StreamServer implements StreamServer {
     channel.httpServer
     ..sessionTimeout = sessionTimeout
     ..listen((HttpRequest req) {
-      (req = _unVersionPrefix(req, uriVersionPrefix)).response.headers
+      (req = _preprocess(req)).response.headers
         ..set(HttpHeaders.SERVER, _SERVER_HEADER)
         ..date = new DateTime.now();
 
@@ -323,6 +326,16 @@ class _StreamServer implements StreamServer {
       });
     });
     _channels.add(channel);
+  }
+
+  HttpRequest _preprocess(HttpRequest req) {
+    final String path = req.uri.path,
+      np = (pathPreprocessor ?? _defaultPathPreprocess)(path);
+    return path == np ? req: _wrapRequest(req, np, keepQuery: true);
+  }
+  String _defaultPathPreprocess(String path) {
+    return _uriVerPrefix.isNotEmpty && path.startsWith(_uriVerPrefix) ?
+        path.substring(_uriVerPrefix.length): path;
   }
 
   @override
@@ -358,10 +371,4 @@ class _StreamServer implements StreamServer {
       return value;
     throw new ServerError("Handler/filter must return null or Future, not $value");
   }
-}
-
-HttpRequest _unVersionPrefix(HttpRequest req, String prefix) {
-  String path;
-  return !prefix.isEmpty && (path = req.uri.path).startsWith(prefix) ?
-    _wrapRequest(req, path.substring(prefix.length), keepQuery: true): req;
 }

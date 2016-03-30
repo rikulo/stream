@@ -3,6 +3,10 @@
 // Author: tomyeh
 part of stream;
 
+/// Used with [StreamServer.pathPreprocessor] for preprocessing the
+/// request's path.
+typedef String PathPreprocessor(String path);
+
 /**
  * Stream server.
  *
@@ -161,6 +165,18 @@ abstract class StreamServer {
    *     [:script src="/js/init.dart"] [!-- no need to prefix uriVersionPrefix --]
    */
   String uriVersionPrefix;
+  /** Preprocessor that will be used to preprocess the path of each request,
+   * if specified.
+   * 
+   * By default, it removes [uriVersionPrefix], if specified and found
+   * in the request's path.
+   * However, to really make [uriVersionPrefix] to work, you usuaully have
+   * to provide a preprocessor to remove all possible prefixes (including
+   * the current version and all previous versions).
+   * After all, browsers with cached content might request a file with
+   * an older version.
+   */
+  PathPreprocessor pathPreprocessor;
 
   /** Indicates whether the server is running.
    */

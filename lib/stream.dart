@@ -6,7 +6,7 @@ library stream;
 
 import "dart:io";
 import "dart:async";
-import "dart:collection" show HashMap, LinkedHashMap;
+import "dart:collection" show HashMap;
 import "dart:convert" show JSON;
 import "package:logging/logging.dart" show Logger, Level;
 import 'package:path/path.dart' as Path;

@@ -6,12 +6,12 @@ part of features;
 Future forwarderView(HttpConnect connect) async { //#3
   HttpResponse response = connect.response;
   if (!Rsp.init(connect, "text/html; charset=utf-8"))
-    return new Future.value();
+    return null;
 
   if (true) { //if#3
 
     return connect.forward("/forward"); //forward#4
   } //if
 
-  return new Future.value();
+  return null;
 }

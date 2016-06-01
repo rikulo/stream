@@ -7,7 +7,7 @@ Future lastModified(HttpConnect connect) async { //#2
   HttpResponse response = connect.response;
   if (!Rsp.init(connect, "text/html; charset=utf-8",
   etag: "abc123"))
-    return new Future.value();
+    return null;
 
   response.write("""<html>
   <head>
@@ -20,5 +20,5 @@ Future lastModified(HttpConnect connect) async { //#2
 </html>
 """); //#2
 
-  return new Future.value();
+  return null;
 }

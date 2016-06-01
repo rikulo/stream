@@ -6,7 +6,7 @@ part of hello_mvc;
 Future listView(HttpConnect connect, {String path, List<FileInfo> infos}) async { //#3
   HttpResponse response = connect.response;
   if (!Rsp.init(connect, "text/html; charset=utf-8"))
-    return new Future.value();
+    return null;
 
   response.write("""<!DOCTYPE html>
 <html>
@@ -57,5 +57,5 @@ Future listView(HttpConnect connect, {String path, List<FileInfo> infos}) async 
 </html>
 """); //#23
 
-  return new Future.value();
+  return null;
 }

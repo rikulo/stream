@@ -6,7 +6,7 @@ part of hello_templating;
 Future home(HttpConnect connect) async { //#2
   HttpResponse response = connect.response;
   if (!Rsp.init(connect, "text/html; charset=utf-8"))
-    return new Future.value();
+    return null;
 
   response.write("""<!DOCTYPE html>
 <html>
@@ -66,5 +66,5 @@ Future home(HttpConnect connect) async { //#2
 </html>
 """); //#28
 
-  return new Future.value();
+  return null;
 }

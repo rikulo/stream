@@ -6,7 +6,7 @@ part of features;
 Future includerView(HttpConnect connect) async { //#2
   HttpResponse response = connect.response;
   if (!Rsp.init(connect, "text/html; charset=utf-8"))
-    return new Future.value();
+    return null;
 final infos = {
   "fruits": ["apple", "orange", "lemon"],
   "cars": ["bmw", "audi", "honda"]
@@ -70,5 +70,5 @@ final infos = {
 </html>
 """); //#35
 
-  return new Future.value();
+  return null;
 }

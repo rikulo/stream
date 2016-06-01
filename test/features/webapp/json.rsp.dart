@@ -6,7 +6,7 @@ part of features;
 Future json(HttpConnect connect) async { //#2
   HttpResponse response = connect.response;
   if (!Rsp.init(connect, "text/html; charset=utf-8"))
-    return new Future.value();
+    return null;
 var map = {
   "first": [123, "abc"],
   "second": true
@@ -36,5 +36,5 @@ document.getElementById("show").innerHTML = out;
 </html>
 """); //#14
 
-  return new Future.value();
+  return null;
 }

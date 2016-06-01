@@ -6,7 +6,7 @@ part of hello_templating;
 Future classic(HttpConnect connect, {header, sidebar, body, footer}) async { //#2
   HttpResponse response = connect.response;
   if (!Rsp.init(connect, "text/html; charset=utf-8"))
-    return new Future.value();
+    return null;
 
   response.write("""<div>
   <div class="header">
@@ -48,5 +48,5 @@ Future classic(HttpConnect connect, {header, sidebar, body, footer}) async { //#
 </div>
 """); //#13
 
-  return new Future.value();
+  return null;
 }

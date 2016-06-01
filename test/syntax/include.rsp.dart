@@ -10,7 +10,7 @@ import 'package:stream/stream.dart';
 Future include(HttpConnect connect, {foo, more, less}) async { //#3
   HttpResponse response = connect.response;
   if (!Rsp.init(connect, "text/html; charset=utf-8"))
-    return new Future.value();
+    return null;
 
   var less = new StringBuffer(), _0 = connect; //var#3
   connect = new HttpConnect.stringBuffer(connect, less); response = connect.response;
@@ -37,5 +37,5 @@ Future include(HttpConnect connect, {foo, more, less}) async { //#3
 
   await Rsp.nnf(include(new HttpConnect.chain(connect), foo: true, less: less, more: _1.toString())); //include#7
 
-  return new Future.value();
+  return null;
 }

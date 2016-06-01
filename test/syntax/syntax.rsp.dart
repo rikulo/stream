@@ -19,7 +19,7 @@ Future syntax(HttpConnect connect, {foo, bool c:false}) async { //#7
   response.headers..add("Cache-Control", "no-cache"); //header#6
 
   if (!Rsp.init(connect, foo.contentType))
-    return new Future.value();
+    return null;
 
   response.write("""<!DOCTYPE html>
 <html>
@@ -196,5 +196,5 @@ new LinkedHashMap();
 
 """); //#79
 
-  return new Future.value();
+  return null;
 }

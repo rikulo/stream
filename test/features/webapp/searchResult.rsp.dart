@@ -6,7 +6,7 @@ part of features;
 Future searchResult(HttpConnect connect, {criteria}) async { //#2
   HttpResponse response = connect.response;
   if (!Rsp.init(connect, "text/html; charset=utf-8"))
-    return new Future.value();
+    return null;
 
   response.write("""<html>
   <head>
@@ -46,5 +46,5 @@ Future searchResult(HttpConnect connect, {criteria}) async { //#2
 </html>
 """); //#14
 
-  return new Future.value();
+  return null;
 }

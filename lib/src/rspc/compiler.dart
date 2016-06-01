@@ -130,7 +130,7 @@ class Compiler {
         }
         _error("Unclosed tag(s): $sb");
       }
-      _writeln("\n  return new Future.value();\n}");
+      _writeln("\n  return null;\n}");
     }
   }
   void _start([int line]) {
@@ -248,7 +248,7 @@ class Compiler {
         _write("${toEL(_etag)}");
     }
 
-    _writeln('))\n    return new Future.value();'); //end of if(!Rsp.init)
+    _writeln('))\n    return null;'); //end of if(!Rsp.init)
   }
 
   ///Sets the page information.

@@ -6,7 +6,7 @@ part of hello_rsp;
 Future helloView(HttpConnect connect) async { //#3
   HttpResponse response = connect.response;
   if (!Rsp.init(connect, "text/html; charset=utf-8"))
-    return new Future.value();
+    return null;
 
   response.write("""<!DOCTYPE html>
 <html>
@@ -34,5 +34,5 @@ Future helloView(HttpConnect connect) async { //#3
 </html>
 """); //#12
 
-  return new Future.value();
+  return null;
 }

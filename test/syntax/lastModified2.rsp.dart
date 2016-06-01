@@ -11,7 +11,7 @@ Future lastModified2(HttpConnect connect) async { //#2
   HttpResponse response = connect.response;
   if (!Rsp.init(connect, "text/html; charset=utf-8",
   lastModified: connect.channel.startedSince))
-    return new Future.value();
+    return null;
 
   response.write("""<html>
   <head>
@@ -22,5 +22,5 @@ Future lastModified2(HttpConnect connect) async { //#2
 </html>
 """); //#2
 
-  return new Future.value();
+  return null;
 }

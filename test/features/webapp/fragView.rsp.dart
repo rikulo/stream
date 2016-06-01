@@ -6,7 +6,7 @@ part of features;
 Future fragView(HttpConnect connect, {Map infos: const {}, header, footer}) async { //#2
   HttpResponse response = connect.response;
   if (!Rsp.init(connect, "text/html; charset=utf-8"))
-    return new Future.value();
+    return null;
 
   if (header != null) { //if#2
 
@@ -77,5 +77,5 @@ Future fragView(HttpConnect connect, {Map infos: const {}, header, footer}) asyn
 """); //#20
   } //if
 
-  return new Future.value();
+  return null;
 }

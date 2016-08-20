@@ -1,5 +1,9 @@
 # CHANGES
 
+### 1.6.0
+
+* `DefaultRouter.shallCache` introduced
+
 ### 1.5.5
 
 * `Server.pathPreprocessor` introduced

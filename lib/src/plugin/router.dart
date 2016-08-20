@@ -172,10 +172,21 @@ class DefaultRouter implements Router {
     }
   }
 
+  /** Retursn whether the mapping of the given [uri] shall be cached.
+   * Default: it always return true.
+   */
+  bool shallCache(HttpConnect connect, String uri) => true;
+
   @override
   getHandler(HttpConnect connect, String uri) {
-    final Map<String, dynamic> cache = _uriCache.getCache(connect, _uriMapping);
-    var handler = cache[uri];
+    Map<String, dynamic> cache;
+    var handler;
+
+    if (shallCache(connect, uri)) {
+      cache = _uriCache.getCache(connect, _uriMapping);
+      handler = cache[uri];
+    }
+
     if (handler == null) {
       _UriMapping mp;
       for (mp in _uriMapping)
@@ -185,10 +196,12 @@ class DefaultRouter implements Router {
         }
 
       //store to cache
-      cache[uri] = handler == null ? _NOT_FOUND:
-        mp.hasGroup() ? mp: handler; //store _UriMapping if mp.hasGroup()
-      if (cache.length > _cacheSize)
-        cache.remove(cache.keys.first);
+      if (cache != null) {
+        cache[uri] = handler == null ? _NOT_FOUND:
+          mp.hasGroup() ? mp: handler; //store _UriMapping if mp.hasGroup()
+        if (cache.length > _cacheSize)
+          cache.remove(cache.keys.first);
+      }
     } else if (identical(handler, _NOT_FOUND)) {
       return null;
     } else if (handler is _UriMapping) { //hasGroup
@@ -210,6 +223,7 @@ class DefaultRouter implements Router {
     }
     return handler;
   }
+
   @override
   int getFilterIndex(HttpConnect connect, String uri, int iFilter) {
     for (; iFilter < _filterMapping.length; ++iFilter)
@@ -425,24 +439,21 @@ class _UriCache {
     _multimethod = null;
     _cache = null;
   }
+
   Map<String, dynamic> getCache(HttpConnect connect, List<_UriMapping> mappings) {
-    if (_multimethod == null) {
+    if (_multimethod == null) { //not initialized yet
       _cache = new LinkedHashMap();
+
       _multimethod = false;
-      for (final _UriMapping m in mappings) {
+      for (final _UriMapping m in mappings)
         if (m.method != null) {
           _multimethod = true;
-          _cache = new HashMap(); //<String method, <String uri, handler>>
           break;
         }
-      }
     }
 
-    if (!_multimethod)
-      return _cache;
-
-    final String method = connect.request.method;
-    final Map<String, dynamic> cache = _cache[method];
-    return cache != null ? cache: (_cache[method] = new LinkedHashMap());
+    return _multimethod ? 
+      _cache.putIfAbsent(connect.request.method, () => new LinkedHashMap()):
+      _cache;
   }
 }

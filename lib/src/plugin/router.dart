@@ -179,13 +179,10 @@ class DefaultRouter implements Router {
 
   @override
   getHandler(HttpConnect connect, String uri) {
-    Map<String, dynamic> cache;
-    var handler;
-
-    if (shallCache(connect, uri)) {
-      cache = _uriCache.getCache(connect, _uriMapping);
-      handler = cache[uri];
-    }
+    //check cache first before shallCache => better performance
+    //reason: shallCache is likely to return true (after regex)
+    final Map<String, dynamic> cache = _uriCache.getCache(connect, _uriMapping);
+    var handler = cache[uri];
 
     if (handler == null) {
       _UriMapping mp;
@@ -196,7 +193,7 @@ class DefaultRouter implements Router {
         }
 
       //store to cache
-      if (cache != null) {
+      if (shallCache(connect, uri)) {
         cache[uri] = handler == null ? _NOT_FOUND:
           mp.hasGroup() ? mp: handler; //store _UriMapping if mp.hasGroup()
         if (cache.length > _cacheSize)

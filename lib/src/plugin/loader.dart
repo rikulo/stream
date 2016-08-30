@@ -76,6 +76,11 @@ class FileAsset implements Asset {
   Stream<List<int>> openRead([int start, int end]) => file.openRead(start, end);
   @override
   Future<List<int>> readAsBytes() => file.readAsBytes();
+
+  @override
+  String toString() => file.toString();
+  @override
+  bool operator==(o) => o is FileAsset && file == o.file;
 }
 
 /** A cache for storing resources.

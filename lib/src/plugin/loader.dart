@@ -59,6 +59,25 @@ abstract class Asset {
   Future<List<int>> readAsBytes();
 }
 
+/** A file-based asset.
+ */
+class FileAsset implements Asset {
+  FileAsset(this.file);
+
+  final File file;
+
+  @override
+  String get path => file.path;
+  @override
+  Future<DateTime> lastModified() => file.lastModified();
+  @override
+  Future<int> length() => file.length();
+  @override
+  Stream<List<int>> openRead([int start, int end]) => file.openRead(start, end);
+  @override
+  Future<List<int>> readAsBytes() => file.readAsBytes();
+}
+
 /** A cache for storing resources.
  *
  * > Note: It is used by [loadAsset] and [AssetLoader] and derives.
@@ -162,6 +181,7 @@ abstract class AssetLoader implements ResourceLoader {
   Future load(HttpConnect connect, String uri)
   => loadAsset(connect, getAsset(uri), _cache);
 }
+
 /** A file-system-based asset loader.
  */
 class FileLoader extends AssetLoader {
@@ -169,7 +189,7 @@ class FileLoader extends AssetLoader {
 
   @override
   Asset getAsset(String path)
-  => new _FileAsset(new File(path));
+  => new FileAsset(new File(path));
 
   @override
   Future load(HttpConnect connect, String uri) {
@@ -179,7 +199,7 @@ class FileLoader extends AssetLoader {
     final File file = new File(path);
     return file.exists().then((bool exists) {
       if (exists)
-        return loadAsset(connect, new _FileAsset(file), _cache);
+        return loadAsset(connect, new FileAsset(file), _cache);
       return new Directory(path).exists().then((bool exists) {
         if (exists)
           return _loadFileAt(connect, uri, path, connect.server.indexNames, 0, _cache);

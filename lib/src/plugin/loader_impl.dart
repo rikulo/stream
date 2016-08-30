@@ -6,23 +6,6 @@ part of stream_plugin;
 //--- Cache and Asset Loading ---//
 //--- ---//
 
-class _FileAsset implements Asset {
-  _FileAsset(this.file);
-
-  final File file;
-
-  @override
-  String get path => file.path;
-  @override
-  Future<DateTime> lastModified() => file.lastModified();
-  @override
-  Future<int> length() => file.length();
-  @override
-  Stream<List<int>> openRead([int start, int end]) => file.openRead(start, end);
-  @override
-  Future<List<int>> readAsBytes() => file.readAsBytes();
-}
-
 class _AssetDetail {
   final Asset asset;
   final DateTime lastModified;
@@ -102,7 +85,7 @@ Future _loadFileAt(HttpConnect connect, String uri, String dir,
 
   final File file = new File(Path.join(dir, names[j]));
   return file.exists().then((bool exists) {
-    return exists ? loadAsset(connect, new _FileAsset(file), cache):
+    return exists ? loadAsset(connect, new FileAsset(file), cache):
       _loadFileAt(connect, uri, dir, names, j + 1, cache);
   });
 }

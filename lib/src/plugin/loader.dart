@@ -183,6 +183,12 @@ abstract class AssetLoader implements ResourceLoader {
 }
 
 /** A file-system-based asset loader.
+ * 
+ * Note: it assumes the path is related to [rootDir].
+ * That is, `/foo/foo.png` will become `$rootDir/foo/foo.png`.
+ * To load an absolute path, please use [loadAsset] directly. For example,
+ * 
+ *     loadAsset(connect, new FileAsset(new File.fromUri(uri)));
  */
 class FileLoader extends AssetLoader {
   FileLoader(String rootDir): super(rootDir);
@@ -210,7 +216,12 @@ class FileLoader extends AssetLoader {
 }
 
 /** Loads an asset into the given response.
- * Notice that this method assumes the asset exists.
+ * 
+ * To load a file, you can do:
+ * 
+ *     loadAsset(connect, new FileAsset(file));
+ * 
+ * It throws [Http404] if [Asset.lastModified] throws an exception.
  */
 Future loadAsset(HttpConnect connect, Asset asset, [AssetCache cache]) {
   final HttpResponse response = connect.response;
@@ -229,7 +240,7 @@ Future loadAsset(HttpConnect connect, Asset asset, [AssetCache cache]) {
   List<int> content;
 
   return asset.lastModified()
-  .catchError((ex) {
+  .catchError((_) {
     throw new Http404.fromConnect(connect);
   })
   .then((_) {

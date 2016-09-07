@@ -124,7 +124,7 @@ abstract class AssetCache {
  */
 abstract class AssetLoader implements ResourceLoader {
   AssetLoader([this.rootDir]) {
-    _cache = new _AssetCache(this);
+    cache = new _AssetCache(this);
   }
 
   @override
@@ -141,9 +141,11 @@ abstract class AssetLoader implements ResourceLoader {
   int cacheThreshold = 128 * 1024;
 
   /** The cache.
+   * 
+   * You can assign null to it to disable the caching.
+   * Or, overriding [shallCache] to have fine-control of what to cache.
    */
-  AssetCache get cache => _cache;
-  AssetCache _cache;
+  AssetCache cache;
 
   ///Whether to generate the ETag header. Default: true.
   bool useETag = true;
@@ -184,7 +186,7 @@ abstract class AssetLoader implements ResourceLoader {
 
   @override
   Future load(HttpConnect connect, String uri)
-  => loadAsset(connect, getAsset(uri), _cache);
+  => loadAsset(connect, getAsset(uri), cache);
 }
 
 /** A file-system-based asset loader.
@@ -210,10 +212,10 @@ class FileLoader extends AssetLoader {
     final File file = new File(path);
     return file.exists().then((bool exists) {
       if (exists)
-        return loadAsset(connect, new FileAsset(file), _cache);
+        return loadAsset(connect, new FileAsset(file), cache);
       return new Directory(path).exists().then((bool exists) {
         if (exists)
-          return _loadFileAt(connect, uri, path, connect.server.indexNames, 0, _cache);
+          return _loadFileAt(connect, uri, path, connect.server.indexNames, 0, cache);
         throw new Http404(uri);
       });
     });

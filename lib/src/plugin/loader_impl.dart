@@ -66,10 +66,10 @@ class _AssetCache implements AssetCache {
     if (shallCache(asset, assetSize)) {
       final String path = asset.path;
       final _CacheEntry entry = _cache[path];
-      _cache[path] = new _CacheEntry(content, lastModified, assetSize);
-      _cacheSize += assetSize;
       if (entry != null)
         _cacheSize -= entry.assetSize;
+      _cache[path] = new _CacheEntry(content, lastModified, assetSize);
+      _cacheSize += assetSize;
 
       //reduce the cache's size if necessary
       while (_cacheSize > _loader.cacheSize)

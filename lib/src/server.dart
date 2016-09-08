@@ -90,12 +90,7 @@ abstract class StreamServer {
    * * [disableLog] - whether to disable logs.
    * If false (default), [Logger.root] will be set to [Level.INFO], and
    * a listener will be added [logger].
-   * * [futureOnly] - whether every request handler shall return a Future instance.
-   * If false (default), a request handler can return null (or nothing) to indicate
-   * the request has been served immediately. However, it is also a common error -- forget
-   * to return a Future object. To avoid this problem, you can return a Future object
-   * in each your handler, and then specify this argument to true to have Stream server
-   * to ensure it.
+   * * [futureOnly] - deprecated.
    */
   factory StreamServer({Map<String, dynamic> uriMapping,
       Map errorMapping, Map<String, RequestFilter> filterMapping,
@@ -103,14 +98,16 @@ abstract class StreamServer {
   => new _StreamServer(
       new DefaultRouter(uriMapping: uriMapping,
         errorMapping: errorMapping, filterMapping: filterMapping),
-      homeDir, disableLog, futureOnly);
+      homeDir, disableLog);
 
   /** Constructs a server with the given router.
    * It is used if you'd like to use your own router, rather than the default one.
+   *
+   * * [futureOnly] - deprecated.
    */
   factory StreamServer.router(Router router, {String homeDir,
       bool disableLog: false, bool futureOnly: false})
-  => new _StreamServer(router, homeDir, disableLog, futureOnly);
+  => new _StreamServer(router, homeDir, disableLog);
 
   /** The version.
    */

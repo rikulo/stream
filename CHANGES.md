@@ -1,5 +1,10 @@
 # CHANGES
 
+### 1.6.1
+
+* `StreamServer`'s futureOnly argument is deprecated.
+* `AssetLoader.cache` can be set to null (to disable caching).
+
 ### 1.6.0
 
 * `DefaultRouter.shallCache` introduced

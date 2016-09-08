@@ -25,10 +25,9 @@ class _StreamServer implements StreamServer {
   _ConnectErrorCallback _onError;
   _OnIdleCallback _onIdle;
   int _connectionCount = 0;
-  final bool _futureOnly;
 
-  _StreamServer(this._router, String homeDir, bool disableLog,
-    this._futureOnly): logger = new Logger("stream") {
+  _StreamServer(this._router, String homeDir, bool disableLog):
+  logger = new Logger("stream") {
     if (!disableLog) {
       Logger.root.level = Level.INFO;
       logger.onRecord.listen(simpleLoggerHandler);
@@ -93,7 +92,9 @@ class _StreamServer implements StreamServer {
       if (handler != null) {
         if (handler is Function)
           return _ensureFuture(handler(connect));
-        return forward(connect, handler); //must be a string
+
+        assert(handler is String); //must be a string
+        return forward(connect, handler);
       }
 
       //protect from access
@@ -141,7 +142,7 @@ class _StreamServer implements StreamServer {
       }
 
       return (handler is Function ?
-        _ensureFuture(handler(connect), true): forward(connect, handler))
+        _ensureFuture(handler(connect)): forward(connect, handler))
       .catchError((ex, st) {
         if (!shouted)
           _shout(connect, error, stackTrace);
@@ -360,15 +361,6 @@ class _StreamServer implements StreamServer {
   @override
   List<HttpChannel> get channels => _channels;
 
-  Future _ensureFuture(value, [bool ignoreFutureOnly=false]) {
-    //Note: we can't use Http500. otherwise, the error won't be logged
-    if (value == null) { //immediate (no async task)
-      if (_futureOnly && !ignoreFutureOnly)
-        throw new ServerError("Handler/filter must return Future");
-      return new Future.value();
-    }
-    if (value is Future)
-      return value;
-    throw new ServerError("Handler/filter must return null or Future, not $value");
-  }
+  static Future _ensureFuture(value)
+  => value is Future ? value: new Future.value(value);
 }

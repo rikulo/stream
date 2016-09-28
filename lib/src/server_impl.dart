@@ -3,13 +3,15 @@
 // Author: tomyeh
 part of stream;
 
-const String _VERSION = "1.6.2";
+const String _VERSION = "1.6.3";
 const String _SERVER_HEADER = "Stream/$_VERSION";
 
 ///The error handler for HTTP connection.
 typedef void _ConnectErrorCallback(HttpConnect connect, err, [stackTrace]);
 ///The callback of onIdle
 typedef void _OnIdleCallback();
+///The callback of countConnection
+typedef bool _ShallCount(HttpConnect connect);
 
 class _StreamServer implements StreamServer {
   @override
@@ -24,6 +26,7 @@ class _StreamServer implements StreamServer {
   final Router _router;
   _ConnectErrorCallback _onError;
   _OnIdleCallback _onIdle;
+  _ShallCount _shallCount;
   int _connectionCount = 0;
 
   _StreamServer(this._router, String homeDir, bool disableLog):
@@ -225,6 +228,10 @@ class _StreamServer implements StreamServer {
   }
   @override
   int get connectionCount => _connectionCount;
+  @override
+  void set shallCount(bool shallCount(HttpConnect connect)) {
+    _shallCount = shallCount;
+  }
 
   @override
   bool get isRunning => !_channels.isEmpty;
@@ -306,7 +313,8 @@ class _StreamServer implements StreamServer {
 
       //protect from aborted connection
       final HttpConnect connect = new _HttpConnect(channel, req, req.response);
-      ++_connectionCount;
+      final shallCount = _shallCount?.call(connect) != false;
+      if (shallCount) ++_connectionCount;
 
       _handle(connect, 0) //0 means filter from beginning
       .catchError((ex, st) => _handleErr(connect, ex, st))
@@ -315,7 +323,7 @@ class _StreamServer implements StreamServer {
         .catchError((ex, st)
             => _shout(connect, _errorToString(ex, st)))
         .whenComplete(() {
-          if (--_connectionCount <= 0 && _onIdle != null) {
+          if (shallCount && --_connectionCount <= 0 && _onIdle != null) {
             assert(_connectionCount == 0);
             try {
               _onIdle();

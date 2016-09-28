@@ -90,11 +90,10 @@ abstract class StreamServer {
    * * [disableLog] - whether to disable logs.
    * If false (default), [Logger.root] will be set to [Level.INFO], and
    * a listener will be added [logger].
-   * * [futureOnly] - deprecated.
    */
   factory StreamServer({Map<String, dynamic> uriMapping,
       Map errorMapping, Map<String, RequestFilter> filterMapping,
-      String homeDir, bool disableLog: false, bool futureOnly: false})
+      String homeDir, bool disableLog: false})
   => new _StreamServer(
       new DefaultRouter(uriMapping: uriMapping,
         errorMapping: errorMapping, filterMapping: filterMapping),
@@ -102,11 +101,9 @@ abstract class StreamServer {
 
   /** Constructs a server with the given router.
    * It is used if you'd like to use your own router, rather than the default one.
-   *
-   * * [futureOnly] - deprecated.
    */
   factory StreamServer.router(Router router, {String homeDir,
-      bool disableLog: false, bool futureOnly: false})
+      bool disableLog: false})
   => new _StreamServer(router, homeDir, disableLog);
 
   /** The version.
@@ -355,7 +352,7 @@ abstract class StreamServer {
    *
    * In additions, you can do some house cleaning here too.
    *
-   * * See also [connectionCount]
+   * * See also [connectionCount] and [shallCount].
    */
   void onIdle(void onIdle());
 
@@ -363,9 +360,15 @@ abstract class StreamServer {
    * It is also the number of requests in processing.
    * If zero, it means the server is idle.
    *
-   * * See also [onIdle].
+   * * See also [onIdle] and [shallCount].
    */
   int get connectionCount;
+  /** A callback to control whether to increase [connectionCount].
+   * If not specified (default), it counts each connection.
+   *
+   * Note: it also affects when [onIdle] is called.
+   */
+  void set shallCount(bool shallCount(HttpConnect connect));
 
   /** Maps the given URI to the given handler.
    *

@@ -1,5 +1,10 @@
 # CHANGES
 
+### 1.6.3
+
+* `StreamServer.shallCount` introduced
+* `StreamServer`'s futureOnly argument is removed.
+
 ### 1.6.1
 
 * `StreamServer`'s futureOnly argument is deprecated.

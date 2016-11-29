@@ -48,7 +48,11 @@ class _StreamServer implements StreamServer {
     _resLoader = new ResourceLoader(_homeDir);
   }
   static String _getRootPath() {
-    String path = Platform.script.toFilePath();
+    String path;
+    try {
+      path = Platform.script.toFilePath();
+    } catch (_) { //UnsupportedError if running from IDE
+    }
     path = path == null ? Path.current:
       Path.absolute(Path.normalize(Path.dirname(path)));
 

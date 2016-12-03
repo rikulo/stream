@@ -31,11 +31,11 @@ Future include(HttpConnect connect, {foo, more, less}) async { //#3
   response.write("""  More information
 """); //#9
 
-  await Rsp.nnf(include(new HttpConnect.chain(connect), more: "recursive")); //include#10
+  await include(new HttpConnect.chain(connect), more: "recursive"); //include#10
 
   connect = _2; _2 = null; response = connect.response;
 
-  await Rsp.nnf(include(new HttpConnect.chain(connect), foo: true, less: less, more: _1.toString())); //include#7
+  await include(new HttpConnect.chain(connect), foo: true, less: less, more: _1.toString()); //include#7
 
   return null;
 }

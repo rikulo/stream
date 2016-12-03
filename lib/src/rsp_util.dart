@@ -55,6 +55,7 @@ class Rsp {
 
   /** Converts the given value to a non-null [Future].
    */
+  @deprecated
   static Future nnf([v]) => v is Future ? v: new Future.value(v);
 
   /** Converts the given value to a non-null string with the given conditions.

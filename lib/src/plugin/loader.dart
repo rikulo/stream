@@ -205,20 +205,18 @@ class FileLoader extends AssetLoader {
   => new FileAsset(new File(path));
 
   @override
-  Future load(HttpConnect connect, String uri) {
+  Future load(HttpConnect connect, String uri) async {
     String path = uri.substring(1); //must start with '/'
     path = Path.join(rootDir, path);
 
     final File file = new File(path);
-    return file.exists().then((bool exists) {
-      if (exists)
-        return loadAsset(connect, new FileAsset(file), cache);
-      return new Directory(path).exists().then((bool exists) {
-        if (exists)
-          return _loadFileAt(connect, uri, path, connect.server.indexNames, 0, cache);
-        throw new Http404(uri);
-      });
-    });
+    if (await file.exists())
+      return loadAsset(connect, new FileAsset(file), cache);
+
+    if (await new Directory(path).exists())
+      return _loadFileAt(connect, uri, path, connect.server.indexNames, 0, cache);
+
+    throw new Http404(uri);
   }
 }
 
@@ -230,7 +228,7 @@ class FileLoader extends AssetLoader {
  * 
  * It throws [Http404] if [Asset.lastModified] throws an exception.
  */
-Future loadAsset(HttpConnect connect, Asset asset, [AssetCache cache]) {
+Future loadAsset(HttpConnect connect, Asset asset, [AssetCache cache]) async {
   final HttpResponse response = connect.response;
   final bool isIncluded = connect.isIncluded;
   ContentType contentType;
@@ -244,46 +242,42 @@ Future loadAsset(HttpConnect connect, Asset asset, [AssetCache cache]) {
   }
 
   DateTime lastModified;
-  List<int> content;
-
-  return asset.lastModified()
-  .catchError((_) {
+  try {
+    lastModified = await asset.lastModified();
+  } catch (_) {
     throw new Http404.fromConnect(connect);
-  })
-  .then((_) {
-    lastModified = _;
-    if (cache != null) {
-      content = cache.getContent(asset, lastModified);
-      if (content != null)
-        return content.length;
-    }
-    return asset.length();
-  })
-  .then((int assetSize) {
-    List<_Range> ranges;
+  }
 
-    if (!isIncluded) {
-      final _AssetDetail detail =
-        new _AssetDetail(asset, lastModified, assetSize, cache);
-      if (!checkIfHeaders(connect, lastModified, detail.etag))
-        return null;
-
-      ranges = _parseRange(connect, detail);
-      if (!_setHeaders(connect, detail, ranges))
-        return null; //done
-    }
-
+  List<int> content;
+  int assetSize;
+  if (cache != null) {
+    content = cache.getContent(asset, lastModified);
     if (content != null)
-      return _outContentInRanges(response, ranges, contentType, content);
+      assetSize = content.length;
+  }
+  if (assetSize == null)
+    assetSize = await asset.length();
 
-    if (cache != null && cache.shallCache(asset, assetSize))
-      return asset.readAsBytes().then((List<int> content) {
-        cache.setContent(asset, lastModified, content);
-        return _outContentInRanges(response, ranges, contentType, content);
-      });
+  List<_Range> ranges;
+  if (!isIncluded) {
+    final _AssetDetail detail =
+      new _AssetDetail(asset, lastModified, assetSize, cache);
+    if (!checkIfHeaders(connect, lastModified, detail.etag))
+      return null;
 
-    return _outAssetInRanges(response, ranges, contentType, asset, assetSize);
-  });
+    ranges = _parseRange(connect, detail);
+    if (!_setHeaders(connect, detail, ranges))
+      return null; //done
+  }
+
+  if (content == null && cache != null && cache.shallCache(asset, assetSize)) {
+    content = await asset.readAsBytes();
+    cache.setContent(asset, lastModified, content);
+  }
+
+  if (content != null)
+    return _outContentInRanges(response, ranges, contentType, content);
+  return _outAssetInRanges(response, ranges, contentType, asset, assetSize);
 }
 
 /**

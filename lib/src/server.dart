@@ -265,10 +265,9 @@ abstract class StreamServer {
    * After calling this method, the caller shall write the output stream in `then`, since
    * the request handler for the given URI might handle it asynchronously. For example,
    *
-   *     forward(connect, "another").then((_) {
-   *       connect.response.write("<p>More content</p>");
-   *       //...
-   *     });
+   *     await forward(connect, "another");
+   *     connect.response.write("<p>More content</p>");
+   *     ...
    *
    * * [uri] - the URI to chain. If omitted, it is the same as [connect]'s.
    * It can contain the query string too.
@@ -301,10 +300,9 @@ abstract class StreamServer {
    * After calling this method, the caller shall write the output stream in `then`, since
    * the request handler for the given URI might handle it asynchronously. For example,
    *
-   *     include(connect, "another").then((_) {
-   *       connect.response.write("<p>More content</p>");
-   *       //...
-   *     });
+   *     include(connect, "another");
+   *     connect.response.write("<p>More content</p>");
+   *     ...
    *
    * * [uri] - the URI to chain. If omitted, it is the same as [connect]'s.
    * It can contain the query string too.

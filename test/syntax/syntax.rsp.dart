@@ -107,7 +107,7 @@ Future syntax(HttpConnect connect, {foo, bool c:false}) async { //#7
     response.write("""      *Employee*
 """); //#40
 
-    return Rsp.nnf(syntax(connect, c: true, foo: "abc")); //forward#41
+    return syntax(connect, c: true, foo: "abc"); //forward#41
 
   } else { //else#42
 
@@ -154,7 +154,7 @@ Future syntax(HttpConnect connect, {foo, bool c:false}) async { //#7
 
   connect = _2; _2 = null; response = connect.response;
 
-  await Rsp.nnf(syntax(new HttpConnect.chain(connect), c: true, foo: _1.toString())); //include#54
+  await syntax(new HttpConnect.chain(connect), c: true, foo: _1.toString()); //include#54
 
   response.write("""
 

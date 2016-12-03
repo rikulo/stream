@@ -306,9 +306,9 @@ class Compiler {
   void include(String method, [Map args, int line]) {
     if (verbose) _info("Include $method", line);
 
-    _write("\n${_current.pre}await Rsp.nnf($method(new HttpConnect.chain(connect)");
+    _write("\n${_current.pre}await $method(new HttpConnect.chain(connect)");
     _outArgs(args);
-    _writeln(")); //include#$line");
+    _writeln("); //include#$line");
   }
 
   ///Forward to the given URI.
@@ -330,9 +330,9 @@ class Compiler {
   void forward(String method, [Map args, int line]) {
     if (verbose) _info("Forward $method", line);
 
-    _write("\n${_current.pre}return Rsp.nnf(${method}(connect");
+    _write("\n${_current.pre}return ${method}(connect");
     _outArgs(args);
-    _writeln(")); //forward#$line");
+    _writeln("); //forward#$line");
   }
   //Concatenates arguments
   void _catArgs(Map args) {

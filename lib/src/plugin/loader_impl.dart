@@ -79,15 +79,14 @@ class _AssetCache implements AssetCache {
 }
 
 Future _loadFileAt(HttpConnect connect, String uri, String dir,
-    List<String> names, int j, [AssetCache cache]) {
+    List<String> names, int j, [AssetCache cache]) async {
   if (j >= names.length)
     throw new Http404(uri);
 
   final File file = new File(Path.join(dir, names[j]));
-  return file.exists().then((bool exists) {
-    return exists ? loadAsset(connect, new FileAsset(file), cache):
+  return (await file.exists()) ?
+      loadAsset(connect, new FileAsset(file), cache):
       _loadFileAt(connect, uri, dir, names, j + 1, cache);
-  });
 }
 
 bool _matchETag(String value, String etag) {
@@ -262,25 +261,27 @@ class _RangeWriter {
     this.assetSize, this.output): this.contentType = contentType != null ?
       "${HttpHeaders.CONTENT_TYPE}: ${contentType}": null;
 
-  Future write([int j = 0]) {
-    if (j >= ranges.length) { //no more
+  Future write() async {
+    for (int j = 0;; ++j) {
+      if (j >= ranges.length) { //no more
+        response
+          ..writeln()
+          ..write(_MIME_BOUNDARY_END);
+        return; //done
+      }
+
       response
         ..writeln()
-        ..write(_MIME_BOUNDARY_END);
-      return null; //done
+        ..writeln(_MIME_BOUNDARY_BEGIN);
+      if (contentType != null)
+        response.writeln(contentType);
+
+      final _Range range = ranges[j];
+      response
+        ..writeln("${HttpHeaders.CONTENT_RANGE}: bytes ${range.start}-${range.end - 1}/$assetSize")
+        ..writeln();
+      await output(range);
     }
-
-    response
-      ..writeln()
-      ..writeln(_MIME_BOUNDARY_BEGIN);
-    if (contentType != null)
-      response.writeln(contentType);
-
-    final _Range range = ranges[j];
-    response
-      ..writeln("${HttpHeaders.CONTENT_RANGE}: bytes ${range.start}-${range.end - 1}/$assetSize")
-      ..writeln();
-    return output(range).then((_) => write(j + 1));
   }
 }
 
@@ -297,7 +298,6 @@ Future _outContentInRanges(HttpResponse response, List<_Range> ranges,
     return new _RangeWriter(response, ranges, contentType, assetSize,
       (_Range range) {
         response.add(content.sublist(range.start, range.end));
-        return new Future.value();
       }).write();
   }
 }

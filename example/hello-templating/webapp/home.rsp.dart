@@ -31,7 +31,7 @@ Future home(HttpConnect connect) async { //#2
   var _2 = new StringBuffer(), _3 = connect; //var#14
   connect = new HttpConnect.stringBuffer(connect, _2); response = connect.response;
 
-  await Rsp.nnf(sidebar(new HttpConnect.chain(connect))); //include#15
+  await sidebar(new HttpConnect.chain(connect)); //include#15
 
   connect = _3; _3 = null; response = connect.response;
 
@@ -60,7 +60,7 @@ Future home(HttpConnect connect) async { //#2
 
   connect = _7; _7 = null; response = connect.response;
 
-  await Rsp.nnf(classic(new HttpConnect.chain(connect), header: _0.toString(), sidebar: _2.toString(), footer: _4.toString(), body: _6.toString())); //include#9
+  await classic(new HttpConnect.chain(connect), header: _0.toString(), sidebar: _2.toString(), footer: _4.toString(), body: _6.toString()); //include#9
 
   response.write("""  </body>
 </html>

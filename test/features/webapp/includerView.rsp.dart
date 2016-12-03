@@ -32,7 +32,7 @@ final infos = {
     <div style="border: 1px solid red">
 """); //#19
 
-  await Rsp.nnf(fragView(new HttpConnect.chain(connect), infos: infos)); //include#21
+  await fragView(new HttpConnect.chain(connect), infos: infos); //include#21
 
   response.write("""    </div>
     <div style="border: 1px solid red">
@@ -63,7 +63,7 @@ final infos = {
 
   connect = _3; _3 = null; response = connect.response;
 
-  await Rsp.nnf(fragView(new HttpConnect.chain(connect), infos: infos, header: _0.toString(), footer: _2.toString())); //include#24
+  await fragView(new HttpConnect.chain(connect), infos: infos, header: _0.toString(), footer: _2.toString()); //include#24
 
   response.write("""    </div>
   </body>

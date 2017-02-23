@@ -343,8 +343,18 @@ class Http500 extends HttpStatusException {
   Http500.fromConnect(HttpConnect connect, [String cause]):
       this.fromUri(connect.request.uri, cause);
 }
+/// HTTP 503 exception.
+class Http503 extends HttpStatusException {
+  Http503([String cause]): super._(503, _status2msg(_M503, cause));
+  Http503.fromUri(Uri uri, [String cause]):
+      super._(503, _status2msg(_M503,
+          cause != null ? "${uri.path}: $cause": uri.path), uri: uri);
+  Http503.fromConnect(HttpConnect connect, [String cause]):
+      this.fromUri(connect.request.uri, cause);
+}
 
-const String _M403 = "Forbidden", _M404 = "Not Found", _M500 = "Internal Server Error";
+const String _M403 = "Forbidden", _M404 = "Not Found",
+  _M500 = "Internal Server Error", _M503 = "Service Unavailable";
 
 String _status2msg(String reason, String cause)
 => cause != null ? "$reason: $cause": reason;

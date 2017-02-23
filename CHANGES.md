@@ -1,5 +1,9 @@
 # CHANGES
 
+### 1.6.6
+
+* `Http503` introduced.
+
 ### 1.6.5
 
 * `Rsp.nnf` is deprecated. Recompile all RSP files to remove the use.

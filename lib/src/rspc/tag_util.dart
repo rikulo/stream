@@ -137,7 +137,7 @@ void outMap(TagContext tc, Map<String, String> map) {
     tc.write("'");
     tc.write(key);
     tc.write("': ");
-    tc.write(toEL(map[key])); //Rsp.cat can handle nob-string value
+    tc.write(toEL(map[key])); //Rsp.cat can handle non-string value
   }
   tc.write("}");
 }

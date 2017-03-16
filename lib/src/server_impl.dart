@@ -270,7 +270,7 @@ class _StreamServer implements StreamServer {
     final address = channel.address, port = channel.port;
     logger.info(
       "Rikulo Stream Server $_VERSION starting${channel.isSecure ? ' HTTPS': ''} on "
-      "${address is InternetAddress ? (address as InternetAddress).address: address}:$port\n"
+      "${address is InternetAddress ? address.address: address}:$port\n"
       "Home: ${homeDir}");
   }
   @override

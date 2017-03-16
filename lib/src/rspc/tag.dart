@@ -235,7 +235,7 @@ class IncludeTag extends Tag {
   String get name => "include";
 }
 ///merge arguments
-Map<String, dynamic> _mergeArgs(Map<String, dynamic> dst, Map<String, String> src) {
+Map<String, String> _mergeArgs(Map<String, String> dst, Map<String, String> src) {
   if (src != null)
     for (final nm in src.keys)
       dst[nm] = "[=${src[nm]}.toString()]";

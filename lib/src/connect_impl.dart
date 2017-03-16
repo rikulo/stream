@@ -293,8 +293,10 @@ class _ReadOnlyHeaders extends HttpHeadersWrapper {
   void set date(DateTime date) {
   }
   @override
+  void noFolding(String name) {
+  }
+  @override
   void set expires(DateTime expires) {
-    origin.expires = expires;
   }
   @override
   void set ifModifiedSince(DateTime ifModifiedSince) {
@@ -306,7 +308,19 @@ class _ReadOnlyHeaders extends HttpHeadersWrapper {
   void set port(int port) {
   }
   @override
+  void clear() {
+  }
+  @override
+  void set chunkedTransferEncoding(bool value) {
+  }
+  @override
   void set contentType(ContentType contentType) {
+  }
+  @override
+  void set contentLength(int contentLength) {
+  }
+  @override
+  void set persistentConnection(bool value) {
   }
 }
 

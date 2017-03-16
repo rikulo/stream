@@ -246,7 +246,7 @@ class DefaultRouter implements Router {
 }
 
 ///Renderer for 404
-final _f404 = (_) {throw new Http404();};
+final RequestHandler _f404 = (HttpConnect _) {throw new Http404();};
 
 ///Returns a function that can *upgrade* HttpConnect to WebSocket
 Function _upgradeWS(Future handler(WebSocket socket))

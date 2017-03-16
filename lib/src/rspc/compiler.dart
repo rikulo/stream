@@ -75,8 +75,8 @@ class Compiler {
         outText(_current, text, prevln);
       } else {
         if (!started) {
-          if (token is Tag && (token as Tag).name == "header") {
-            assert(!(token as Tag).hasClosing);
+          if (token is Tag && token.name == "header") {
+            assert(!token.hasClosing);
             final int line = _line;
             _headers.add(new _QuedTag(token, _tagData(tag: token), line));
             continue;
@@ -165,7 +165,7 @@ class Compiler {
       }
     }
 
-    final imports = new LinkedHashSet.from(
+    final imports = new LinkedHashSet<String>.from(
       const ["dart:async", "dart:io", "package:stream/stream.dart"]);
     if (_defImports != null)
       imports.addAll(_defImports);
@@ -288,7 +288,7 @@ class Compiler {
   }
 
   ///Include the given URI.
-  void includeUri(String uri, [Map args, int line]) {
+  void includeUri(String uri, [Map<String, String> args, int line]) {
     if (verbose) _info("Include $uri", line);
 
     _write("\n${_current.pre}await connect.include(");
@@ -303,7 +303,7 @@ class Compiler {
     _writeln("); //include#$line");
   }
   ///Include the output of the given renderer
-  void include(String method, [Map args, int line]) {
+  void include(String method, [Map<String, String> args, int line]) {
     if (verbose) _info("Include $method", line);
 
     _write("\n${_current.pre}await $method(new HttpConnect.chain(connect)");
@@ -312,7 +312,7 @@ class Compiler {
   }
 
   ///Forward to the given URI.
-  void forwardUri(String uri, [Map args, int line]) {
+  void forwardUri(String uri, [Map<String, String> args, int line]) {
     if (verbose) _info("Forward $uri", line);
 
     _write("\n${_current.pre}return connect.forward(");
@@ -327,7 +327,7 @@ class Compiler {
     _writeln("); //forward#$line");
   }
   //Forward to the given renderer
-  void forward(String method, [Map args, int line]) {
+  void forward(String method, [Map<String, String> args, int line]) {
     if (verbose) _info("Forward $method", line);
 
     _write("\n${_current.pre}return ${method}(connect");
@@ -335,13 +335,13 @@ class Compiler {
     _writeln("); //forward#$line");
   }
   //Concatenates arguments
-  void _catArgs(Map args) {
+  void _catArgs(Map<String, String> args) {
     if (args != null && !args.isEmpty) {
       _write(", ");
       outMap(_current, args);
     }
   }
-  void _outArgs(Map args) {
+  void _outArgs(Map<String, String> args) {
     if (args != null)
       for (final arg in args.keys) {
         _write(", ");

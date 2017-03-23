@@ -3,7 +3,7 @@
 part of features;
 
 /** Template, includerView, for rendering the view. */
-Future includerView(HttpConnect connect) async { //#2
+Future includerView(HttpConnect connect) async {
   HttpResponse response = connect.response;
   if (!Rsp.init(connect, "text/html; charset=utf-8"))
     return null;
@@ -24,51 +24,51 @@ final infos = {
       <li>You shall see something inside the following two boxes.</li>
     </ul>
     <div style="border: 1px solid blue">
-"""); //#7
+""");
 
-  await connect.include("/frag.html"); //include#18
-
-  response.write("""    </div>
-    <div style="border: 1px solid red">
-"""); //#19
-
-  await fragView(new HttpConnect.chain(connect), infos: infos); //include#21
+  await connect.include("/frag.html");
 
   response.write("""    </div>
     <div style="border: 1px solid red">
-"""); //#22
+""");
 
-  var _0 = new StringBuffer(), _1 = connect; //var#25
+  await fragView(new HttpConnect.chain(connect), infos: infos);
+
+  response.write("""    </div>
+    <div style="border: 1px solid red">
+""");
+
+  final _0 = new StringBuffer(), _1 = connect;
   connect = new HttpConnect.stringBuffer(connect, _0); response = connect.response;
 
   response.write("""  <h1>This is a header</h1>
-  <p>Passed from the includer for showing """); //#26
+  <p>Passed from the includer for showing """);
 
-  response.write(Rsp.nnx(infos)); //#27
+  response.write(Rsp.nnx(infos));
 
 
   response.write("""</p>
-"""); //#27
+""");
 
-  connect = _1; _1 = null; response = connect.response;
+  connect = _1; response = connect.response;
 
-  var _2 = new StringBuffer(), _3 = connect; //var#29
+  final _2 = new StringBuffer(), _3 = connect;
   connect = new HttpConnect.stringBuffer(connect, _2); response = connect.response;
 
   response.write("""  <h2>This is a footer</h2>
   <p>It also includes another page:</p>
-"""); //#30
+""");
 
-  await connect.include("/frag.html"); //include#32
+  await connect.include("/frag.html");
 
-  connect = _3; _3 = null; response = connect.response;
+  connect = _3; response = connect.response;
 
-  await fragView(new HttpConnect.chain(connect), infos: infos, header: _0.toString(), footer: _2.toString()); //include#24
+  await fragView(new HttpConnect.chain(connect), infos: infos, header: _0.toString(), footer: _2.toString());
 
   response.write("""    </div>
   </body>
 </html>
-"""); //#35
+""");
 
   return null;
 }

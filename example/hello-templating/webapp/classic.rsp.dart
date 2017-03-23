@@ -3,50 +3,50 @@
 part of hello_templating;
 
 /** Template, classic, for rendering the view. */
-Future classic(HttpConnect connect, {header, sidebar, body, footer}) async { //#2
+Future classic(HttpConnect connect, {header, sidebar, body, footer}) async {
   HttpResponse response = connect.response;
   if (!Rsp.init(connect, "text/html; charset=utf-8"))
     return null;
 
   response.write("""<div>
   <div class="header">
-    """); //#2
+    """);
 
-  response.write(Rsp.nnx(header, encode: 'none')); //#4
+  response.write(Rsp.nnx(header, encode: 'none'));
 
 
   response.write("""
 
   </div>
   <div class="sidebar">
-    """); //#4
+    """);
 
-  response.write(Rsp.nnx(sidebar, encode: 'none')); //#7
+  response.write(Rsp.nnx(sidebar, encode: 'none'));
 
 
   response.write("""
 
   </div>
   <div class="body">
-    """); //#7
+    """);
 
-  response.write(Rsp.nnx(body, encode: 'none')); //#10
+  response.write(Rsp.nnx(body, encode: 'none'));
 
 
   response.write("""
 
   </div>
   <div class="footer">
-    """); //#10
+    """);
 
-  response.write(Rsp.nnx(footer, encode: 'none')); //#13
+  response.write(Rsp.nnx(footer, encode: 'none'));
 
 
   response.write("""
 
   </div>
 </div>
-"""); //#13
+""");
 
   return null;
 }

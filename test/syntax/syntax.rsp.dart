@@ -10,13 +10,13 @@ import 'dart:collection' show LinkedHashMap;
 var someExternal = 123;
 
 /** Template, syntax, for rendering the view. */
-Future syntax(HttpConnect connect, {foo, bool c:false}) async { //#7
+Future syntax(HttpConnect connect, {foo, bool c:false}) async {
   HttpResponse response = connect.response;
 
   response.headers..add("age", "129")
-    ..add("accept-ranges", foo.acceptRanges); //header#5
+    ..add("accept-ranges", foo.acceptRanges);
 
-  response.headers..add("Cache-Control", "no-cache"); //header#6
+  response.headers..add("Cache-Control", "no-cache");
 
   if (!Rsp.init(connect, foo.contentType))
     return null;
@@ -24,177 +24,177 @@ Future syntax(HttpConnect connect, {foo, bool c:false}) async { //#7
   response.write("""<!DOCTYPE html>
 <html>
   <head>
-    <title>"""); //#7
+    <title>""");
 
-  response.write(Rsp.nnx("$foo.name [${foo.title}]")); //#10
+  response.write(Rsp.nnx("$foo.name [${foo.title}]"));
 
 
   response.write("""</title>
   </head>
   <body>
     <p>This is a test with ""\" and \\ and ""\\".
-    <p>Another expresion: \""""); //#10
+    <p>Another expresion: \"""");
 
-  response.write(Rsp.nnx(foo.description)); //#14
+  response.write(Rsp.nnx(foo.description));
 
 
   response.write(""""
-    <p>An empty expression: """); //#14
+    <p>An empty expression: """);
 
   response.write("""
 
     <p>This is not a tag: [:foo ], [:another and [/none].
     <ul>
-"""); //#16
+""");
 
-  for (var user in foo.friends) { //for#19
+  for (var user in foo.friends) {
 
-    response.write("""      <li>"""); //#20
+    response.write("""      <li>""");
 
-    response.write(Rsp.nnx(user.name)); //#20
+    response.write(Rsp.nnx(user.name));
 
 
     response.write("""
 
-"""); //#20
+""");
 
-    if (user.isCustomer) { //if#21
+    if (user.isCustomer) {
 
       response.write("""      <i>!important!</i>
-"""); //#22
+""");
     } //if
 
-    while (user.hasMore()) { //while#24
+    while (user.hasMore()) {
 
-      response.write("""        """); //#25
+      response.write("""        """);
 
-      response.write(Rsp.nnx(user.showMore())); //#25
+      response.write(Rsp.nnx(user.showMore()));
 
 
       response.write("""
 
-"""); //#25
+""");
     } //while
 
     response.write("""      </li>
-"""); //#27
+""");
   } //for
 
   response.write("""    </ul>
 
-"""); //#29
+""");
 
-  for (var fruit in ["apple", "orange"]) { //for#31
+  for (var fruit in ["apple", "orange"]) {
   } //for
 
   response.write("""
 
-"""); //#33
+""");
 
-  if (foo.isCustomer) { //if#34
+  if (foo.isCustomer) {
 
     response.write("""      *Custmer*
-"""); //#35
+""");
 
-    await connect.include("/in-if"); //include#36
+    await connect.include("/in-if");
 
-  } else if (c) { //else#37
+  } else if (c) {
 
-    return connect.forward("/x/y/z"); //forward#38
+    return connect.forward("/x/y/z");
 
-  } else if (foo.isEmployee) { //else#39
+  } else if (foo.isEmployee) {
 
     response.write("""      *Employee*
-"""); //#40
+""");
 
-    return syntax(connect, c: true, foo: "abc"); //forward#41
+    return syntax(connect, c: true, foo: "abc");
 
-  } else { //else#42
+  } else {
 
     response.write("""      *Unknown* [/if] 
-"""); //#43
+""");
   } //if
 
   response.write("""
 
-"""); //#45
+""");
 
-  var whatever = new StringBuffer(), _0 = connect; //var#46
-  connect = new HttpConnect.stringBuffer(connect, whatever); response = connect.response;
+  final _whatever_ = new StringBuffer(), _0 = connect;
+  connect = new HttpConnect.stringBuffer(connect, _whatever_); response = connect.response;
 
   response.write("""    define a variable
-"""); //#47
+""");
 
-  for (var fruit in ["apple", "orange"]) { //for#48
+  for (var fruit in ["apple", "orange"]) {
 
-    response.write("""        """); //#49
+    response.write("""        """);
 
-    response.write(Rsp.nnx(fruit)); //#49
+    response.write(Rsp.nnx(fruit));
 
 
     response.write("""
 
-"""); //#49
+""");
   } //for
 
-  connect = _0; _0 = null; response = connect.response;
-  whatever = whatever.toString();
+  connect = _0; response = connect.response;
+  final whatever = _whatever_.toString();
 
   response.write("""
 
-"""); //#52
+""");
 
-  await connect.include("/abc"); //include#53
+  await connect.include("/abc");
 
-  var _1 = new StringBuffer(), _2 = connect; //var#55
+  final _1 = new StringBuffer(), _2 = connect;
   connect = new HttpConnect.stringBuffer(connect, _1); response = connect.response;
 
   response.write("""      The content for foo
-"""); //#56
+""");
 
-  connect = _2; _2 = null; response = connect.response;
+  connect = _2; response = connect.response;
 
-  await syntax(new HttpConnect.chain(connect), c: true, foo: _1.toString()); //include#54
+  await syntax(new HttpConnect.chain(connect), c: true, foo: _1.toString());
 
   response.write("""
 
-"""); //#59
+""");
 
-  if (foo.isMeaningful) { //if#60
+  if (foo.isMeaningful) {
 
     response.write("""      something is meaningful
-"""); //#61
+""");
 
-    return connect.forward(Rsp.cat("/foo?abc", {'first': "1st", 'second': foo})); //forward#62
+    return connect.forward(Rsp.cat("/foo?abc", {'first': "1st", 'second': foo}));
   } //if
 
-  response.write(Rsp.script(connect, "/script/foo.dart")); //script#64
+  response.write(Rsp.script(connect, "/script/foo.dart"));
 
   response.write("""    <script>
     \$("#j\\q");
     </script>
   </body>
 </html>
-"""); //#65
+""");
 
-  response..write("<script>")..write("foo1")..write("=") //json-js#70
+  response..write("<script>")..write("foo1")..write("=")
    ..write(Rsp.json(foo.name.length ~/ 2))..writeln('</script>');
-  response..write('<script type="text/plain" id="') //json#71
+  response..write('<script type="text/plain" id="')
    ..write("foo2")..write('">')
    ..write(Rsp.json(foo.name.length ~/ 2 * "/]".length))..writeln('</script>');
 
   response.write("""
 
-"""); //#72
+""");
 
   response.write("""
 
-"""); //#74
+""");
 new LinkedHashMap();
 
   response.write("""
 
-"""); //#79
+""");
 
   return null;
 }

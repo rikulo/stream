@@ -3,21 +3,21 @@
 part of hello_templating;
 
 /** Template, sidebar, for rendering the view. */
-Future sidebar(HttpConnect connect) async { //#2
+Future sidebar(HttpConnect connect) async {
   HttpResponse response = connect.response;
   if (!Rsp.init(connect, "text/html; charset=utf-8"))
     return null;
 
   response.write("""<ul>
   <li>This is a sidebar.</li>
-  <li>"""); //#2
+  <li>""");
 
-  response.write(Rsp.nnx(new DateTime.now())); //#4
+  response.write(Rsp.nnx(new DateTime.now()));
 
 
   response.write("""</li>
 </ul>
-"""); //#4
+""");
 
   return null;
 }

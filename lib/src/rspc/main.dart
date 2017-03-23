@@ -5,7 +5,7 @@ part of stream_rspc;
 
 class _Environ {
   Encoding encoding = UTF8;
-  bool verbose = false;
+  bool verbose = false, lineNumber = false;
   List<String> sources;
 }
 
@@ -17,7 +17,8 @@ void main(List<String> arguments) {
     return;
 
   for (final String name in env.sources)
-    compileFile(name, encoding: env.encoding, verbose: env.verbose);
+    compileFile(name, encoding: env.encoding, verbose: env.verbose,
+        lineNumber: env.lineNumber);
 }
 
 bool _parseArgs(List<String> arguments, _Environ env) {
@@ -25,6 +26,7 @@ bool _parseArgs(List<String> arguments, _Environ env) {
     ..addOption("encoding", abbr: 'e',
       help: "Specify character encoding used by source file, such as utf-8, ascii and latin-1")
     ..addFlag("help", abbr: 'h', negatable: false, help: "Display this message")
+    ..addFlag("line-number", abbr: 'n', negatable: false, help: "Output the line number of the source file")
     ..addFlag("verbose", abbr: 'v', negatable: false, help: "Enable verbose output")
     ..addFlag("version", negatable: false, help: "Version information");
   final args = argParser.parse(arguments);
@@ -65,7 +67,9 @@ bool _parseArgs(List<String> arguments, _Environ env) {
     return false;
   }
 
-  env.verbose = args['verbose'];
-  env.sources = args.rest;
+  env
+    ..verbose = args['verbose']
+    ..lineNumber = args['line-number']
+    ..sources = args.rest;
   return true;
 }

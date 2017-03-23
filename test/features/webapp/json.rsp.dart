@@ -3,7 +3,7 @@
 part of features;
 
 /** Template, json, for rendering the view. */
-Future json(HttpConnect connect) async { //#2
+Future json(HttpConnect connect) async {
   HttpResponse response = connect.response;
   if (!Rsp.init(connect, "text/html; charset=utf-8"))
     return null;
@@ -19,9 +19,9 @@ var map = {
     <title>Test of Json</title>
   </head>
   <body>
-"""); //#7
+""");
 
-  response..write("<script>")..write("foo")..write("=") //json-js#13
+  response..write("<script>")..write("foo")..write("=")
    ..write(Rsp.json([map, "another</sCRipt>"]))..writeln('</script>');
 
   response.write("""    <div id="show"></div>
@@ -34,7 +34,7 @@ document.getElementById("show").innerHTML = out;
     </script>
   </body>
 </html>
-"""); //#14
+""");
 
   return null;
 }

@@ -44,6 +44,10 @@ abstract class TagContext {
   ///Pops the value back
   pop();
 
+  ///Returns the comment containing the line number.
+  String getLineNumberComment([int line])
+  => compiler.lineNumber ? ' //#${line??this.line}': '';
+
   ///Writes a string to [output] in the compiler's encoding.
   void write(String str) {
     output.write(str);
@@ -194,7 +198,7 @@ class HeaderTag extends Tag {
         else tc.write("\n${tc.pre}  ");
         tc.write('..add("$nm", ${toEL(val)})');
       }
-      tc.writeln('; //header#${tc.line}');
+      tc.writeln(';${tc.getLineNumberComment()}');
     }
   }
   @override
@@ -288,15 +292,16 @@ class VarTag extends Tag {
       var2 = tc.nextVar();
     tc..push(var1)..push(var2);
 
-    tc.writeln("\n${tc.pre}var $var1 = new StringBuffer(), $var2 = connect; //var#${tc.line}\n"
+    if (tc.parent.args == null) var1 = "_${var1}_";
+    tc.writeln("\n${tc.pre}final $var1 = new StringBuffer(), $var2 = connect;${tc.getLineNumberComment()}\n"
       "${tc.pre}connect = new HttpConnect.stringBuffer(connect, $var1); response = connect.response;");
   }
   @override
   void end(TagContext tc) {
     String var2 = tc.pop(), var1 = tc.pop();
-    tc.writeln("\n${tc.pre}connect = $var2; $var2 = null; response = connect.response;");
+    tc.writeln("\n${tc.pre}connect = $var2; response = connect.response;");
     if (tc.parent.args == null) {
-      tc.writeln("${tc.pre}$var1 = $var1.toString();");
+      tc.writeln("${tc.pre}final $var1 = _${var1}_.toString();");
     }
   }
   @override
@@ -341,7 +346,7 @@ class JsonTag extends Tag {
     if (val.isEmpty)
       tc.error("Expect an expression");
 
-    tc.writeln("""${tc.pre}response..write('<script type="text/plain" id="') //json#${tc.line}""");
+    tc.writeln("""${tc.pre}response..write('<script type="text/plain" id="')${tc.getLineNumberComment()}""");
     tc.writeln("""${tc.pre} ..write(${toEL(nm)})..write('">')""");
     tc.writeln("${tc.pre} ..write(Rsp.json($val))..writeln('</script>');");
   }
@@ -386,7 +391,7 @@ class JsonJsTag extends Tag {
     if (val.isEmpty)
       tc.error("Expect an expression");
 
-    tc.writeln('\n${tc.pre}response..write("<script>")..write(${toEL(nm)})..write("=") //json-js#${tc.line}');
+    tc.writeln('\n${tc.pre}response..write("<script>")..write(${toEL(nm)})..write("=")${tc.getLineNumberComment()}');
     tc.writeln("${tc.pre} ..write(Rsp.json($val))..writeln('</script>');");
   }
   @override
@@ -442,7 +447,7 @@ class ScriptTag extends Tag {
     tc.write('\n${tc.pre}response.write(Rsp.script(connect, ${toEL(src)}');
       if (!bootstrap || basync)
         tc.write(', $bootstrap, $basync');
-    tc.writeln(')); //script#${tc.line}');
+    tc.writeln('));${tc.getLineNumberComment()}');
   }
   @override
   bool get hasClosing => false;
@@ -464,7 +469,7 @@ abstract class ControlTag extends Tag {
       beg = needsVar_ ? "(var ": "(";
       end = ")";
     }
-    tc.writeln("\n${tc.pre}$name $beg$data$end { //$name#${tc.line}");
+    tc.writeln("\n${tc.pre}$name $beg$data$end {${tc.getLineNumberComment()}");
     tc.indent();
   }
   @override
@@ -530,7 +535,7 @@ class ElseTag extends Tag {
     tc.unindent();
 
     if (data.isEmpty) {
-      tc.writeln("\n${tc.pre}} else { //else#${tc.line}");
+      tc.writeln("\n${tc.pre}} else {${tc.getLineNumberComment()}");
     } else {
       String cond;
       if (data.length < 4 || !data.startsWith("if")
@@ -545,7 +550,7 @@ class ElseTag extends Tag {
         beg = "(";
         end = ")";
       }
-      tc.writeln("\n${tc.pre}} else if $beg$cond$end { //else#${tc.line}");
+      tc.writeln("\n${tc.pre}} else if $beg$cond$end {${tc.getLineNumberComment()}");
     }
 
     tc.indent();

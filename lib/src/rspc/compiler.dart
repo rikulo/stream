@@ -12,7 +12,7 @@ class Compiler {
   final IOSink destination;
   final String destinationName;
   final Encoding encoding;
-  final bool verbose;
+  final bool verbose, lineNumber;
   //the closure's partOf, import, name, args...
   String _partOf, _parts, _import, _name, _args, _desc, _contentType, _dart;
   final List<String> _defImports;
@@ -28,7 +28,7 @@ class Compiler {
 
   Compiler(String source, this.destination, {
       this.sourceName, this.destinationName, this.encoding: UTF8,
-      this.verbose: false, List<String> imports}):
+      this.verbose: false, this.lineNumber: false, List<String> imports}):
       this.source = source.replaceAll("\r\n", "\n"),
       this._defImports = imports {
         //to Unix format since _write assumes it
@@ -216,7 +216,7 @@ class Compiler {
     _write("\n/** $_desc */\nFuture $_name(HttpConnect connect");
     if (_args != null)
       _write(", {$_args}");
-    _write(") async { //#$line\n"
+    _write(") async {${_getLineNumberComment(line)}\n"
       "  HttpResponse response = connect.response;\n");
 
     if (!_headers.isEmpty) {
@@ -300,7 +300,7 @@ class Compiler {
       _catArgs(args);
       _write(')');
     }
-    _writeln("); //include#$line");
+    _writeln(");${_getLineNumberComment(line)}");
   }
   ///Include the output of the given renderer
   void include(String method, [Map<String, String> args, int line]) {
@@ -308,7 +308,7 @@ class Compiler {
 
     _write("\n${_current.pre}await $method(new HttpConnect.chain(connect)");
     _outArgs(args);
-    _writeln("); //include#$line");
+    _writeln(");${_getLineNumberComment(line)}");
   }
 
   ///Forward to the given URI.
@@ -324,7 +324,7 @@ class Compiler {
       _catArgs(args);
       _write(')');
     }
-    _writeln("); //forward#$line");
+    _writeln(");${_getLineNumberComment(line)}");
   }
   //Forward to the given renderer
   void forward(String method, [Map<String, String> args, int line]) {
@@ -332,7 +332,7 @@ class Compiler {
 
     _write("\n${_current.pre}return ${method}(connect");
     _outArgs(args);
-    _writeln("); //forward#$line");
+    _writeln(");${_getLineNumberComment(line)}");
   }
   //Concatenates arguments
   void _catArgs(Map<String, String> args) {
@@ -551,7 +551,7 @@ class Compiler {
     final expr = _tagData(skipFollowingSpaces: false);
       //1) '/' is NOT a terminal, 2) no skip space for expression
     if (!expr.isEmpty)
-      _writeln('\n${_current.pre}response.write(Rsp.nnx($expr)); //#${_line}\n');
+      _writeln('\n${_current.pre}response.write(Rsp.nnx($expr));${_getLineNumberComment()}\n');
       //it doesn't push, so we have to use _line instead of _current.line
       //_tagData might have multiple lines
   }
@@ -681,6 +681,9 @@ class Compiler {
         return "'${impt.substring(0, i)}'${impt.substring(i)}";
     return "'$impt'";
   }
+
+  String _getLineNumberComment([int line])
+  => lineNumber ? ' //#${line??this._line}': '';
 
   void _write(String str) {
     _current.write(str);

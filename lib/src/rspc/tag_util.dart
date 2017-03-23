@@ -115,7 +115,7 @@ void outText(TagContext tc, String text, [int line]) {
     tc.write(cc);
   }
 
-  tc.writeln('"""); //#${line != null ? line: tc.line}');
+  tc.writeln('""");${tc.getLineNumberComment(line)}');
 }
 
 /** Output the given map to the generated Dart file.

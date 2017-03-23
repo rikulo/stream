@@ -20,7 +20,7 @@ void main() {
 }
 
 //URI mapping
-var _uriMapping = {
+var _uriMapping = <String, dynamic> {
   "/forward": forward,
   "/forwardRsp": forwarderView, //generated from forwarderView.rsp.html
   "/include": includerView,  //generated from includerView.rsp.html
@@ -80,7 +80,7 @@ var _uriMapping = {
 };
 
 //Error mapping
-var _errMapping = {
+var _errMapping = <String, dynamic> {
   "404": "/404.html",
   "500": (HttpConnect connect) {
     connect.response
@@ -104,7 +104,7 @@ var _errMapping = {
 };
 
 //Filtering
-var _filterMapping = {
+var _filterMapping = <String, RequestFilter> {
   "/log.*": (HttpConnect connect, Future chain(HttpConnect conn)) {
     connect.server.logger.info("Filter 1: ${connect.request.uri}");
     return chain(connect);

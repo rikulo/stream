@@ -3,7 +3,7 @@
 part of hello_rsp;
 
 /** Template, helloView, for rendering the view. */
-Future helloView(HttpConnect connect) async { //#3
+Future helloView(HttpConnect connect) async {
   HttpResponse response = connect.response;
   if (!Rsp.init(connect, "text/html; charset=utf-8"))
     return null;
@@ -16,15 +16,15 @@ Future helloView(HttpConnect connect) async { //#3
   </head>
   <body>
     <h1>Stream: Hello RSP</h1>
-    <p>Now is """); //#3
+    <p>Now is """);
 
-  response.write(Rsp.nnx(new DateTime.now())); //#11
+  response.write(Rsp.nnx(new DateTime.now()));
 
 
   response.write(""".</p>
-    <p>This page is served by Rikulo Stream """); //#11
+    <p>This page is served by Rikulo Stream """);
 
-  response.write(Rsp.nnx(connect.server.version)); //#12
+  response.write(Rsp.nnx(connect.server.version));
 
 
   response.write(""".</p>
@@ -32,7 +32,7 @@ Future helloView(HttpConnect connect) async { //#3
   <a href="https://github.com/rikulo/stream/tree/master/example/hello-rsp">Github</a> for how it is implemented.</a>
   </body>
 </html>
-"""); //#12
+""");
 
   return null;
 }

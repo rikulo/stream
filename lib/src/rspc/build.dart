@@ -9,9 +9,11 @@ part of stream_rspc;
  * * [imports] - additional imported packages, such as `["package:foo/foo.dart"]`.
  */
 void compile(String source, IOSink out, {String sourceName, String destinationName,
-    Encoding encoding: UTF8, bool verbose: false, List<String> imports}) {
+    Encoding encoding: UTF8, bool verbose: false, bool lineNumber: false,
+    List<String> imports}) {
   new Compiler(source, out, sourceName: sourceName, destinationName: destinationName,
-      encoding: encoding, verbose: verbose, imports: imports).compile();
+      encoding: encoding, verbose: verbose, lineNumber: lineNumber, imports: imports)
+  .compile();
 }
 
 /** Compiles the RSP document of the given [sourceName] and write the result to
@@ -19,8 +21,8 @@ void compile(String source, IOSink out, {String sourceName, String destinationNa
  *
  * * [imports] - additional imported packages, such as `["package:foo/foo.dart"]`.
  */
-void compileFile(String sourceName, {String destinationName, bool verbose : false, 
-    Encoding encoding : UTF8, List<String> imports}) {
+void compileFile(String sourceName, {String destinationName, bool verbose: false, 
+    bool lineNumber: false, Encoding encoding: UTF8, List<String> imports}) {
   final source = new File(sourceName);
   if (!source.existsSync()) {
     print("File not found: ${sourceName}");
@@ -52,7 +54,8 @@ void compileFile(String sourceName, {String destinationName, bool verbose : fals
     try {
       compile(text, out, sourceName: sourceName,
           destinationName: _unipath(dest.path), //force to use '/' even in Windows
-          encoding: encoding, verbose: verbose, imports: imports);
+          encoding: encoding, verbose: verbose, lineNumber: lineNumber,
+          imports: imports);
     } on SyntaxError catch (e) {
       print("${e.message}\nCompilation aborted.");
     } finally {

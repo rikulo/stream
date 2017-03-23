@@ -3,7 +3,7 @@
 part of features;
 
 /** Template, lastModified, for rendering the view. */
-Future lastModified(HttpConnect connect) async { //#2
+Future lastModified(HttpConnect connect) async {
   HttpResponse response = connect.response;
   if (!Rsp.init(connect, "text/html; charset=utf-8",
   etag: "abc123"))
@@ -18,7 +18,7 @@ Future lastModified(HttpConnect connect) async { //#2
     the server.
   </body>
 </html>
-"""); //#2
+""");
 
   return null;
 }

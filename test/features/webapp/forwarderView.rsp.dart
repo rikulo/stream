@@ -3,14 +3,14 @@
 part of features;
 
 /** Template, forwarderView, for rendering the view. */
-Future forwarderView(HttpConnect connect) async { //#3
+Future forwarderView(HttpConnect connect, {bool verified:true}) async {
   HttpResponse response = connect.response;
   if (!Rsp.init(connect, "text/html; charset=utf-8"))
     return null;
 
-  if (true) { //if#3
+  if (verified) {
 
-    return connect.forward("/forward"); //forward#4
+    return connect.forward("/forward");
   } //if
 
   return null;

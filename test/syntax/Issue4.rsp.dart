@@ -7,7 +7,7 @@ import 'dart:io';
 import 'package:stream/stream.dart';
 
 /** Template, Issue4, for rendering the view. */
-Future Issue4(HttpConnect connect) async { //#1
+Future Issue4(HttpConnect connect) async {
   HttpResponse response = connect.response;
   if (!Rsp.init(connect, "text/html; charset=utf-8"))
     return null;
@@ -18,20 +18,20 @@ render(HttpConnect connect, {more, less}) {
   response.write("""
 
 
-abc/"""); //#5
+abc/""");
 
-  response.write(Rsp.nnx(foo)); //#7
+  response.write(Rsp.nnx(foo));
 
 
   response.write("""
 
-"""); //#7
+""");
 
-  await connect.include("${Rsp.nns(foo)}"); //include#8
+  await connect.include("${Rsp.nns(foo)}");
 
-  await connect.include("abc/${Rsp.nns(foo)}"); //include#9
+  await connect.include("abc/${Rsp.nns(foo)}");
 
-  await render(new HttpConnect.chain(connect), more: "abc/${Rsp.nns(foo)}", less: foo); //include#10
+  await render(new HttpConnect.chain(connect), more: "abc/${Rsp.nns(foo)}", less: foo);
 
   return null;
 }

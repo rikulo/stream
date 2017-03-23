@@ -3,78 +3,78 @@
 part of features;
 
 /** Template, fragView, for rendering the view. */
-Future fragView(HttpConnect connect, {Map infos: const {}, header, footer}) async { //#2
+Future fragView(HttpConnect connect, {Map infos: const {}, header, footer}) async {
   HttpResponse response = connect.response;
   if (!Rsp.init(connect, "text/html; charset=utf-8"))
     return null;
 
-  if (header != null) { //if#2
+  if (header != null) {
 
-    response.write(Rsp.nnx(header, encode: 'none')); //#3
+    response.write(Rsp.nnx(header, encode: 'none'));
 
 
     response.write("""
 
-"""); //#3
+""");
   } //if
 
   response.write("""<ul>
   <li>This is a fragment and generated dynamically</li>
-"""); //#5
+""");
 
-  for (var type in infos.keys) { //for#7
+  for (var type in infos.keys) {
 
-    response.write("""    <li>"""); //#8
+    response.write("""    <li>""");
 
-    response.write(Rsp.nnx(type)); //#8
+    response.write(Rsp.nnx(type));
 
 
     response.write("""
 
       <ol>
-"""); //#8
+""");
 
-    for (var name in infos[type]) { //for#10
+    for (var name in infos[type]) {
 
-      response.write("""        <li>"""); //#11
+      response.write("""        <li>""");
 
-      response.write(Rsp.nnx(name)); //#11
+      response.write(Rsp.nnx(name));
 
 
       response.write("""</li>
-"""); //#11
+""");
     } //for
 
     response.write("""      </ol>
     </li>
-"""); //#13
+""");
   } //for
 
-  response.write("""  <li>Browser is """); //#16
+  response.write("""  <li>Browser is """);
 
-  response.write(Rsp.nnx(connect.browser)); //#16
+  response.write(Rsp.nnx(connect.browser));
 
 
   response.write("""</li>
-  <li>Locales are """); //#16
+  <li>Locales are """);
 
-  response.write(Rsp.nnx(connect.locales)); //#17
+  response.write(Rsp.nnx(connect.locales));
 
 
   response.write("""</li>
 </ul>
-"""); //#17
+""");
 
-  if (footer != null) { //if#19
+  if (footer != null) {
 
-    response.write("""  """); //#20
+    response.write("""  """);
 
-    response.write(Rsp.nnx(footer, encode: 'none')); //#20
+    response.write(Rsp.nnx(footer, encode: 'none'));
 
 
     response.write("""
 
-"""); //#20
+""");
   } //if
 
   return null;

@@ -3,7 +3,7 @@
 part of features;
 
 /** Template, searchResult, for rendering the view. */
-Future searchResult(HttpConnect connect, {criteria}) async { //#2
+Future searchResult(HttpConnect connect, {criteria}) async {
   HttpResponse response = connect.response;
   if (!Rsp.init(connect, "text/html; charset=utf-8"))
     return null;
@@ -17,34 +17,34 @@ Future searchResult(HttpConnect connect, {criteria}) async { //#2
     <h1>Search Result</h1>
     <p>Criteria:</p>
     <ul>
-      <li>text: """); //#2
+      <li>text: """);
 
-  response.write(Rsp.nnx(criteria.text)); //#11
-
-
-  response.write("""</li>
-      <li>since: """); //#11
-
-  response.write(Rsp.nnx(criteria.since)); //#12
+  response.write(Rsp.nnx(criteria.text));
 
 
   response.write("""</li>
-      <li>within: """); //#12
+      <li>since: """);
 
-  response.write(Rsp.nnx(criteria.within)); //#13
+  response.write(Rsp.nnx(criteria.since));
 
 
   response.write("""</li>
-      <li>hasAttachment: """); //#13
+      <li>within: """);
 
-  response.write(Rsp.nnx(criteria.hasAttachment)); //#14
+  response.write(Rsp.nnx(criteria.within));
+
+
+  response.write("""</li>
+      <li>hasAttachment: """);
+
+  response.write(Rsp.nnx(criteria.hasAttachment));
 
 
   response.write("""</li>
     </ul>
   </body>
 </html>
-"""); //#14
+""");
 
   return null;
 }

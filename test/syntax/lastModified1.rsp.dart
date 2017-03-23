@@ -12,7 +12,7 @@ import 'package:stream/stream.dart';
   
 
 /** Template, lastModified1, for rendering the view. */
-Future lastModified1(HttpConnect connect, {input}) async { //#7
+Future lastModified1(HttpConnect connect, {input}) async {
   HttpResponse response = connect.response;
   if (!Rsp.init(connect, "text/html; charset=utf-8",
   lastModified: lastModified(),
@@ -24,16 +24,16 @@ Future lastModified1(HttpConnect connect, {input}) async { //#7
     <title></title>
   </head>
   <body>
-    """); //#7
+    """);
 
-  response.write(Rsp.nnx(input.whatever * input.another, encode: 'none', maxLength: 20)); //#12
+  response.write(Rsp.nnx(input.whatever * input.another, encode: 'none', maxLength: 20));
 
 
   response.write("""
 
   </body>
 </html>
-"""); //#12
+""");
 
   return null;
 }

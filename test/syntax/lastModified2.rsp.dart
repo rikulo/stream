@@ -7,7 +7,7 @@ import 'dart:io';
 import 'package:stream/stream.dart';
 
 /** Template, lastModified2, for rendering the view. */
-Future lastModified2(HttpConnect connect) async { //#2
+Future lastModified2(HttpConnect connect) async {
   HttpResponse response = connect.response;
   if (!Rsp.init(connect, "text/html; charset=utf-8",
   lastModified: connect.channel.startedSince))
@@ -20,7 +20,7 @@ Future lastModified2(HttpConnect connect) async { //#2
   <body>
   </body>
 </html>
-"""); //#2
+""");
 
   return null;
 }

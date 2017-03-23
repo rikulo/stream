@@ -1,5 +1,9 @@
 # CHANGES
 
+### 1.6.7
+
+* The line number won't be generated in the output Dart file. To turn it on, specify `-n` option.
+
 ### 1.6.6
 
 * `Http503` introduced.

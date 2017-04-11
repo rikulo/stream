@@ -165,7 +165,11 @@ class _StreamServer implements StreamServer {
       if (connect != null) {
         final String uri = connect.request.uri.path;
         buf..write("[")..write(uri)..write("] ");
+
+        final values = connect.request.headers[HttpHeaders.USER_AGENT];
+        if (values != null && values.length >= 1) buf..writeln(values[0]);
       }
+
       buf..write(err);
       if (st != null)
         buf..write("\n")..write(st);

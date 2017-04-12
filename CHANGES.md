@@ -1,5 +1,9 @@
 # CHANGES
 
+### 1.6.8
+
+* If `StreamServer.onError` is registered, the default logging will be disabled.
+
 ### 1.6.7
 
 * The line number won't be generated in the output Dart file. To turn it on, specify `-n` option.

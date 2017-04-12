@@ -336,8 +336,10 @@ abstract class StreamServer {
    *
    * Notice: all uncaught error will be handled automatically, such as
    * closing up the connection, if any, and log the error message,
-   * in additions to invoking [onError] you registered.
    * Thus, you rarely need to register an error handler.
+   * 
+   * Once [onError] is assigned, the default logging will be disabled,
+   * i.e., it is [onError]'s job to log it.
    */
   void onError(void onError(HttpConnect connect, error, [stackTrace]));
 

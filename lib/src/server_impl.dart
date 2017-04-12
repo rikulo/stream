@@ -3,7 +3,7 @@
 // Author: tomyeh
 part of stream;
 
-const String _VERSION = "1.6.7";
+const String _VERSION = "1.6.8";
 const String _SERVER_HEADER = "Stream/$_VERSION";
 
 ///The error handler for HTTP connection.
@@ -116,16 +116,8 @@ class _StreamServer implements StreamServer {
     return resourceLoader.load(connect, uri);
   }
   Future _handleErr(HttpConnect connect, error, stackTrace) async {
-    if (_onError != null) {
-      try {
-        _onError(connect, error, stackTrace);
-      } catch (ex, st) {
-        _shout(connect, _errorToString(ex, st));
-      }
-    }
-
     if (connect.errorDetail != null) { //called twice; ignore 2nd one
-      _shout(connect, error, stackTrace);
+      _logError(connect, error, stackTrace);
       return; //done
     }
 
@@ -134,15 +126,20 @@ class _StreamServer implements StreamServer {
     var handler = _router.getErrorHandler(error);
     if (handler == null) {
       if (error is! HttpStatusException) {
-        _shout(connect, error, stackTrace);
+        _logError(connect, error, stackTrace);
         shouted = true;
         error = new Http500.fromConnect(connect,
           error != null ? error.toString(): "");
       }
 
       final code = error.statusCode;
-      connect.response.statusCode = code;
-        //spec: not to update reasonPhrase (it is up to error handler if any)
+      try {
+        connect.response.statusCode = code;
+          //spec: not to update reasonPhrase (it is up to error handler if any)
+      } catch (ex, st) { //possible: Header already sent
+        _logError(connect, ex, st);
+      }
+
       handler = _router.getErrorHandlerByCode(code);
       if (handler == null)
         return;
@@ -152,12 +149,25 @@ class _StreamServer implements StreamServer {
       await (handler is Function ? handler(connect): forward(connect, handler));
     } catch (ex, st) {
       if (!shouted)
-        _shout(connect, error, stackTrace);
-      _shout(connect, _errorToString(ex, st));
+        _logError(connect, error, stackTrace);
+      _logError(connect, ex, st);
     }
   }
 
-  static String _errorToString(err, st) => st != null ? "$err\n$st": "$err";
+  void _logInitError(error, stackTrace)
+  => _logError(null, error, stackTrace);
+
+  void _logError(HttpConnect connect, error, [stackTrace]) {
+    if (_onError != null) {
+      try {
+        _onError(connect, error, stackTrace);
+      } catch (ex, st) {
+        _shout(connect, ex, st);
+      }
+    } else {
+      _shout(connect, error, stackTrace);
+    }
+  }
 
   void _shout(HttpConnect connect, err, [st]) {
     final StringBuffer buf = new StringBuffer();
@@ -292,17 +302,7 @@ class _StreamServer implements StreamServer {
       runZoned(() {
         _startNow(channel);
       },
-      onError: (ex, st) {
-        if (_onError != null) {
-          try {
-            _onError(null, ex, st);
-          } catch (err, st) {
-            _shout(null, _errorToString(err, st));
-          }
-        }
-
-        _shout(null, "Uncaught!! " + _errorToString(ex, st));
-      });
+      onError: _logInitError);
     } else {
       _startNow(channel);
     }
@@ -326,20 +326,20 @@ class _StreamServer implements StreamServer {
         try {
           await _handleErr(connect, ex, st);
         } catch (ex, st) {
-          _shout(connect, _errorToString(ex, st));
+          _logError(connect, ex, st);
         }
       } finally {
         try {
           await connect.response.close();
         } catch (ex, st) {
-          _shout(connect, _errorToString(ex, st));
+          _logError(connect, ex, st);
         } finally {
           if (shallCount && --_connectionCount <= 0 && _onIdle != null) {
             assert(_connectionCount == 0);
             try {
               _onIdle();
             } catch (ex, st) {
-              _shout(connect, _errorToString(ex, st));
+              _logError(connect, ex, st);
             }
           }
         }

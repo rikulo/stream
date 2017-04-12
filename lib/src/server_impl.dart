@@ -7,7 +7,7 @@ const String _VERSION = "1.6.8";
 const String _SERVER_HEADER = "Stream/$_VERSION";
 
 ///The error handler for HTTP connection.
-typedef void _ConnectErrorCallback(HttpConnect connect, err, [stackTrace]);
+typedef void _ConnectErrorCallback(HttpConnect connect, err, stackTrace);
 ///The callback of onIdle
 typedef void _OnIdleCallback();
 ///The callback of countConnection
@@ -233,7 +233,7 @@ class _StreamServer implements StreamServer {
   }
 
   @override
-  void onError(void onError(HttpConnect connect, err, [stackTrace])) {
+  void onError(void onError(HttpConnect connect, err, stackTrace)) {
     _onError = onError;
   }
   @override

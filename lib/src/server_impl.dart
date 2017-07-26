@@ -162,6 +162,7 @@ class _StreamServer implements StreamServer {
       try {
         _onError(connect, error, stackTrace);
       } catch (ex, st) {
+        _shout(connect, error, stackTrace);
         _shout(connect, ex, st);
       }
     } else {

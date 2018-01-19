@@ -320,6 +320,12 @@ class HttpStatusException implements HttpException {
   String toString() => "HttpStatusException($statusCode: $message)";
 }
 
+/// HTTP 400 exception.
+class Http400 extends HttpStatusException {
+  Http400([String path]): super(400, message: _status2msg(_M400, path));
+  Http400.fromUri(Uri uri): super(400, message: _status2msg(_M400, uri.path), uri: uri);
+  Http400.fromConnect(HttpConnect connect): this.fromUri(connect.request.uri);
+}
 /// HTTP 401 exception.
 class Http401 extends HttpStatusException {
   Http401([String path]): super(401, message: _status2msg(_M401, path));
@@ -337,6 +343,12 @@ class Http404 extends HttpStatusException {
   Http404([String path]): super(404, message: _status2msg(_M404, path));
   Http404.fromUri(Uri uri): super(404, message: _status2msg(_M404, uri.path), uri: uri);
   Http404.fromConnect(HttpConnect connect): this.fromUri(connect.request.uri);
+}
+/// HTTP 405 exception.
+class Http405 extends HttpStatusException {
+  Http405([String path]): super(405, message: _status2msg(_M405, path));
+  Http405.fromUri(Uri uri): super(405, message: _status2msg(_M405, uri.path), uri: uri);
+  Http405.fromConnect(HttpConnect connect): this.fromUri(connect.request.uri);
 }
 /// HTTP 406 exception.
 class Http406 extends HttpStatusException {
@@ -370,7 +382,9 @@ class Http503 extends HttpStatusException {
       this.fromUri(connect.request.uri, cause);
 }
 
-const String _M401 = "Unauthorized", _M403 = "Forbidden", _M404 = "Not Found",
+const String _M400 = "Bad Request", _M401 = "Unauthorized",
+  _M403 = "Forbidden", _M404 = "Not Found",
+  _M405 = "Method Not Allowed",
   _M406 = "Not Acceptable", _M408 = "Request Timeout",
   _M500 = "Internal Server Error", _M503 = "Service Unavailable";
 

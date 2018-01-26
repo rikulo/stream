@@ -13,4 +13,4 @@ dependencies:
   args: any
   path: any
 environment:
-  sdk: ">=1.9.0"
+  sdk: ">=1.9.0 <3.0.0"

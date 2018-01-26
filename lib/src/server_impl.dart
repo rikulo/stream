@@ -3,7 +3,7 @@
 // Author: tomyeh
 part of stream;
 
-const String _VERSION = "1.6.8";
+const String _VERSION = "1.6.9";
 const String _SERVER_HEADER = "Stream/$_VERSION";
 
 ///The error handler for HTTP connection.
@@ -105,7 +105,12 @@ class _StreamServer implements StreamServer {
         return handler(connect);
 
       assert(handler is String); //must be a string
-      return forward(connect, handler);
+      if (_completeUriRegex.hasMatch(handler)) {
+        connect.redirect(handler);
+        return null;
+      } else {
+        return forward(connect, handler);
+      }
     }
 
     //protect from access

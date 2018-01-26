@@ -1,5 +1,9 @@
 # CHANGES
 
+### 1.6.9
+
+* Allow user to map a URI to another website in router.
+
 ### 1.6.8
 
 * If `StreamServer.onError` is registered, the default logging will be disabled.

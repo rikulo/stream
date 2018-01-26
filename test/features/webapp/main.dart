@@ -69,6 +69,7 @@ var _uriMapping = <String, dynamic> {
   "/redirect": (HttpConnect connect) {
     connect.redirect(connect.request.uri.queryParameters["uri"]);
   },
+  "/quire": "https://quire.io",
   "/json": json,
   "ws:/ws-test(/.*)?": (WebSocket socket) {
     socket.listen((evt) {

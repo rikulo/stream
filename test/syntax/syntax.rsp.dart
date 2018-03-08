@@ -85,6 +85,15 @@ Future syntax(HttpConnect connect, {foo, bool c:false}) async {
 """);
 
   for (var fruit in ["apple", "orange"]) {
+
+    response.write("""      """);
+
+    response.write(Rsp.nnx(fruit));
+
+
+    response.write("""
+
+""");
   } //for
 
   response.write("""
@@ -162,7 +171,13 @@ Future syntax(HttpConnect connect, {foo, bool c:false}) async {
 
   if (foo.isMeaningful) {
 
-    response.write("""      something is meaningful
+    response.write("""      something is meaningful: """);
+
+    response.write(Rsp.nnx(whatever));
+
+
+    response.write("""
+
 """);
 
     return connect.forward(Rsp.cat("/foo?abc", {'first': "1st", 'second': foo}));

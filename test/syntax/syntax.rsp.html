@@ -29,6 +29,7 @@
     </ul>
 
     [:for fruit in ["apple", "orange"]]
+      [=fruit]
     [/for]
 
     [:if foo.isCustomer]
@@ -48,7 +49,7 @@
       [:for fruit in ["apple", "orange"]]
         [=fruit]
       [/for]
-	[/var]
+	  [/var]
 
     [:include "/abc"/]
     [:include syntax c="[=true]"]
@@ -58,7 +59,7 @@
     [/include]
 
     [:if foo.isMeaningful]
-      something is meaningful
+      something is meaningful: [=whatever]
       [:forward "/foo?abc" first="1st" second="[=foo]"/]
     [/if]
     [:script src="/script/foo.dart"]

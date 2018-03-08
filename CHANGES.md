@@ -1,5 +1,9 @@
 # CHANGES
 
+### 1.7.0
+
+* `proxyRequest()` introduced to proxy requests to another server
+
 ### 1.6.9
 
 * Allow user to map a URI to another website in router.

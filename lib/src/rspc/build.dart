@@ -109,8 +109,8 @@ File _locate(String flnm) {
 void build(List<String> arguments, {String filenameMapper(String source),
     Encoding encoding: UTF8, List<String> imports}) {
   final ArgParser argParser = new ArgParser()
-    ..addOption("changed", allowMultiple: true)
-    ..addOption("removed", allowMultiple: true)
+    ..addMultiOption("changed")
+    ..addMultiOption("removed")
     ..addFlag("clean", negatable: false)
     ..addFlag("machine", negatable: false)
     ..addFlag("full", negatable: false);

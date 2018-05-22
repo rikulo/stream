@@ -59,15 +59,16 @@ Future proxyRequest(HttpConnect connect, url, {String proxyName,
           '${serverRequest.protocolVersion} ${proxyName??"Stream"}');
 
       if (requestBody == null) { //first time
-        var onAdd;
+        var copyTo;
         if (shallRetry != null) {
           requestBody = <int>[];
-          onAdd = (List<int> event) {
+          copyTo = (List<int> event) {
             requestBody.addAll(event);
+            clientRequest.sink.add(event);
           };
         }
 
-        await _store(serverRequest, clientRequest.sink, onAdd: onAdd);
+        await _copy(serverRequest, clientRequest.sink, copyTo: copyTo);
       } else { //retries
         clientRequest.sink.add(requestBody);
       }
@@ -121,7 +122,7 @@ Future proxyRequest(HttpConnect connect, url, {String proxyName,
     }
   }
 
-  await _store(clientResponse.stream, serverResponse);
+  await _copy(clientResponse.stream, serverResponse);
 }
 
 void _addHeader(Map<String, String> headers, String name, String value) {
@@ -132,21 +133,21 @@ void _addHeader(Map<String, String> headers, String name, String value) {
   }
 }
 
-Future _store<T>(Stream<T> stream, EventSink<T> sink,
-    {bool cancelOnError: true, bool closeSink: true, void onAdd(T event)}) {
+Future _copy<T>(Stream<T> stream, EventSink<T> sink,
+    {bool cancelOnError: true, bool closeSink: true, void copyTo(T event)}) {
   var completer = new Completer();
-  stream.listen(onAdd == null ? sink.add: (event) {
-    onAdd(event);
-    sink.add(event);
-  }, onError: (e, stackTrace) {
-    sink.addError(e, stackTrace);
-    if (cancelOnError) {
-      completer.complete();
+  stream.listen(copyTo ?? sink.add,
+    onError: (e, stackTrace) {
+      sink.addError(e, stackTrace);
+      if (cancelOnError) {
+        completer.complete();
+        if (closeSink) sink.close();
+      }
+    },
+    onDone: () {
       if (closeSink) sink.close();
-    }
-  }, onDone: () {
-    if (closeSink) sink.close();
-    completer.complete();
-  }, cancelOnError: cancelOnError);
+      completer.complete();
+    }, cancelOnError: cancelOnError);
+
   return completer.future;
 }

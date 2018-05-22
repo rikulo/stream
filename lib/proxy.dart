@@ -21,7 +21,10 @@ import "stream.dart";
 /// * [url] must be a [String] or [Uri].
 /// * [proxyName] is used in headers to identify this proxy. It should be a valid
 /// HTTP token or a hostname. It defaults to null -- no `via` header will be added.
-Future proxyRequest(HttpConnect connect, url, {String proxyName}) async {
+/// * [shallRetry] a callback to return true if [proxyRequest] shall
+/// retry to connect [url].
+Future proxyRequest(HttpConnect connect, url, {String proxyName,
+      FutureOr<bool> shallRetry(ex, StackTrace st)}) async {
   //COPRYRIGHT NOTICE:
   //The code is ported from [shelf_proxy](https://github.com/dart-lang/shelf_proxy)
 
@@ -37,24 +40,48 @@ Future proxyRequest(HttpConnect connect, url, {String proxyName}) async {
   final client = new http.Client(),
     serverRequest = connect.request,
     serverResponse = connect.response;
+  var clientResponse;
 
-  var clientRequest =
-      new http.StreamedRequest(serverRequest.method, uri);
-  clientRequest.followRedirects = false;
-  serverRequest.headers.forEach((String name, List<String> values) {
-    for (final value in values)
-      _addHeader(clientRequest.headers, name, value);
-  });
-  clientRequest.headers['Host'] = uri.authority;
+  for (List<int> requestBody;;) {
+    try {
+      var clientRequest =
+          new http.StreamedRequest(serverRequest.method, uri);
+      clientRequest.followRedirects = false;
+      serverRequest.headers.forEach((String name, List<String> values) {
+        for (final value in values)
+          _addHeader(clientRequest.headers, name, value);
+      });
+      clientRequest.headers['Host'] = uri.authority;
 
-  // Add a Via header. See
-  // http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.45
-  _addHeader(clientRequest.headers, 'via',
-      '${serverRequest.protocolVersion} ${proxyName??"Stream"}');
+      // Add a Via header. See
+      // http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.45
+      _addHeader(clientRequest.headers, 'via',
+          '${serverRequest.protocolVersion} ${proxyName??"Stream"}');
 
-  await _store(serverRequest, clientRequest.sink);
+      if (requestBody == null) { //first time
+        var onAdd;
+        if (shallRetry != null) {
+          requestBody = <int>[];
+          onAdd = (List<int> event) {
+            requestBody.addAll(event);
+          };
+        }
 
-  final clientResponse = await client.send(clientRequest);
+        await _store(serverRequest, clientRequest.sink, onAdd: onAdd);
+      } else { //retries
+        clientRequest.sink.add(requestBody);
+      }
+
+      clientResponse = await client.send(clientRequest);
+      break; //done
+
+    } on SocketException catch (ex, st) {
+      if (shallRetry == null || (await shallRetry(ex, st)) != true)
+        rethrow;
+      //retry
+    }
+  }
+
   serverResponse.statusCode = clientResponse.statusCode;
   clientResponse.headers.forEach((name, value) {
     serverResponse.headers.add(name, value);
@@ -105,10 +132,13 @@ void _addHeader(Map<String, String> headers, String name, String value) {
   }
 }
 
-Future _store(Stream stream, EventSink sink,
-    {bool cancelOnError: true, bool closeSink: true}) {
+Future _store<T>(Stream<T> stream, EventSink<T> sink,
+    {bool cancelOnError: true, bool closeSink: true, void onAdd(T event)}) {
   var completer = new Completer();
-  stream.listen(sink.add, onError: (e, stackTrace) {
+  stream.listen(onAdd == null ? sink.add: (event) {
+    onAdd(event);
+    sink.add(event);
+  }, onError: (e, stackTrace) {
     sink.addError(e, stackTrace);
     if (cancelOnError) {
       completer.complete();

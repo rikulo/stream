@@ -4,7 +4,7 @@
 
 * [Home](http://rikulo.org/projects/stream)
 * [Documentation](http://docs.rikulo.org/stream/latest)
-* [API Reference](http://www.dartdocs.org/documentation/stream/1.7.0+1)
+* [API Reference](http://www.dartdocs.org/documentation/stream/1.7.0+2)
 * [Discussion](http://stackoverflow.com/questions/tagged/rikulo)
 * [Git Repository](https://github.com/rikulo/stream)
 * [Issues](https://github.com/rikulo/stream/issues)

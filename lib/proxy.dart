@@ -21,10 +21,11 @@ import "stream.dart";
 /// * [url] must be a [String] or [Uri].
 /// * [proxyName] is used in headers to identify this proxy. It should be a valid
 /// HTTP token or a hostname. It defaults to null -- no `via` header will be added.
-/// * [shallRetry] a callback to return true if [proxyRequest] shall
-/// retry to connect [url].
+/// * [shallRetry] a callback to decide whether to retry,
+/// if [proxyRequest] fails due to [SocketException].
+/// Ignored if omitted.
 Future proxyRequest(HttpConnect connect, url, {String proxyName,
-      FutureOr<bool> shallRetry(ex, StackTrace st)}) async {
+      FutureOr<bool> shallRetry(SocketException ex, StackTrace st)}) async {
   //COPRYRIGHT NOTICE:
   //The code is ported from [shelf_proxy](https://github.com/dart-lang/shelf_proxy)
 

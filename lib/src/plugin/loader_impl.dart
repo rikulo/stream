@@ -155,14 +155,14 @@ bool _isTextType(ContentType ctype) {
   String ptype, subType;
   return ctype == null || (ptype = ctype.primaryType) == "text"
     || ((subType = ctype.subType) != null && subType.endsWith("+xml"))
-    || (ptype == "application" && _TEXT_SUBTYPE.containsKey(subType));
+    || (ptype == "application" && _textSubtype.containsKey(subType));
 }
-const Map<String, bool> _TEXT_SUBTYPE = const<String, bool> {
+const Map<String, bool> _textSubtype = const<String, bool> {
   "json": true, "javascript": true, "dart": true, "xml": true,
 };
 
 ///used to adjust truncation error when converting to internet time
-const Duration _ONE_SECOND = const Duration(seconds: 1);
+const Duration _oneSecond = const Duration(seconds: 1);
 
 //--- Range Handling ---//
 //--- ---//
@@ -193,7 +193,7 @@ List<_Range> _parseRange(HttpConnect connect, _AssetDetail detail) {
   final String ifRange = rqheaders.value(HttpHeaders.ifRangeHeader);
   if (ifRange != null) {
     try {
-      if (detail.lastModified.isAfter(HttpDate.parse(ifRange).add(_ONE_SECOND)))
+      if (detail.lastModified.isAfter(HttpDate.parse(ifRange).add(_oneSecond)))
         return null; //dirty
     } catch (e) { //ignore it silently
     }
@@ -266,13 +266,13 @@ class _RangeWriter {
       if (j >= ranges.length) { //no more
         response
           ..writeln()
-          ..write(_MIME_BOUNDARY_END);
+          ..write(_mimeBoundaryEnd);
         return; //done
       }
 
       response
         ..writeln()
-        ..writeln(_MIME_BOUNDARY_BEGIN);
+        ..writeln(_mimeBoundaryBegin);
       if (contentType != null)
         response.writeln(contentType);
 
@@ -319,8 +319,8 @@ Future _outAssetInRanges(HttpResponse response, List<_Range> ranges,
 }
 
 //the boundary used for multipart output
-const String _MIME_BOUNDARY = "STREAM_MIME_BOUNDARY";
-const String _MIME_BOUNDARY_BEGIN = "--$_MIME_BOUNDARY";
-const String _MIME_BOUNDARY_END = "--$_MIME_BOUNDARY--";
+const String _mimeBoundary = "STREAM_MIME_BOUNDARY";
+const String _mimeBoundaryBegin = "--$_mimeBoundary";
+const String _mimeBoundaryEnd = "--$_mimeBoundary--";
 final ContentType _multipartBytesType =
-  ContentType.parse("multipart/byteranges; boundary=$_MIME_BOUNDARY");
+  ContentType.parse("multipart/byteranges; boundary=$_mimeBoundary");

@@ -326,71 +326,71 @@ class HttpStatusException implements HttpException {
 
 /// HTTP 400 exception.
 class Http400 extends HttpStatusException {
-  Http400([String path]): super(400, message: _status2msg(_M400, path));
-  Http400.fromUri(Uri uri): super(400, message: _status2msg(_M400, uri.path), uri: uri);
+  Http400([String path]): super(400, message: _status2msg(_m400, path));
+  Http400.fromUri(Uri uri): super(400, message: _status2msg(_m400, uri.path), uri: uri);
   Http400.fromConnect(HttpConnect connect): this.fromUri(connect.request.uri);
 }
 /// HTTP 401 exception.
 class Http401 extends HttpStatusException {
-  Http401([String path]): super(401, message: _status2msg(_M401, path));
-  Http401.fromUri(Uri uri): super(401, message: _status2msg(_M401, uri.path), uri: uri);
+  Http401([String path]): super(401, message: _status2msg(_m401, path));
+  Http401.fromUri(Uri uri): super(401, message: _status2msg(_m401, uri.path), uri: uri);
   Http401.fromConnect(HttpConnect connect): this.fromUri(connect.request.uri);
 }
 /// HTTP 403 exception.
 class Http403 extends HttpStatusException {
-  Http403([String path]): super(403, message: _status2msg(_M403, path));
-  Http403.fromUri(Uri uri): super(403, message: _status2msg(_M403, uri.path), uri: uri);
+  Http403([String path]): super(403, message: _status2msg(_m403, path));
+  Http403.fromUri(Uri uri): super(403, message: _status2msg(_m403, uri.path), uri: uri);
   Http403.fromConnect(HttpConnect connect): this.fromUri(connect.request.uri);
 }
 /// HTTP 404 exception.
 class Http404 extends HttpStatusException {
-  Http404([String path]): super(404, message: _status2msg(_M404, path));
-  Http404.fromUri(Uri uri): super(404, message: _status2msg(_M404, uri.path), uri: uri);
+  Http404([String path]): super(404, message: _status2msg(_m404, path));
+  Http404.fromUri(Uri uri): super(404, message: _status2msg(_m404, uri.path), uri: uri);
   Http404.fromConnect(HttpConnect connect): this.fromUri(connect.request.uri);
 }
 /// HTTP 405 exception.
 class Http405 extends HttpStatusException {
-  Http405([String path]): super(405, message: _status2msg(_M405, path));
-  Http405.fromUri(Uri uri): super(405, message: _status2msg(_M405, uri.path), uri: uri);
+  Http405([String path]): super(405, message: _status2msg(_m405, path));
+  Http405.fromUri(Uri uri): super(405, message: _status2msg(_m405, uri.path), uri: uri);
   Http405.fromConnect(HttpConnect connect): this.fromUri(connect.request.uri);
 }
 /// HTTP 406 exception.
 class Http406 extends HttpStatusException {
-  Http406([String path]): super(406, message: _status2msg(_M406, path));
-  Http406.fromUri(Uri uri): super(406, message: _status2msg(_M406, uri.path), uri: uri);
+  Http406([String path]): super(406, message: _status2msg(_m406, path));
+  Http406.fromUri(Uri uri): super(406, message: _status2msg(_m406, uri.path), uri: uri);
   Http406.fromConnect(HttpConnect connect): this.fromUri(connect.request.uri);
 }
 /// HTTP 408 exception.
 class Http408 extends HttpStatusException {
-  Http408([String path]): super(408, message: _status2msg(_M408, path));
-  Http408.fromUri(Uri uri): super(408, message: _status2msg(_M408, uri.path), uri: uri);
+  Http408([String path]): super(408, message: _status2msg(_m408, path));
+  Http408.fromUri(Uri uri): super(408, message: _status2msg(_m408, uri.path), uri: uri);
   Http408.fromConnect(HttpConnect connect): this.fromUri(connect.request.uri);
 }
 
 /// HTTP 500 exception.
 class Http500 extends HttpStatusException {
-  Http500([String cause]): super(500, message: _status2msg(_M500, cause));
+  Http500([String cause]): super(500, message: _status2msg(_m500, cause));
   Http500.fromUri(Uri uri, [String cause]):
-      super(500, message: _status2msg(_M500,
+      super(500, message: _status2msg(_m500,
           cause != null ? "${uri.path}: $cause": uri.path), uri: uri);
   Http500.fromConnect(HttpConnect connect, [String cause]):
       this.fromUri(connect.request.uri, cause);
 }
 /// HTTP 503 exception.
 class Http503 extends HttpStatusException {
-  Http503([String cause]): super(503, message: _status2msg(_M503, cause));
+  Http503([String cause]): super(503, message: _status2msg(_m503, cause));
   Http503.fromUri(Uri uri, [String cause]):
-      super(503, message: _status2msg(_M503,
+      super(503, message: _status2msg(_m503,
           cause != null ? "${uri.path}: $cause": uri.path), uri: uri);
   Http503.fromConnect(HttpConnect connect, [String cause]):
       this.fromUri(connect.request.uri, cause);
 }
 
-const String _M400 = "Bad Request", _M401 = "Unauthorized",
-  _M403 = "Forbidden", _M404 = "Not Found",
-  _M405 = "Method Not Allowed",
-  _M406 = "Not Acceptable", _M408 = "Request Timeout",
-  _M500 = "Internal Server Error", _M503 = "Service Unavailable";
+const String _m400 = "Bad Request", _m401 = "Unauthorized",
+  _m403 = "Forbidden", _m404 = "Not Found",
+  _m405 = "Method Not Allowed",
+  _m406 = "Not Acceptable", _m408 = "Request Timeout",
+  _m500 = "Internal Server Error", _m503 = "Service Unavailable";
 
 String _status2msg(String reason, String cause)
 => cause != null ? "$reason: $cause": reason;

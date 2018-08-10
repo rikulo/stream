@@ -33,7 +33,7 @@ bool _parseArgs(List<String> arguments, _Environ env) {
 
   final usage = "Usage: rspc [<flags>] <rsp-file> [<rsp-file>...]";
   if (args['version']) {
-    print("RSP Compiler version $VERSION");
+    print("RSP Compiler version $version");
     return false;
   }
   if (args['help']) {

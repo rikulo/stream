@@ -3,8 +3,8 @@
 // Author: tomyeh
 part of stream;
 
-const String _VERSION = "2.0.0";
-const String _SERVER_HEADER = "Stream/$_VERSION";
+const String _version = "2.0.0";
+const String _serverHeader = "Stream/$_version";
 
 ///The error handler for HTTP connection.
 typedef void _ConnectErrorCallback(HttpConnect connect, err, stackTrace);
@@ -15,7 +15,7 @@ typedef bool _ShallCount(HttpConnect connect);
 
 class _StreamServer implements StreamServer {
   @override
-  final String version = _VERSION;
+  final String version = _version;
   @override
   final Logger logger;
 
@@ -290,7 +290,7 @@ class _StreamServer implements StreamServer {
   void _logHttpStarted(HttpChannel channel) {
     final address = channel.address, port = channel.port;
     logger.info(
-      "Rikulo Stream Server $_VERSION starting${channel.isSecure ? ' HTTPS': ''} on "
+      "Rikulo Stream Server $_version starting${channel.isSecure ? ' HTTPS': ''} on "
       "${address is InternetAddress ? address.address: address}:$port\n"
       "Home: ${homeDir}");
   }
@@ -299,7 +299,7 @@ class _StreamServer implements StreamServer {
     final channel = new _HttpChannel.fromSocket(
         this, new HttpServer.listenOn(socket), socket);
     _startChannel(channel, zoned);
-    logger.info("Rikulo Stream Server $_VERSION starting on $socket\n"
+    logger.info("Rikulo Stream Server $_version starting on $socket\n"
       "Home: ${homeDir}");
     return channel;
   }
@@ -319,7 +319,7 @@ class _StreamServer implements StreamServer {
     ..sessionTimeout = sessionTimeout
     ..listen((HttpRequest req) async {
       (req = _preprocess(req)).response.headers
-        ..set(HttpHeaders.serverHeader, _SERVER_HEADER)
+        ..set(HttpHeaders.serverHeader, _serverHeader)
         ..date = new DateTime.now();
 
       //protect from aborted connection

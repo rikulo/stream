@@ -328,7 +328,7 @@ bool checkIfHeaders(HttpConnect connect, DateTime lastModified, String etag) {
     //Ignored it if If-None-Match specified (since ETag differs)
     final DateTime ifModifiedSince = rqheaders.ifModifiedSince;
     if (ifModifiedSince != null && ifNoneMatch == null
-    && lastModified.isBefore(ifModifiedSince.add(_ONE_SECOND))) {
+    && lastModified.isBefore(ifModifiedSince.add(_oneSecond))) {
       response.statusCode = HttpStatus.notModified;
       if (etag != null)
         response.headers.set(HttpHeaders.etagHeader, etag);
@@ -340,7 +340,7 @@ bool checkIfHeaders(HttpConnect connect, DateTime lastModified, String etag) {
     if (value != null) {
       try {
         final DateTime ifUnmodifiedSince = HttpDate.parse(value);
-        if (lastModified.isAfter(ifUnmodifiedSince.add(_ONE_SECOND))) {
+        if (lastModified.isAfter(ifUnmodifiedSince.add(_oneSecond))) {
           response.statusCode = HttpStatus.preconditionFailed;
           return false;
         }

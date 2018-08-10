@@ -163,7 +163,7 @@ abstract class HttpConnect {
    * since `HttpResponse.redirect()` will close the connection (which
    * will be called automatically under Rikulo Stream).
    */
-  void redirect(String url, {int status: HttpStatus.MOVED_TEMPORARILY});
+  void redirect(String url, {int status: HttpStatus.movedTemporarily});
 
   /** Forward this connection to the given [uri].
    *
@@ -272,7 +272,7 @@ class HttpConnectWrapper implements HttpConnect {
   bool get isForwarded => origin.isForwarded;
 
   @override
-  void redirect(String uri, {int status: HttpStatus.MOVED_TEMPORARILY}) {
+  void redirect(String uri, {int status: HttpStatus.movedTemporarily}) {
     origin.redirect(_toCompleteUrl(request, uri), status: status);
   }
   @override
@@ -297,6 +297,7 @@ class HttpConnectWrapper implements HttpConnect {
     origin.errorDetail = errorDetail;
   }
 
+  @override
   Map<String, dynamic> get dataset => origin.dataset;
 }
 
@@ -310,13 +311,16 @@ class ErrorDetail {
 /** A HTTP status exception.
  */
 class HttpStatusException implements HttpException {
+  @override
   final String message;
   final int statusCode;
+  @override
   final Uri uri;
 
   HttpStatusException(int this.statusCode, {String message, Uri this.uri})
   : this.message = message ?? "Status $statusCode";
 
+  @override
   String toString() => "HttpStatusException($statusCode: $message)";
 }
 

@@ -20,4 +20,4 @@ part "src/rspc/compiler.dart";
 part "src/rspc/tag.dart";
 part "src/rspc/tag_util.dart";
 
-const String VERSION = "1.7.0";
+const String VERSION = "2.0.0";

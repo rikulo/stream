@@ -70,9 +70,9 @@ abstract class _AbstractConnect implements HttpConnect {
   bool get isForwarded => false;
 
   @override
-  void redirect(String uri, {int status: HttpStatus.MOVED_TEMPORARILY}) {
+  void redirect(String uri, {int status: HttpStatus.movedTemporarily}) {
     response.statusCode = status;
-    response.headers.set(HttpHeaders.LOCATION, _toCompleteUrl(request, uri));
+    response.headers.set(HttpHeaders.locationHeader, _toCompleteUrl(request, uri));
   }
   @override
   Future forward(String uri, {HttpRequest request, HttpResponse response})
@@ -112,7 +112,7 @@ class _HttpConnect extends _AbstractConnect {
   List<String> get locales {
     if (_locales == null) {
       _locales = [];
-      final List<String> langs = request.headers[HttpHeaders.ACCEPT_LANGUAGE];
+      final List<String> langs = request.headers[HttpHeaders.acceptLanguageHeader];
       if (langs != null) {
         final Map<num, List<String>> infos = new HashMap();
         for (final lang in langs) {

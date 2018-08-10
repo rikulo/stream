@@ -27,7 +27,7 @@ class Compiler {
   int _nextVar = 0; //used to implement TagContext.nextVar()
 
   Compiler(String source, this.destination, {
-      this.sourceName, this.destinationName, this.encoding: UTF8,
+      this.sourceName, this.destinationName, this.encoding: utf8,
       this.verbose: false, this.lineNumber: false, List<String> imports}):
       this.source = source.replaceAll("\r\n", "\n"),
       this._defImports = imports {
@@ -742,6 +742,7 @@ class _TagContext extends TagContext {
   String _pre;
 
   ///The line number
+  @override
   final int line;
 
   _TagContext.root(Compiler compiler, IOSink output)
@@ -774,6 +775,7 @@ class _TagContext extends TagContext {
   void warning(String message, [int line]) {
     compiler._warning(message, line);
   }
+  @override
   String toString() => "($line: $tag)";
 }
 

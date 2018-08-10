@@ -3,7 +3,7 @@
 // Author: tomyeh
 part of stream;
 
-const String _VERSION = "1.7.0";
+const String _VERSION = "2.0.0";
 const String _SERVER_HEADER = "Stream/$_VERSION";
 
 ///The error handler for HTTP connection.
@@ -182,7 +182,7 @@ class _StreamServer implements StreamServer {
         final String uri = connect.request.uri.path;
         buf..write("[")..write(uri)..write("] ");
 
-        final values = connect.request.headers[HttpHeaders.USER_AGENT];
+        final values = connect.request.headers[HttpHeaders.userAgentHeader];
         if (values != null && values.length >= 1) buf..writeln(values[0]);
       }
 
@@ -232,6 +232,7 @@ class _StreamServer implements StreamServer {
 
   @override
   ResourceLoader get resourceLoader => _resLoader;
+  @override
   void set resourceLoader(ResourceLoader loader) {
     if (loader == null)
       throw new ArgumentError("null");
@@ -259,7 +260,7 @@ class _StreamServer implements StreamServer {
   Future<HttpChannel> start({address, int port: 8080, int backlog: 0,
       bool v6Only: false, bool shared: false, bool zoned: true}) async {
     if (address == null)
-      address = InternetAddress.ANY_IP_V4;
+      address = InternetAddress.anyIPv4;
 
     final iserver = await HttpServer.bind(address, port, backlog: backlog,
         v6Only: v6Only, shared: shared);
@@ -275,7 +276,7 @@ class _StreamServer implements StreamServer {
       bool v6Only: false, bool requestClientCertificate: false,
       int backlog: 0, bool shared: false, bool zoned: true}) async {
     if (address == null)
-      address = InternetAddress.ANY_IP_V4;
+      address = InternetAddress.anyIPv4;
 
     final iserver = await HttpServer.bindSecure(address, port, context,
         requestClientCertificate: requestClientCertificate,
@@ -318,7 +319,7 @@ class _StreamServer implements StreamServer {
     ..sessionTimeout = sessionTimeout
     ..listen((HttpRequest req) async {
       (req = _preprocess(req)).response.headers
-        ..set(HttpHeaders.SERVER, _SERVER_HEADER)
+        ..set(HttpHeaders.serverHeader, _SERVER_HEADER)
         ..date = new DateTime.now();
 
       //protect from aborted connection

@@ -4,7 +4,7 @@
 part of stream_rspc;
 
 class _Environ {
-  Encoding encoding = UTF8;
+  Encoding encoding = utf8;
   bool verbose = false, lineNumber = false;
   List<String> sources;
 }
@@ -47,14 +47,14 @@ bool _parseArgs(List<String> arguments, _Environ env) {
   if (val != null)
     switch (val.toLowerCase()) {
       case 'ascii':
-        env.encoding = ASCII;
+        env.encoding = ascii;
         break;
       case 'utf-8':
-        env.encoding = UTF8;
+        env.encoding = utf8;
         break;
       case 'iso-8859-1':
       case 'latin-1':
-        env.encoding = LATIN1;
+        env.encoding = latin1;
         break;
       default:
         print("Unknown encoding: $val");

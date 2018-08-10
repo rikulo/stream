@@ -1,2 +1,12 @@
 analyzer:
-  strong-mode: true
+  #strong-mode:
+  errors:
+    todo: ignore
+linter:
+  rules:
+    - annotate_overrides
+    - avoid_init_to_null
+    #- camel_case_types
+    #- constant_identifier_names
+    #- unnecessary_new
+    #- unnecessary_const

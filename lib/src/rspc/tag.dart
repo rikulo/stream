@@ -88,6 +88,7 @@ abstract class Tag {
    */
   String get name;
 
+  @override
   String toString() => "[$name]";
 }
 

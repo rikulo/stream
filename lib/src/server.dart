@@ -188,7 +188,7 @@ abstract class StreamServer {
    * [HttpConnect.channel].
    *
    * * [address] - It can either be a [String] or an [InternetAddress].
-   * Default: [InternetAddress.ANY_IP_V4] (i.e., "0.0.0.0").
+   * Default: [InternetAddress.anyIPv4] (i.e., "0.0.0.0").
    * It will cause Stream server to listen all adapters
    * IP addresses using IPv4.
    *
@@ -412,5 +412,7 @@ class ServerError extends Error {
   final String message;
 
   ServerError(this.message);
+
+  @override
   String toString() => "ServerError($message)";
 }

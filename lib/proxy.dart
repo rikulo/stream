@@ -101,8 +101,8 @@ Future proxyRequest(HttpConnect connect, url, {String proxyName,
   // If the original response was gzipped, it will be decoded by [client]
   // and we'll have no way of knowing its actual content-length.
   if (clientResponse.headers['content-encoding'] == 'gzip') {
-    serverResponse.headers.removeAll(HttpHeaders.CONTENT_ENCODING);
-    serverResponse.headers.removeAll(HttpHeaders.CONTENT_LENGTH);
+    serverResponse.headers.removeAll(HttpHeaders.contentEncodingHeader);
+    serverResponse.headers.removeAll(HttpHeaders.contentLengthHeader);
 
     // Add a Warning header. See
     // http://www.w3.org/Protocols/rfc2616/rfc2616-sec13.html#sec13.5.2

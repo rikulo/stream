@@ -128,6 +128,7 @@ class DefaultRouter implements Router {
    * * [preceding] - whether to make the mapping preceding any previous mappings.
    * In other words, if true, this mapping will be interpreted first.
    */
+  @override
   void map(String uri, handler, {preceding: false}) {
     if (handler != null && handler is! Function && handler is! String)
       throw new ServerError("URI mapping: function (renderer) or string (URI) is required for $uri");
@@ -143,6 +144,7 @@ class DefaultRouter implements Router {
    * * [preceding] - whether to make the mapping preceding any previous mappings.
    * In other words, if true, this mapping will be interpreted first.
    */
+  @override
   void filter(String uri, RequestFilter filter, {preceding: false}) {
     if (filter is! Function)
       throw new ServerError("Filter mapping: function (filter) is required for $uri");
@@ -417,6 +419,7 @@ class _Var {
   final String name;
   _Var(this.name);
 
+  @override
   String toString() => name;
 }
 

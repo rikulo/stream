@@ -30,13 +30,13 @@ class Rsp {
         if (!checkIfHeaders(connect, lastModified, etag))
           return false;
 
-        isPreconditionFailed = response.statusCode == HttpStatus.PRECONDITION_FAILED;
+        isPreconditionFailed = response.statusCode == HttpStatus.preconditionFailed;
             //Set by checkIfHeaders (see also Issue 59)
-        if (isPreconditionFailed || response.statusCode < HttpStatus.BAD_REQUEST) {
+        if (isPreconditionFailed || response.statusCode < HttpStatus.badRequest) {
           if (lastModified != null)
-            headers.set(HttpHeaders.LAST_MODIFIED, lastModified);
+            headers.set(HttpHeaders.lastModifiedHeader, lastModified);
           if (etag != null)
-            headers.set(HttpHeaders.ETAG, etag);
+            headers.set(HttpHeaders.etagHeader, etag);
         }
 
       }
@@ -127,7 +127,7 @@ class Rsp {
   /** Serializes the given object into a JSON string by use of
    * [JSON.encode](http://api.dartlang.org/docs/releases/latest/dart_convert.html#JSON).
    */
-  static String json(data) => JSON.encode(data).replaceAll(_scriptPtn, r"<\/");
+  static String json(data) => cvt.json.encode(data).replaceAll(_scriptPtn, r"<\/");
   static final RegExp _scriptPtn = new RegExp(r"</(?=script>)", caseSensitive: false);
     //it is possible that a string contains </script>
 

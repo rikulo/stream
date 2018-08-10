@@ -298,27 +298,27 @@ bool checkIfHeaders(HttpConnect connect, DateTime lastModified, String etag) {
   final HttpHeaders rqheaders = request.headers;
 
   //Check If-Match
-  final String ifMatch = rqheaders.value(HttpHeaders.IF_MATCH);
+  final String ifMatch = rqheaders.value(HttpHeaders.ifMatchHeader);
   if (ifMatch != null && ifMatch != "*"
   && (etag == null || !_matchETag(ifMatch, etag))) { //not match
-    response.statusCode = HttpStatus.PRECONDITION_FAILED;
+    response.statusCode = HttpStatus.preconditionFailed;
     return false;
   }
 
   //Check If-None-Match
   //Note: it shall be checked before If-Modified-Since
-  final String ifNoneMatch = rqheaders.value(HttpHeaders.IF_NONE_MATCH);
+  final String ifNoneMatch = rqheaders.value(HttpHeaders.ifNoneMatchHeader);
   if (ifNoneMatch != null) {
     if (ifNoneMatch == "*"
     || (etag != null && _matchETag(ifNoneMatch, etag))) { //match
       final String method = request.method;
       if (method == "GET" || method == "HEAD") {
-        response.statusCode = HttpStatus.NOT_MODIFIED;
+        response.statusCode = HttpStatus.notModified;
         if (etag != null)
-          response.headers.set(HttpHeaders.ETAG, etag);
+          response.headers.set(HttpHeaders.etagHeader, etag);
         return false;
       }
-      response.statusCode = HttpStatus.PRECONDITION_FAILED;
+      response.statusCode = HttpStatus.preconditionFailed;
       return false;
     }
   }
@@ -329,19 +329,19 @@ bool checkIfHeaders(HttpConnect connect, DateTime lastModified, String etag) {
     final DateTime ifModifiedSince = rqheaders.ifModifiedSince;
     if (ifModifiedSince != null && ifNoneMatch == null
     && lastModified.isBefore(ifModifiedSince.add(_ONE_SECOND))) {
-      response.statusCode = HttpStatus.NOT_MODIFIED;
+      response.statusCode = HttpStatus.notModified;
       if (etag != null)
-        response.headers.set(HttpHeaders.ETAG, etag);
+        response.headers.set(HttpHeaders.etagHeader, etag);
       return false;
     }
 
     //Check If-Unmodified-Since
-    final String value = rqheaders.value(HttpHeaders.IF_UNMODIFIED_SINCE);
+    final String value = rqheaders.value(HttpHeaders.ifUnmodifiedSinceHeader);
     if (value != null) {
       try {
         final DateTime ifUnmodifiedSince = HttpDate.parse(value);
         if (lastModified.isAfter(ifUnmodifiedSince.add(_ONE_SECOND))) {
-          response.statusCode = HttpStatus.PRECONDITION_FAILED;
+          response.statusCode = HttpStatus.preconditionFailed;
           return false;
         }
       } catch (e) { //ignore it silently

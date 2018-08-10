@@ -105,22 +105,22 @@ bool _setHeaders(HttpConnect connect, _AssetDetail detail, List<_Range> ranges) 
   final HttpRequest request = connect.request;
   final HttpResponse response = connect.response;
   final HttpHeaders headers = response.headers;
-  headers.set(HttpHeaders.ACCEPT_RANGES, "bytes");
+  headers.set(HttpHeaders.acceptRangesHeader, "bytes");
 
-  final bool isPreconditionFailed = response.statusCode == HttpStatus.PRECONDITION_FAILED;
+  final bool isPreconditionFailed = response.statusCode == HttpStatus.preconditionFailed;
     //Set by checkIfHeaders (see also Issue 59)
-  if (isPreconditionFailed || response.statusCode < HttpStatus.BAD_REQUEST) {
-      headers.set(HttpHeaders.LAST_MODIFIED, detail.lastModified);
+  if (isPreconditionFailed || response.statusCode < HttpStatus.badRequest) {
+      headers.set(HttpHeaders.lastModifiedHeader, detail.lastModified);
 
     if (detail.cache != null) {
       final String etag = detail.etag;
       if (etag != null)
-        headers.set(HttpHeaders.ETAG, etag);
+        headers.set(HttpHeaders.etagHeader, etag);
       final Duration dur = detail.cache.getExpires(detail.asset);
       if (dur != null) {
         headers
-          ..set(HttpHeaders.EXPIRES, detail.lastModified.add(dur))
-          ..set(HttpHeaders.CACHE_CONTROL, "max-age=${dur.inSeconds}");
+          ..set(HttpHeaders.expiresHeader, detail.lastModified.add(dur))
+          ..set(HttpHeaders.cacheControlHeader, "max-age=${dur.inSeconds}");
       }
     }
   }
@@ -131,11 +131,11 @@ bool _setHeaders(HttpConnect connect, _AssetDetail detail, List<_Range> ranges) 
   if (ranges == null) {
     response.contentLength = detail.assetSize;
   } else {
-    response.statusCode = HttpStatus.PARTIAL_CONTENT;
+    response.statusCode = HttpStatus.partialContent;
     if (ranges.length == 1) {
       final _Range range = ranges[0];
       response.contentLength = range.length;
-      headers.set(HttpHeaders.CONTENT_RANGE,
+      headers.set(HttpHeaders.contentRangeHeader,
         "bytes ${range.start}-${range.end - 1}/${detail.assetSize}");
     } else {
       headers.contentType = _multipartBytesType;
@@ -190,7 +190,7 @@ class _Range {
 
 List<_Range> _parseRange(HttpConnect connect, _AssetDetail detail) {
   final HttpHeaders rqheaders = connect.request.headers;
-  final String ifRange = rqheaders.value(HttpHeaders.IF_RANGE);
+  final String ifRange = rqheaders.value(HttpHeaders.ifRangeHeader);
   if (ifRange != null) {
     try {
       if (detail.lastModified.isAfter(HttpDate.parse(ifRange).add(_ONE_SECOND)))
@@ -203,7 +203,7 @@ List<_Range> _parseRange(HttpConnect connect, _AssetDetail detail) {
       return null; //dirty
   }
 
-  final String srange = rqheaders.value(HttpHeaders.RANGE);
+  final String srange = rqheaders.value(HttpHeaders.rangeHeader);
   if (srange == null)
     return null;
   if (!srange.startsWith("bytes="))
@@ -231,8 +231,8 @@ List<_Range> _parseRange(HttpConnect connect, _AssetDetail detail) {
     final _Range range = new _Range(values[0], values[1], detail.assetSize);
     if (!range.validate(detail.assetSize)) {
       connect.response.headers.set(
-          HttpHeaders.CONTENT_RANGE, "bytes */${detail.assetSize}");
-      return _rangeError(connect, HttpStatus.REQUESTED_RANGE_NOT_SATISFIABLE);
+          HttpHeaders.contentRangeHeader, "bytes */${detail.assetSize}");
+      return _rangeError(connect, HttpStatus.requestedRangeNotSatisfiable);
     }
     ranges.add(range);
 
@@ -244,7 +244,7 @@ List<_Range> _parseRange(HttpConnect connect, _AssetDetail detail) {
     return _rangeError(connect);
   return ranges;
 }
-_rangeError(HttpConnect connect, [int code = HttpStatus.BAD_REQUEST]) {
+_rangeError(HttpConnect connect, [int code = HttpStatus.badRequest]) {
   connect.response.statusCode = code;
 }
 final RegExp _reRange = new RegExp(r"(\d*)\-(\d*)");
@@ -259,7 +259,7 @@ class _RangeWriter {
 
   _RangeWriter(this.response, this.ranges, ContentType contentType,
     this.assetSize, this.output): this.contentType = contentType != null ?
-      "${HttpHeaders.CONTENT_TYPE}: ${contentType}": null;
+      "${HttpHeaders.contentTypeHeader}: ${contentType}": null;
 
   Future write() async {
     for (int j = 0;; ++j) {
@@ -278,7 +278,7 @@ class _RangeWriter {
 
       final _Range range = ranges[j];
       response
-        ..writeln("${HttpHeaders.CONTENT_RANGE}: bytes ${range.start}-${range.end - 1}/$assetSize")
+        ..writeln("${HttpHeaders.contentRangeHeader}: bytes ${range.start}-${range.end - 1}/$assetSize")
         ..writeln();
       await output(range);
     }

@@ -52,7 +52,7 @@ abstract class Router {
  */
 class DefaultRouter implements Router {
   final List<_UriMapping> _uriMapping = [], _filterMapping = [];
-  final Map<int, dynamic> _codeMapping = new HashMap(); //mapping of status code to URI/Function
+  final Map<int, dynamic> _codeMapping = new HashMap<int, dynamic>(); //mapping of status code to URI/Function
   final List<_ErrMapping> _errMapping = []; //exception to URI/Function
 
   final _UriCache _uriCache = new _UriCache();
@@ -333,7 +333,7 @@ class _UriMapping {
       //ensure it is absolute or starts with regex wildcard
 
     uri = "^$uri\$"; //match the whole URI
-    _groups = new HashMap();
+    _groups = new HashMap<int, String>();
 
     //parse grouping: ([a-zA-Z_-]+:regex)
     final sb = new StringBuffer();
@@ -442,7 +442,7 @@ class _UriCache {
 
   Map<String, dynamic> getCache(HttpConnect connect, List<_UriMapping> mappings) {
     if (_multimethod == null) { //not initialized yet
-      _cache = new LinkedHashMap();
+      _cache = new LinkedHashMap<String, dynamic>();
 
       _multimethod = false;
       for (final _UriMapping m in mappings)

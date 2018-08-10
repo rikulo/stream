@@ -584,7 +584,7 @@ class Compiler {
     //parse libfile (TODO: use a better algorithm to parse rather than readAsStringSync/writeAsStringSync)
     String libnm;
     bool comment0 = false, comment1 = false;
-    Set<String> libimports = new Set(), libparts = new Set();
+    final libimports = new Set<String>(), libparts = new Set<String>();
     final data = libfile.readAsStringSync();
     int len = data.length, importPos, partPos = len;
     for (int i = 0, j; i < len; ++i) {

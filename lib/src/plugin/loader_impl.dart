@@ -32,7 +32,7 @@ class _CacheEntry {
 
 class _AssetCache implements AssetCache {
   final AssetLoader _loader;
-  final Map<String, _CacheEntry> _cache = new LinkedHashMap();
+  final Map<String, _CacheEntry> _cache = new LinkedHashMap<String, _CacheEntry>();
   int _cacheSize = 0;
 
   _AssetCache(this._loader);

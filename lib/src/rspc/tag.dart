@@ -99,7 +99,7 @@ abstract class Tag {
  */
 Map<String, Tag> get tags {
   if (_tags == null) {
-    _tags = new HashMap();
+    _tags = new HashMap<String, Tag>();
     for (Tag tag in [new PageTag(), new DartTag(), new HeaderTag(),
       new IncludeTag(), new ForwardTag(), new VarTag(),
       new JsonTag(), new JsonJsTag(), new ScriptTag(),
@@ -222,7 +222,7 @@ class IncludeTag extends Tag {
   @override
   void begin(TagContext tc, String data) {
     tc.data = new ArgInfo(tc, data);
-    tc.args = new LinkedHashMap(); //order is important
+    tc.args = new LinkedHashMap<String, String>(); //order is important
   }
   @override
   void end(TagContext tc) {
@@ -263,7 +263,7 @@ class ForwardTag extends Tag {
   @override
   void begin(TagContext tc, String data) {
     tc.data = new ArgInfo(tc, data);
-    tc.args = new LinkedHashMap(); //order is important
+    tc.args = new LinkedHashMap<String, String>(); //order is important
   }
   @override
   void end(TagContext tc) {

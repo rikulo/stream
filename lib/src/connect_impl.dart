@@ -114,7 +114,7 @@ class _HttpConnect extends _AbstractConnect {
       _locales = [];
       final List<String> langs = request.headers[HttpHeaders.acceptLanguageHeader];
       if (langs != null) {
-        final Map<num, List<String>> infos = new HashMap();
+        final infos = new HashMap<num, List<String>>();
         for (final lang in langs) {
           _parseLocales(lang, infos);
         }
@@ -133,7 +133,7 @@ class _HttpConnect extends _AbstractConnect {
   ErrorDetail errorDetail;
   @override
   Map<String, dynamic> get dataset
-  => _dataset != null ? _dataset: MapUtil.auto(() => _dataset = new HashMap());
+  => _dataset != null ? _dataset: MapUtil.auto(() => _dataset = new HashMap<String, dynamic>());
 }
 
 //Parse Accept-Language into locales

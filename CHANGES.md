@@ -1,5 +1,9 @@
 # CHANGES
 
+### 2.0.0
+
+* Dart 2
+
 ### 1.7.0
 
 * `proxyRequest()` introduced to proxy requests to another server

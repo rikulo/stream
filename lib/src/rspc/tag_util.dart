@@ -4,18 +4,19 @@
 part of stream_rspc;
 
 ///Test if the given character can be used in a variable name.
-bool isValidVarChar(String cc, bool firstChar)
- => StringUtil.isChar(cc, lower: true, upper: true, digit: !firstChar, match:"_\$");
+bool isValidVarCharCode(int cc, bool firstChar)
+ => StringUtil.isCharCode(cc, lower: true, upper: true, digit: !firstChar)
+    || cc == $underscore || cc == $$;
 
 /** Test if the given value is enclosed with `[= ]`.
  * If null, false is returned.
  */
 bool isEL(String data) {
   for (int i = 0, len = data != null ? data.length: 0; i < len; ++i) {
-    final cc = data[i];
-    if (cc == '\\')
+    final cc = data.codeUnitAt(i);
+    if (cc == $backslash)
       ++i;
-    else if (cc == '[' && i + 1 < len && data[i + 1] == '=')
+    else if (cc == $lbracket && i + 1 < len && data.codeUnitAt(i + 1) == $equal)
       return true;
   }
   return false;
@@ -34,8 +35,8 @@ String toEL(String data, {direct: true}) {
 
   final sb = new StringBuffer();
   for (int i = 0, len = data.length; i < len; ++i) {
-    final cc = data[i];
-    if (cc == '[' && i + 1 < len && data[i + 1] == '=') { //found
+    final cc = data.codeUnitAt(i);
+    if (cc == $lbracket && i + 1 < len && data.codeUnitAt(i + 1) == $equal) { //found
       final j = _skipToELEnd(data, i + 2),
           val = data.substring(i + 2, j).trim();
       if (direct && i == 0 && j + 1 == len) //single EL
@@ -47,29 +48,28 @@ String toEL(String data, {direct: true}) {
       continue;
     }
 
-    sb.write(cc);
-    if (cc == '\\')
-      sb.write(data[++i]);
+    sb.writeCharCode(cc);
+    if (cc == $backslash)
+      sb.writeCharCode(data.codeUnitAt(++i));
   }
   final val = sb.toString();
   return val.indexOf('"') >= 0 ?
     val.indexOf("'") >= 0 ? '"""$val"""': "'$val'": '"$val"';
 }
 int _skipToELEnd(String data, int from) {
-  String sep;
-  int nbkt = 0;
+  int sep, nbkt = 0;
   for (int len = data.length; from < len; ++from) {
-    final cc = data[from];
-    if (cc == '\\') {
+    final cc = data.codeUnitAt(from);
+    if (cc == $backslash) {
       ++from;
     } else if (sep == null) {
-      if (cc == '"' || cc == "'") {
+      if (cc == $double_quote || cc == $single_quote) {
         sep = cc;
-      } else if (nbkt == 0 && cc == ']') { //'/' is a valid operator
+      } else if (nbkt == 0 && cc == $rbracket) { //'/' is a valid operator
         return from;
-      } else if (cc == '[') {
+      } else if (cc == $lbracket) {
         ++nbkt;
-      } else if (cc == ']') {
+      } else if (cc == $rbracket) {
         --nbkt;
       }
     } else if (cc == sep) {
@@ -99,20 +99,21 @@ void outText(TagContext tc, String text, [int line]) {
   tc.write('\n${tc.pre}response.write("""');
 
   for (int i = 0, len = text.length; i < len; ++i) {
-    final cc = text[i];
-    if (i == 0 && cc == '\n') {
+    final cc = text.codeUnitAt(i);
+    if (i == 0 && cc == $lf) {
       tc.write('\n'); //first linefeed is ignored, so we have add one more
-    } else if (cc == '"') {
+    } else if (cc == $double_quote) {
       if (i == len - 1) { //end with "
         tc.write('\\');
-      } else if (i + 2 < len && text[i + 1] == '"' && text[i + 2] == '"') {
+      } else if (i + 2 < len && text.codeUnitAt(i + 1) == $double_quote
+      && text.codeUnitAt(i + 2) == $double_quote) {
         tc.write('""\\');
         i += 2;
       }
-    } else if (cc == '\\' || cc == '\$') {
+    } else if (cc == $backslash || cc == $$) {
       tc.write('\\');
     }
-    tc.write(cc);
+    tc.writeCharCode(cc);
   }
 
   tc.writeln('""");${tc.getLineNumberComment(line)}');
@@ -167,27 +168,27 @@ class ArgInfo {
     bool isID = false;
     if (idFirst || stringFirst) {
       if (data != null && !(data = data.trim()).isEmpty) {
-        final c0 = data[0], len = data.length;
-        if (stringFirst && (c0 == '"' || c0 == "'")) {
+        final c0 = data.codeUnitAt(0), len = data.length;
+        if (stringFirst && (c0 == $double_quote || c0 == $single_quote)) {
           for (int i = 1; i < len; ++i) {
-            final cc = data[i];
+            final cc = data.codeUnitAt(i);
             if (cc == c0) {
               first = data.substring(1, i);
               data = data.substring(i + 1);
               break; //done
             }
-            if (cc == '\\' && i + 1 < len)
+            if (cc == $backslash && i + 1 < len)
               ++i; //skip
           }
         } else if (idFirst) {
           int i = 0;
-          for (; i < len && isValidVarChar(data[i], i == 0); ++i)
+          for (; i < len && isValidVarCharCode(data.codeUnitAt(i), i == 0); ++i)
             ;
           if (i > 0) {
             first = data.substring(0, i);
             data = data.substring(i).trim();
             isID = true;
-            if (!data.isEmpty && data[0] == '=')
+            if (!data.isEmpty && data.codeUnitAt(0) == $equal)
               tc.error("Unexpected '=' after an ID, $first"); //highlight common error
           }
         }

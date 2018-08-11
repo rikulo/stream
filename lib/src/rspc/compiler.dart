@@ -144,8 +144,8 @@ class Compiler {
       _name = StringUtil.camelize(i < 0 ? _name: _name.substring(0, i));
         //don't use basenameWithoutExtension since there might be multiple '.'
       for (i = _name.length; --i >= 0;) { //check if _name is legal
-        final cc = _name[i];
-        if (!isValidVarChar(cc, i == 0))
+        final cc = _name.codeUnitAt(i);
+        if (!isValidVarCharCode(cc, i == 0))
           _error("Unable to generate a legal function name from $sourceName. "
             "Please specify the name with the page tag.", line);
       }
@@ -183,8 +183,9 @@ class Compiler {
 
       final sb = new StringBuffer(), len = lib.length;
       for (i = 0; i < len; ++i) {
-        final cc = lib[i];
-        sb.write(isValidVarChar(cc, i == 0) ? cc: '_');
+        final cc = lib.codeUnitAt(i);
+        if (isValidVarCharCode(cc, i == 0)) sb.writeCharCode(cc);
+        else sb.write('_');
       }
       _writeln("library $sb;\n");
 
@@ -371,25 +372,25 @@ class Compiler {
   }
   _specialToken(StringBuffer sb) {
     while (_pos < _len) {
-      final cc = source[_pos];
-      if (cc == '[') {
+      final cc = source.codeUnitAt(_pos);
+      if (cc == $lbracket) {
         final j = _pos + 1;
         if (j < _len) {
-          final c2 = source[j];
-          if (c2 == '=') { //[=exprssion]
+          final c2 = source.codeUnitAt(j);
+          if (c2 == $equal) { //[=exprssion]
             _pos = j + 1;
             return new _Expr();
-          } else if (c2 == ':' || c2 == '/') { //[:beginning-tag] or [/closing-tag]
+          } else if (c2 == $colon || c2 == $slash) { //[:beginning-tag] or [/closing-tag]
             int k = j + 1;
-            if (k < _len && StringUtil.isChar(source[k], lower:true)) {
+            if (k < _len && StringUtil.isCharCode(source.codeUnitAt(k), lower:true)) {
               int m = _skipTagId(k);
               final tagnm = source.substring(k, m);
               final tag = tags[tagnm];
               if (tag != null) {
-                if (c2 == ':') { //beginning of tag
+                if (c2 == $colon) { //beginning of tag
                   _pos = m;
                   return tag;
-                } else if (m < _len && source[m] == ']') { //ending of tag found
+                } else if (m < _len && source.codeUnitAt(m) == $rbracket) { //ending of tag found
                   if (!tag.hasClosing)
                     _error("[/$tagnm] not allowed. It doesn't need the closing tag.", _line);
                   _pos = m + 1;
@@ -398,24 +399,25 @@ class Compiler {
               }
             }
             //fall through
-          } else if (c2 == '!') { //[!-- comment --]
-            if (j + 2 < _len && source[j + 1] == '-' && source[j + 2] == '-') {
+          } else if (c2 == $exclamation) { //[!-- comment --]
+            if (j + 2 < _len && source.codeUnitAt(j + 1) == $dash
+            && source.codeUnitAt(j + 2) == $dash) {
               _pos = _skipUntil("--]", j + 3) + 3;
               continue;
             }
           }
         }
-      } else if (cc == '\\') { //escape
+      } else if (cc == $backslash) { //escape
         final j = _pos + 1;
-        if (j < _len && source[j] == '[') {
+        if (j < _len && source.codeUnitAt(j) == $lbracket) {
           sb.write('['); //\[ => [
           _pos += 2;
           continue;
         }
-      } else if (cc == '\n') {
+      } else if (cc == $lf) {
         _line++;
       }
-      sb.write(cc);
+      sb.writeCharCode(cc);
       ++_pos;
     } //for each cc
     return null;
@@ -423,23 +425,23 @@ class Compiler {
   ///(Optional but for better output) Skips the following whitespaces untile linefeed
   void _skipFollowingSpaces() {
     for (int i = _pos; i < _len; ++i) {
-      final cc = source[i];
-      if (cc == '\n') {
+      final cc = source.codeUnitAt(i);
+      if (cc == $lf) {
         ++_line;
         _pos = i + 1; //skip white spaces until and including linefeed
         return;
       }
-      if (cc != ' ' && cc != '\t')
+      if (cc != $space && cc != $tab)
         break; //don't skip anything
     }
   }
   ///(Optional but for better output) Removes the tailing whitspaces
   static String _rmTailingSpaces(String text) {
     for (int i = text.length; --i >= 0;) {
-      final cc = text[i];
-      if (cc == '\n')
+      final cc = text.codeUnitAt(i);
+      if (cc == $lf)
         return text.substring(0, i + 1); //remove tailing spaces (excluding linefeed)
-      if (cc != ' ' && cc != '\t')
+      if (cc != $space && cc != $tab)
         return text; //don't skip anything
     }
     return "";
@@ -447,13 +449,13 @@ class Compiler {
   int _skipUntil(String until, int from) {
     final line = _line;
     final nUtil = until.length;
-    String first = until[0];
+    var first = until.codeUnitAt(0);
     for (; from < _len; ++from) {
-      final cc = source[from];
-      if (cc == '\n') {
+      final cc = source.codeUnitAt(from);
+      if (cc == $lf) {
         _line++;
-      } else if (cc == '\\' && from + 1 < _len) { //escape
-        if (source[++from] == '\n')
+      } else if (cc == $backslash && from + 1 < _len) { //escape
+        if (source.codeUnitAt(++from) == $lf)
           _line++;
       } else {
         if (cc == first) {
@@ -463,7 +465,7 @@ class Compiler {
             if (--n < 1) //matched
               return from;
 
-            if (source[from + n] != until[n])
+            if (source.codeUnitAt(from + n) != until.codeUnitAt(n))
               break; //continue to next character
           }
         }
@@ -474,9 +476,9 @@ class Compiler {
   }
   int _skipTagId(int from) {
     for (; from < _len; ++from) {
-      final cc = source[from];
+      final cc = source.codeUnitAt(from);
       //dash is allowed in a tag name
-      if (!StringUtil.isChar(cc, lower:true, upper:true) && cc != '-')
+      if (!StringUtil.isCharCode(cc, lower:true, upper:true) && cc != $dash)
         break;
     }
     return from;
@@ -484,25 +486,25 @@ class Compiler {
   ///Skip arguments (of a tag)
   int _skipTagArgs(int from) {
     final line = _line;
-    String sep;
-    int nbkt = 0;
+    int sep, nbkt = 0;
     for (; from < _len; ++from) {
-      final cc = source[from];
-      if (cc == '\n') {
+      final cc = source.codeUnitAt(from);
+      if (cc == $lf) {
         _line++;
-      } else if (cc == '\\' && from + 1 < _len) {
-        if (source[++from] == '\n')
+      } else if (cc == $backslash && from + 1 < _len) {
+        if (source.codeUnitAt(++from) == $lf)
           _line++;
       } else if (sep == null) {
-        if (cc == '"' || cc == "'") {
+        if (cc == $double_quote || cc == $single_quote) {
           sep = cc;
-        } else if (cc == '/' && from + 1 < _len && source[from + 1] == ']') {
+        } else if (cc == $slash && from + 1 < _len
+        && source.codeUnitAt(from + 1) == $rbracket) {
           return from;
-        } else if (nbkt == 0 && cc == ']') {
+        } else if (nbkt == 0 && cc == $rbracket) {
           return from;
-        } else if (cc == '[') {
+        } else if (cc == $lbracket) {
           ++nbkt;
-        } else if (cc == ']') {
+        } else if (cc == $rbracket) {
           --nbkt;
         }
       } else if (cc == sep) {
@@ -517,10 +519,10 @@ class Compiler {
     int k = _skipTagArgs(_pos);
     final data = source.substring(_pos, k).trim();
     _pos = k + 1;
-    if (source[k] == '/') {
+    if (source.codeUnitAt(k) == $slash) {
       if (tag != null && tag.hasClosing)
         _lookAhead.add(new _Closing(tag.name));
-      if (_pos >= _len || source[_pos] != ']')
+      if (_pos >= _len || source.codeUnitAt(_pos) != $rbracket)
         _error("Expect ']'");
       ++_pos;
     }
@@ -588,20 +590,20 @@ class Compiler {
     final data = libfile.readAsStringSync();
     int len = data.length, importPos, partPos = len;
     for (int i = 0, j; i < len; ++i) {
-      final cc = data[i];
+      final cc = data.codeUnitAt(i);
       if (comment0) { //look for \n
-        if (cc == '\n')
+        if (cc == $lf)
           comment0 = false;
       } else if (comment1) {
-        if (cc == '*' && i + 1 < len && data[i + 1] == '/') {
+        if (cc == $asterisk && i + 1 < len && data.codeUnitAt(i + 1) == $slash) {
           ++i;
           comment1 = false;
         }
-      } else if (cc == '/') {
+      } else if (cc == $slash) {
         if (i + 1 < len) {
-          final c2 = data[i + 1];
-          comment0 = c2 == '/';
-          comment1 = c2 == '*';
+          final c2 = data.codeUnitAt(i + 1);
+          comment0 = c2 == $slash;
+          comment1 = c2 == $asterisk;
           if (comment0 || comment1)
             ++i;
         }
@@ -628,7 +630,7 @@ class Compiler {
           _error("Illegal part syntax found in $libfile");
         libparts.add(data.substring(i, j).trim().replaceAll('"', "'").replaceAll('\\', '/'));
         i = j;
-      } else if (!StringUtil.isChar(cc, whitespace: true)) {
+      } else if (!$whitespaces.contains(cc)) {
         partPos = i;
         break;
       }
@@ -677,7 +679,7 @@ class Compiler {
   String _toImport(String impt) {
     impt = impt.trim();
     for (int i = 0, len = impt.length; i < len; ++i)
-      if (StringUtil.isChar(impt[i], whitespace: true))
+      if ($whitespaces.contains(impt.codeUnitAt(i)))
         return "'${impt.substring(0, i)}'${impt.substring(i)}";
     return "'$impt'";
   }
@@ -799,12 +801,12 @@ int _startsWith(String data, int i, String pattern) {
   for (int len = data.length, pl = pattern.length, j = 0;; ++i, ++j) {
     if (j >= pl)
       return i; //found
-    if (i >= len || data[i] != pattern[j])
+    if (i >= len || data.codeUnitAt(i) != pattern.codeUnitAt(j))
       return -1;
   }
 }
 int _skipWhitespace(String data, int i) {
-  for (int len = data.length; i < len && StringUtil.isChar(data[i], whitespace: true); ++i)
+  for (int len = data.length; i < len && $whitespaces.contains(data.codeUnitAt(i)); ++i)
     ;
   return i;
 }

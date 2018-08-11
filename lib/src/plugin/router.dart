@@ -98,11 +98,11 @@ class DefaultRouter implements Router {
 
         if (code is String) {
           try {
-            if (StringUtil.isChar(code[0], digit:true))
+            if (StringUtil.isCharCode(code.codeUnitAt(0), digit:true))
               code = int.parse(code);
             else
               code = ClassUtil.forName(code);
-          } catch (e) { //silent; handle it  later
+          } catch (_) { //silent; handle it  later
           }
         } else if (code != null && code is! int) {
           code = reflect(code).type;
@@ -282,19 +282,19 @@ class _UriMapping {
       List segs = [];
       int k = 0, len = val.length;
       for (int i = 0; i < len; ++i) {
-        switch (val[i]) {
-          case '\\':
+        switch (val.codeUnitAt(i)) {
+          case $backslash:
             if (i + 1 < len)
               ++i; //skip next
             break;
-          case '(':
+          case $lparen:
             if (i + 1 < len) {
               if (k < i)
                 segs.add(val.substring(k, i));
               for (k = ++i;; ++k) {
                 if (k >= len)
                   throw new ServerError("Expect ')': $val");
-                if (val[k] == ')') {
+                if (val.codeUnitAt(k) == $rparen) {
                   segs.add(new _Var(val.substring(i, k)));
                   i = k++;
                   break;
@@ -316,19 +316,21 @@ class _UriMapping {
   void _parseUri(String uri) {
     //handle get:xxx, post:xxx, ws:xxz
     for (int i = 0, len = uri.length; i < len; ++i) {
-      final cc = uri[i];
-      if (cc == ':') {
+      final cc = uri.codeUnitAt(i);
+      if (cc == $colon) {
         if (i > 0) {
           method = uri.substring(0, i).toUpperCase();
           uri = uri.substring(i + 1);
         }
         break; //done
-      } else if (!StringUtil.isChar(cc, upper:true, lower:true)) {
+      } else if (!StringUtil.isCharCode(cc, upper:true, lower:true)) {
         break;
       }
     }
 
-    if (uri.isEmpty || "/.[(".indexOf(uri[0]) < 0)
+    int cc;
+    if (uri.isEmpty || ((cc = uri.codeUnitAt(0)) != $slash
+        && cc != $dot && cc != $lbracket && cc != $lparen))
       throw new ServerError("URI pattern must start with '/', '.', '[' or '('; not '$uri'");
       //ensure it is absolute or starts with regex wildcard
 
@@ -340,20 +342,20 @@ class _UriMapping {
     bool bracket = false;
     l_top:
     for (int i = 0, grpId = 0, len = uri.length; i < len; ++i) {
-      switch (uri[i]) {
-        case '\\':
+      switch (uri.codeUnitAt(i)) {
+        case $backslash:
           if (i + 1 < len) {
             sb.write('\\');
             ++i; //skip next
           }
           break;
-        case '[':
+        case $lbracket:
           bracket = true;
           break;
-        case ']':
+        case $rbracket:
           bracket = false;
           break;
-        case '(':
+        case $lparen:
           if (bracket)
             break;
 
@@ -369,11 +371,12 @@ class _UriMapping {
               break l_top;
             }
 
-            final cc = uri[j];
-            if (StringUtil.isChar(cc, lower:true, upper:true, digit: true, match:"_.")) {
-              nmsb.write(cc);
+            final cc = uri.codeUnitAt(j);
+            if (StringUtil.isCharCode(cc, lower:true, upper:true, digit: true)
+            || cc == $underscore || cc == $dot) {
+              nmsb.writeCharCode(cc);
             } else {
-              if (cc == ':' && !nmsb.isEmpty) {
+              if (cc == $colon && !nmsb.isEmpty) {
                 nm = nmsb.toString();
               } else {
                 sb.write(nmsb);
@@ -389,7 +392,7 @@ class _UriMapping {
           ++grpId;
           continue;
       }
-      sb.write(uri[i]);
+      sb.writeCharCode(uri.codeUnitAt(i));
     }
 
     if (_groups.isEmpty)

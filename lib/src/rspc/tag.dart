@@ -52,6 +52,10 @@ abstract class TagContext {
   void write(String str) {
     output.write(str);
   }
+  ///Writes a character code.
+  void writeCharCode(int code) {
+    output.writeCharCode(code);
+  }
   ///Write a string plus a linefeed to [output] in the compiler's encoding.
   void writeln([String str]) {
     if (str != null)
@@ -332,15 +336,15 @@ class JsonTag extends Tag {
 
     final len = data.length;
     int i = 0;
-    for (; i < len && isValidVarChar(data[i], i == 0); ++i)
+    for (; i < len && isValidVarCharCode(data.codeUnitAt(i), i == 0); ++i)
       ;
     if (i == 0)
       tc.error("Expect a variable name, not '${data[0]}'");
 
     final nm = data.substring(0, i);
-    for (; i < len && StringUtil.isChar(data[i], whitespace: true); ++i)
+    for (; i < len && $whitespaces.contains(data.codeUnitAt(i)); ++i)
       ;
-    if (i >= len || data[i] != '=')
+    if (i >= len || data.codeUnitAt(i) != $equal)
       tc.error("Expect '=', not '${data[i]}");
 
     final val = data.substring(i + 1).trim();
@@ -377,15 +381,15 @@ class JsonJsTag extends Tag {
 
     final len = data.length;
     int i = 0;
-    for (; i < len && isValidVarChar(data[i], i == 0); ++i)
+    for (; i < len && isValidVarCharCode(data.codeUnitAt(i), i == 0); ++i)
       ;
     if (i == 0)
       tc.error("Expect a variable name, not '${data[0]}'");
 
     final nm = data.substring(0, i);
-    for (; i < len && StringUtil.isChar(data[i], whitespace: true); ++i)
+    for (; i < len && $whitespaces.contains(data.codeUnitAt(i)); ++i)
       ;
-    if (i >= len || data[i] != '=')
+    if (i >= len || data.codeUnitAt(i) != $equal)
       tc.error("Expect '=', not '${data[i]}");
 
     final val = data.substring(i + 1).trim();
@@ -540,7 +544,7 @@ class ElseTag extends Tag {
     } else {
       String cond;
       if (data.length < 4 || !data.startsWith("if")
-      || !StringUtil.isChar(data[2], whitespace:true)
+      || !$whitespaces.contains(data.codeUnitAt(2))
       || (cond = data.substring(3).trim()).isEmpty)
         tc.error("Unexpected $data");
 

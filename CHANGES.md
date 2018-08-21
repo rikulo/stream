@@ -2,7 +2,7 @@
 
 ### 2.0.0
 
-* Dart 2
+* Dart 2 supported
 
 ### 1.7.0
 

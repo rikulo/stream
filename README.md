@@ -4,7 +4,7 @@
 
 * [Home](http://rikulo.org/projects/stream)
 * [Documentation](http://docs.rikulo.org/stream/latest)
-* [API Reference](http://www.dartdocs.org/documentation/stream/2.0.0+2)
+* [API Reference](http://www.dartdocs.org/documentation/stream/2.0.1)
 * [Discussion](http://stackoverflow.com/questions/tagged/rikulo)
 * [Git Repository](https://github.com/rikulo/stream)
 * [Issues](https://github.com/rikulo/stream/issues)
@@ -47,11 +47,11 @@ With this build.dart script, whenever your RSP is modified, it will be re-compil
 
 To compile a RSP file manually, run `rspc` (RSP compiler) to compile it into the dart file with [command line interface](http://en.wikipedia.org/wiki/Command-line_interface) as follows:
 
-    tool/rspc.dart your-rsp-file(s)
+    dart -c lib/rspc.dart -n dir1 dir2 file1 fire2...
 
-A dart file is generated for each RSP file you gave.
+A dart file is generated for each RSP file you gave. Fore more options, please run:
 
-Or, you can use a Bash program, [tool/rspc](https://github.com/rikulo/stream/tree/master/tool/rspc), to detect any change of RSP files and compile them automatically.
+    dart -c lib/rspc.dart -h
 
 ## Notes to Contributors
 

@@ -1,5 +1,9 @@
 # CHANGES
 
+### 2.0.1
+
+* `rpsc.dart` enhanced to support folders. Also, it can compile only if source files are modified (the `-n` option).
+
 ### 2.0.0
 
 * Dart 2 supported

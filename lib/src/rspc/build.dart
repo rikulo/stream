@@ -18,15 +18,23 @@ void compile(String source, IOSink out, {String sourceName, String destinationNa
 
 /** Compiles the RSP document of the given [sourceName] and write the result to
  * the file of given [destinationName].
+ * 
+ * It returns true if the file has been compiled.
  *
+ * * [newer] - If true, it compiles only if the source file is newer or
+ * the destination file doesn't exist.
  * * [imports] - additional imported packages, such as `["package:foo/foo.dart"]`.
+ * * [onCompile] - Optional. If specified, it is called when compiling a file,
+ * or when skipping the compilation because of not-modified
  */
-void compileFile(String sourceName, {String destinationName, bool verbose: false, 
-    bool lineNumber: false, Encoding encoding: utf8, List<String> imports}) {
+Future<bool> compileFile(String sourceName, {String destinationName,
+    bool verbose: false, bool newer: false,
+    bool lineNumber: false, Encoding encoding: utf8, List<String> imports,
+    void onCompile(String source, {bool skipped})}) async {
   final source = new File(sourceName);
-  if (!source.existsSync()) {
+  if (!await source.exists()) {
     print("File not found: ${sourceName}");
-    return;
+    return false;
   }
 
   File dest;
@@ -34,41 +42,53 @@ void compileFile(String sourceName, {String destinationName, bool verbose: false
     final int i = sourceName.lastIndexOf('.');
     final int j = sourceName.lastIndexOf('/');
     destinationName = i >= 0 && j < i ? "${sourceName.substring(0, i + 1)}dart" : "${sourceName}.dart";
-    dest = _locate(destinationName);
+    dest = await _locate(destinationName);
   } else {
     dest = new File(destinationName);
   }
 
+  if (newer) {
+    try {
+      if ((await source.lastModified()).isBefore(await dest.lastModified())) {
+        onCompile?.call(sourceName, skipped: true);
+        return false;
+      }
+    } catch (_) {
+      //ignore
+    }
+  }
+
   if (Path.normalize(source.path) == Path.normalize(dest.path)) {
     print("Source and destination are the same file, $source");
-    return;
+    return false;
   }
 
   if (verbose) {
     final int i = dest.path.lastIndexOf('/') + 1;
     print("Compile ${source.path} to ${i > 0 ? dest.path.substring(i) : dest.path}");
   }
-  
-  source.readAsString(encoding: encoding).then((String text) {
-    final out = dest.openWrite(encoding: encoding);
-    try {
-      compile(text, out, sourceName: sourceName,
-          destinationName: _unipath(dest.path), //force to use '/' even in Windows
-          encoding: encoding, verbose: verbose, lineNumber: lineNumber,
-          imports: imports);
-    } on SyntaxError catch (e) {
-      print("${e.message}\nCompilation aborted.");
-    } finally {
-      out.close();
-    }
-  });
+
+  final text = await source.readAsString(encoding: encoding);
+  final out = dest.openWrite(encoding: encoding);
+  try {
+    onCompile?.call(sourceName, skipped: false);
+    compile(text, out, sourceName: sourceName,
+        destinationName: _unipath(dest.path), //force to use '/' even in Windows
+        encoding: encoding, verbose: verbose, lineNumber: lineNumber,
+        imports: imports);
+    return true;
+  } on SyntaxError catch (e) {
+    print("${e.message}\nCompilation aborted.");
+    return false;
+  } finally {
+    out.close();
+  }
 }
 
 ///Locates the right location under the webapp folder, if there is one
-File _locate(String flnm) {
+Future<File> _locate(String flnm) async {
   final List<String> segs = [];
   String path = Path.absolute(Path.normalize(flnm));
-
   for (;;) {
     segs.add(Path.basename(path));
     path = Path.dirname(path);
@@ -76,11 +96,11 @@ File _locate(String flnm) {
       break;
 
     final dir = new Directory(path);
-    if (dir.existsSync()) {
+    if (await dir.exists()) {
       if (Path.basename(path) == "webapp"
-      || new File(Path.join(dir.path, "pubspec.yaml")).existsSync())
+      || await new File(Path.join(dir.path, "pubspec.yaml")).exists())
         break; //under webapp, or no webapp at all (since project found)
-      if (new Directory(Path.join(dir.path, "webapp")).existsSync()) {
+      if (await new Directory(Path.join(dir.path, "webapp")).exists()) {
         segs.add("webapp"); //not under webapp
         break;
       }
@@ -90,7 +110,7 @@ File _locate(String flnm) {
   for (int i = segs.length; --i > 0;)
     path = Path.join(path, segs[i]);
   final dir = new Directory(path);
-  if (!dir.existsSync())
+  if (!await dir.exists())
     dir.create(recursive: true);
   path = Path.relative(path);
   return new File(Path.join(path, segs[0]));
@@ -106,8 +126,8 @@ File _locate(String flnm) {
  * folder with the same path structure.
  * * [imports] - additional imported packages, such as `["package:foo/foo.dart"]`.
  */
-void build(List<String> arguments, {String filenameMapper(String source),
-    Encoding encoding: utf8, List<String> imports}) {
+Future build(List<String> arguments, {String filenameMapper(String source),
+    Encoding encoding: utf8, List<String> imports}) async {
   final ArgParser argParser = new ArgParser()
     ..addMultiOption("changed")
     ..addMultiOption("removed")
@@ -139,7 +159,7 @@ void build(List<String> arguments, {String filenameMapper(String source),
       final i = _rspSource(name);
       if (i >= 0) {
         final File gen = new File("${name.substring(0, i)}dart");
-        if (gen.existsSync())
+        if (await gen.exists())
           gen.delete();
       }
     }

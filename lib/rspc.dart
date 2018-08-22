@@ -5,6 +5,7 @@
 // Author: tomyeh
 library stream_rspc;
 
+import "dart:async";
 import "dart:io";
 import "dart:convert";
 import "dart:collection" show HashMap, LinkedHashMap, LinkedHashSet;
@@ -21,4 +22,4 @@ part "src/rspc/compiler.dart";
 part "src/rspc/tag.dart";
 part "src/rspc/tag_util.dart";
 
-const String version = "2.0.0";
+const String version = "2.0.1";

@@ -36,28 +36,19 @@ if [ "$1" = "-h" ] || [ "$1" = "--help" ] ; then
   echo
   echo "-h, --help   Display this message."
   echo "-f           Force to compile all RSP files. Default: only newer files."
+  echo "             Note: if file(s) are specified, -f is always assumed."
   exit
 fi
 
-force=
-if [ "$1" = '-f' ] ; then
-  force=true
+flags=-n
+if [ "$1" = "-f" ] ; then
+  flags=
+  shift
 fi
 
-count=0
-for fn in $(find . -name *.rsp.html) ; do
-  dst=${fn%.html}.dart
-  if [ "$force" = "true" ] || [ "$dst" -ot "$fn" ] ; then
-    if [ "$force" != "true" ] ; then
-      echo Compile $fn
-    fi
-    let count=count+1
-    $dartfl $fn
-  fi
-done
-
-if [ "$force" = "true" ] ; then
-  echo "$count files are compiled"
-elif [ "$count" = "0" ] ; then
-  echo "All files up to date"
+if [ "$1" != "" ] ; then
+  #note: ingore flags if files are specified
+  $dartfl $*
+else
+  $dartfl $flags $refdir/test $refdir/example
 fi

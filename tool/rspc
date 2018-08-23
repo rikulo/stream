@@ -22,7 +22,7 @@ fi
 if [ "$TERM" = "cygwin" ] || [ "$OSTYPE" = "cygwin" ] ; then
   refdir=$(cygpath -u $refdir)
 fi
-dartfl=$refdir/tool/rspc.dart
+dartfl=$refdir/bin/rspc.dart
 
 if [ ! -f $dartfl ] ; then
   echo $dartfl not found

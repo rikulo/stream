@@ -22,7 +22,7 @@ import "stream.dart";
 /// * [proxyName] is used in headers to identify this proxy. It should be a valid
 /// HTTP token or a hostname. It defaults to null -- no `via` header will be added.
 /// * [shallRetry] a callback to decide whether to retry when
-/// [proxyRequest] receives an exception of [IOException] or [ClientException].
+/// [proxyRequest] receives an exception.
 /// Ignored if omitted.
 Future proxyRequest(HttpConnect connect, url, {String proxyName,
       FutureOr<bool> shallRetry(ex, StackTrace st)}) async {
@@ -78,9 +78,7 @@ Future proxyRequest(HttpConnect connect, url, {String proxyName,
       break; //done
 
     } catch (ex, st) {
-      //IOException implies SocketException and HttpException
-      if ((ex is! IOException && ex is! http.ClientException)
-      || shallRetry == null || (await shallRetry(ex, st)) != true)
+      if (shallRetry == null || (await shallRetry(ex, st)) != true)
         rethrow;
       //retry
     }

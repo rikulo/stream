@@ -230,7 +230,7 @@ class IncludeTag extends Tag {
   }
   @override
   void end(TagContext tc) {
-    final argInfo = tc.data;
+    final argInfo = tc.data as ArgInfo;
     final args = _mergeArgs(argInfo.args, tc.args);
     if (argInfo.isID)
       tc.compiler.include(argInfo.first, args, tc.line);
@@ -271,7 +271,7 @@ class ForwardTag extends Tag {
   }
   @override
   void end(TagContext tc) {
-    final argInfo = tc.data;
+    final argInfo = tc.data as ArgInfo;
     final args = _mergeArgs(argInfo.args, tc.args);
     if (argInfo.isID)
       tc.compiler.forward(argInfo.first, args, tc.line);

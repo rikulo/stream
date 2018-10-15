@@ -29,7 +29,7 @@ bool isEL(String data) {
  * If true and `data` contains nothing but a single expression, the expression
  * is output directly
  */
-String toEL(String data, {direct: true}) {
+String toEL(String data, {bool direct: true}) {
   if (data == null)
     return direct ? "null": '""';
 

@@ -1,5 +1,6 @@
 analyzer:
-  #strong-mode:
+  strong-mode:
+     implicit-casts: false
   errors:
     todo: ignore
 linter:

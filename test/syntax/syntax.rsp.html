@@ -1,5 +1,5 @@
 [!-- Syntax Test --]
-[:page contentType="[=foo.contentType]" args="foo, bool c:false"
+[:page contentType="[=foo.contentType as String]" args="foo, bool c:false"
 	import="dart:collection show LinkedHashMap"
   dart="var someExternal = 123;"/]
 [:header age="129" accept-ranges="[=foo.acceptRanges]" ]
@@ -18,10 +18,10 @@
     <ul>
     [:for user in foo.friends]
       <li>[= user.name]
-      [:if user.isCustomer]
+      [:if user.isCustomer as bool]
       <i>!important!</i>
       [/if]
-      [:while user.hasMore()]
+      [:while user.hasMore() as bool]
         [= user.showMore()]
       [/while]
       </li>
@@ -32,12 +32,12 @@
       [=fruit]
     [/for]
 
-    [:if foo.isCustomer]
+    [:if foo.isCustomer as bool]
       *Custmer*
       [:include "/in-if" /]
     [:else if c]
       [:forward "/x/y/z"/]
-    [:else if foo.isEmployee]
+    [:else if foo.isEmployee as bool]
       *Employee*
       [:forward syntax c="[=true]" foo="abc"/]
     [:else]
@@ -58,7 +58,7 @@
       [/var]
     [/include]
 
-    [:if foo.isMeaningful]
+    [:if foo.isMeaningful as bool]
       something is meaningful: [=whatever]
       [:forward "/foo?abc" first="1st" second="[=foo]"/]
     [/if]

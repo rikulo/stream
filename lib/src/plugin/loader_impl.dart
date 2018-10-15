@@ -244,8 +244,9 @@ List<_Range> _parseRange(HttpConnect connect, _AssetDetail detail) {
     return _rangeError(connect);
   return ranges;
 }
-_rangeError(HttpConnect connect, [int code = HttpStatus.badRequest]) {
+T _rangeError<T>(HttpConnect connect, [int code = HttpStatus.badRequest]) {
   connect.response.statusCode = code;
+  return null;
 }
 final RegExp _reRange = new RegExp(r"(\d*)\-(\d*)");
 

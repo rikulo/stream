@@ -102,14 +102,15 @@ class _StreamServer implements StreamServer {
     var handler = _router.getHandler(connect, uri);
     if (handler != null) {
       if (handler is Function)
-        return handler(connect);
+        return handler(connect) as Future;
 
       assert(handler is String); //must be a string
-      if (_completeUriRegex.hasMatch(handler)) {
-        connect.redirect(handler);
+      final String target = handler;
+      if (_completeUriRegex.hasMatch(target)) {
+        connect.redirect(target);
         return null;
       } else {
-        return forward(connect, handler);
+        return forward(connect, target);
       }
     }
 
@@ -137,7 +138,7 @@ class _StreamServer implements StreamServer {
           error != null ? error.toString(): "");
       }
 
-      final code = error.statusCode;
+      final int code = error.statusCode;
       try {
         connect.response.statusCode = code;
           //spec: not to update reasonPhrase (it is up to error handler if any)
@@ -151,7 +152,8 @@ class _StreamServer implements StreamServer {
     }
 
     try {
-      await (handler is Function ? handler(connect): forward(connect, handler));
+      await (handler is Function ? handler(connect):
+        forward(connect, handler as String));
     } catch (ex, st) {
       if (!shouted)
         _logError(connect, error, stackTrace);
@@ -376,11 +378,11 @@ class _StreamServer implements StreamServer {
   }
 
   @override
-  void map(String uri, handler, {preceding: false}) {
+  void map(String uri, handler, {bool preceding: false}) {
     _router.map(uri, handler, preceding: preceding);
   }
   @override
-  void filter(String uri, RequestFilter filter, {preceding: false}) {
+  void filter(String uri, RequestFilter filter, {bool preceding: false}) {
     _router.filter(uri, filter, preceding: preceding);
   }
 

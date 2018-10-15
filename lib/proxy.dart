@@ -41,11 +41,11 @@ Future proxyRequest(HttpConnect connect, url, {String proxyName,
   final client = new http.Client(),
     serverRequest = connect.request,
     serverResponse = connect.response;
-  var clientResponse;
+  http.StreamedResponse clientResponse;
 
   for (List<int> requestBody;;) {
     try {
-      var clientRequest =
+      final clientRequest =
           new http.StreamedRequest(serverRequest.method, uri);
       clientRequest.followRedirects = false;
       serverRequest.headers.forEach((String name, List<String> values) {
@@ -60,7 +60,7 @@ Future proxyRequest(HttpConnect connect, url, {String proxyName,
           '${serverRequest.protocolVersion} ${proxyName??"Stream"}');
 
       if (requestBody == null) { //first time
-        var copyTo;
+        _Listener<List<int>> copyTo;
         if (shallRetry != null) {
           requestBody = <int>[];
           copyTo = (List<int> event) {
@@ -139,8 +139,8 @@ Future _copy<T>(Stream<T> stream, EventSink<T> sink,
     {bool cancelOnError: true, bool closeSink: true, void copyTo(T event)}) {
   var completer = new Completer();
   stream.listen(copyTo ?? sink.add,
-    onError: (e, stackTrace) {
-      sink.addError(e, stackTrace);
+    onError: (e, StackTrace st) {
+      sink.addError(e, st);
       if (cancelOnError) {
         completer.complete();
         if (closeSink) sink.close();
@@ -153,3 +153,5 @@ Future _copy<T>(Stream<T> stream, EventSink<T> sink,
 
   return completer.future;
 }
+
+typedef void _Listener<T>(T event);

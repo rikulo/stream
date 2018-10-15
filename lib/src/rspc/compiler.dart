@@ -47,7 +47,7 @@ class Compiler {
     int prevln = 1;
     for (var token; (token = _nextToken()) != null; prevln = _line) {
       if (_current.args != null && token is! VarTag && token is! _Closing
-      && (token is! String || !token.trim().isEmpty))
+      && (token is! String || !(token as String).trim().isEmpty))
         _error("Only the var tag is allowed inside the ${_current.tag.name} tag, not $token");
 
       if (token is PageTag) {
@@ -515,7 +515,7 @@ class Compiler {
     return null;
   }
   ///Note: [tag] is required if `tag.hasClosing` is 
-  String _tagData({Tag tag, skipFollowingSpaces: true}) {
+  String _tagData({Tag tag, bool skipFollowingSpaces: true}) {
     int k = _skipTagArgs(_pos);
     final data = source.substring(_pos, k).trim();
     _pos = k + 1;

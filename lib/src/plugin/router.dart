@@ -16,7 +16,7 @@ abstract class Router {
    * * [preceding] - whether to make the mapping preceding any previous mappings.
    * In other words, if true, this mapping will be interpreted first.
    */
-  void map(String uri, handler, {preceding: false});
+  void map(String uri, handler, {bool preceding: false});
   /** Maps the given URI to the given filter.
    *
    * The interpretation of [uri] is really up to the implementation of [Router].
@@ -25,7 +25,7 @@ abstract class Router {
    * * [preceding] - whether to make the mapping preceding any previous mappings.
    * In other words, if true, this mapping will be interpreted first.
    */
-  void filter(String uri, RequestFilter filter, {preceding: false});
+  void filter(String uri, RequestFilter filter, {bool preceding: false});
 
   /** Retrieves the first matched request handler ([RequestHandler]) or
    * forwarded URI ([String]) for the given URI.
@@ -51,9 +51,9 @@ abstract class Router {
  * The default implementation of [Router].
  */
 class DefaultRouter implements Router {
-  final List<_UriMapping> _uriMapping = [], _filterMapping = [];
-  final Map<int, dynamic> _codeMapping = new HashMap<int, dynamic>(); //mapping of status code to URI/Function
-  final List<_ErrMapping> _errMapping = []; //exception to URI/Function
+  final _uriMapping = <_UriMapping>[], _filterMapping = <_UriMapping>[];
+  final _codeMapping = new HashMap<int, dynamic>(); //mapping of status code to URI/Function
+  final _errMapping = <_ErrMapping>[]; //exception to URI/Function
 
   final _UriCache _uriCache = new _UriCache();
   int _cacheSize;
@@ -97,11 +97,12 @@ class DefaultRouter implements Router {
         }
 
         if (code is String) {
+          final scode = code as String;
           try {
-            if (StringUtil.isCharCode(code.codeUnitAt(0), digit:true))
-              code = int.parse(code);
+            if (StringUtil.isCharCode(scode.codeUnitAt(0), digit:true))
+              code = int.parse(scode);
             else
-              code = ClassUtil.forName(code);
+              code = ClassUtil.forName(scode);
           } catch (_) { //silent; handle it  later
           }
         } else if (code != null && code is! int) {
@@ -232,7 +233,7 @@ class DefaultRouter implements Router {
   }
   @override
   RequestFilter getFilterAt(int iFilter) {
-    return _filterMapping[iFilter].handler;
+    return _filterMapping[iFilter].handler as RequestFilter;
   }
   @override
   getErrorHandler(error) {
@@ -249,6 +250,8 @@ class DefaultRouter implements Router {
 
 ///Renderer for 404
 final RequestHandler _f404 = (HttpConnect _) {throw new Http404();};
+
+typedef Future _WSHandler(WebSocket socket);
 
 ///Returns a function that can *upgrade* HttpConnect to WebSocket
 Function _upgradeWS(Future handler(WebSocket socket))
@@ -272,7 +275,7 @@ class _UriMapping {
       if (rawhandler is! Function)
         throw new ServerError(
           "'ws:' must be mapped to a function-typed handler, not $rawhandler");
-      handler = _upgradeWS(rawhandler);
+      handler = _upgradeWS(rawhandler as _WSHandler);
       method = null;
     }
   }
@@ -456,7 +459,8 @@ class _UriCache {
     }
 
     return _multimethod ? 
-      _cache.putIfAbsent(connect.request.method, () => new LinkedHashMap()):
+      _cache.putIfAbsent(connect.request.method,
+          () => new LinkedHashMap<String, dynamic>()) as Map<String, dynamic>:
       _cache;
   }
 }

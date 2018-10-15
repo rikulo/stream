@@ -18,7 +18,7 @@ Future syntax(HttpConnect connect, {foo, bool c:false}) async {
 
   response.headers..add("Cache-Control", "no-cache");
 
-  if (!Rsp.init(connect, foo.contentType))
+  if (!Rsp.init(connect, foo.contentType as String))
     return null;
 
   response.write("""<!DOCTYPE html>
@@ -58,13 +58,13 @@ Future syntax(HttpConnect connect, {foo, bool c:false}) async {
 
 """);
 
-    if (user.isCustomer) {
+    if (user.isCustomer as bool) {
 
       response.write("""      <i>!important!</i>
 """);
     } //if
 
-    while (user.hasMore()) {
+    while (user.hasMore() as bool) {
 
       response.write("""        """);
 
@@ -100,7 +100,7 @@ Future syntax(HttpConnect connect, {foo, bool c:false}) async {
 
 """);
 
-  if (foo.isCustomer) {
+  if (foo.isCustomer as bool) {
 
     response.write("""      *Custmer*
 """);
@@ -111,7 +111,7 @@ Future syntax(HttpConnect connect, {foo, bool c:false}) async {
 
     return connect.forward("/x/y/z");
 
-  } else if (foo.isEmployee) {
+  } else if (foo.isEmployee as bool) {
 
     response.write("""      *Employee*
 """);
@@ -169,7 +169,7 @@ Future syntax(HttpConnect connect, {foo, bool c:false}) async {
 
 """);
 
-  if (foo.isMeaningful) {
+  if (foo.isMeaningful as bool) {
 
     response.write("""      something is meaningful: """);
 

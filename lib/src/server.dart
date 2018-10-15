@@ -382,7 +382,7 @@ abstract class StreamServer {
    * * [preceding] - whether to make the mapping preceding any previous mappings.
    * In other words, if true, this mapping will be interpreted first.
    */
-  void map(String uri, handler, {preceding: false});
+  void map(String uri, handler, {bool preceding: false});
   /** Maps the given URI to the given filter.
    *
    * * [uri]: a regular expression used to match the request URI.
@@ -390,7 +390,7 @@ abstract class StreamServer {
    * * [preceding] - whether to make the mapping preceding any previous mappings.
    * In other words, if true, this mapping will be interpreted first.
    */
-  void filter(String uri, RequestFilter filter, {preceding: false});
+  void filter(String uri, RequestFilter filter, {bool preceding: false});
 
   /** The logger for logging information.
    */

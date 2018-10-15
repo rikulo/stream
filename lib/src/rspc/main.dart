@@ -76,11 +76,11 @@ bool _parseArgs(List<String> arguments, _Environ env) {
   final args = argParser.parse(arguments);
 
   final usage = "Usage: rspc [<flags>] <dir-or-rsp-file> [<dir-or-rsp-file>...]";
-  if (args['version']) {
+  if (args['version'] as bool) {
     print("RSP Compiler version $version");
     return false;
   }
-  if (args['help']) {
+  if (args['help'] as bool) {
     print(usage);
     print("\nCompiles the RSP file to a Dart file.\n\nOptions:");
     print(argParser.usage);
@@ -112,9 +112,9 @@ bool _parseArgs(List<String> arguments, _Environ env) {
   }
 
   env
-    ..newer = args['newer']
-    ..verbose = args['verbose']
-    ..lineNumber = args['line-number']
+    ..newer = args['newer'] as bool
+    ..verbose = args['verbose'] as bool
+    ..lineNumber = args['line-number'] as bool
     ..sources = args.rest;
   return true;
 }

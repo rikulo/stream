@@ -240,7 +240,7 @@ class _IncludedConnect extends _ProxyConnect {
 
 ///Request for renaming URI.
 class _ReUriRequest extends HttpRequestWrapper {
-  _ReUriRequest(request, this._uri): super(request);
+  _ReUriRequest(HttpRequest request, this._uri): super(request);
 
   final Uri _uri;
 

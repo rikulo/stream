@@ -7,9 +7,9 @@ import "package:stream/stream.dart";
 void main() {
   new StreamServer(
     uriMapping: {
-      "/static/.*": (connect) => connect.server.resourceLoader
+      "/static/.*": (HttpConnect connect) => connect.server.resourceLoader
         .load(connect, connect.request.uri.path.substring(7)),
-      "/": (connect) => connect.forward("/static/test.html"),
-      "/.*": (connect) => throw new Http404.fromConnect(connect)
+      "/": (HttpConnect connect) => connect.forward("/static/test.html"),
+      "/.*": (HttpConnect connect) => throw new Http404.fromConnect(connect)
     }).start();
 }

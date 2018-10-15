@@ -72,8 +72,8 @@ class Rsp {
    * * [pre]: whether to replace whitespace with `&nbsp;` (default: false).
    * It is meaningful only if encode is `xml`.
    */
-  static String nnx(value, {String encode, int maxLength: 0, bool firstLine: false,
-    pre: false}) {
+  static String nnx(value, {String encode, int maxLength: 0,
+    bool firstLine: false, bool pre: false}) {
     String str = encode == "json" ? json(value):
         value != null ? value.toString(): "";
     if (firstLine) {

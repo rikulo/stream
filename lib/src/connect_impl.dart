@@ -97,12 +97,16 @@ class _HttpConnect extends _AbstractConnect {
 
   @override
   Browser get browser {
-    if (_browser == null) {
-      final ua = request.headers.value("User-Agent");
-      _browser = new _Browser(ua != null ? ua: "");
-    }
+    if (_browser == null)
+      _browser = new _Browser(headerValue(HttpHeaders.userAgentHeader, ""));
     return _browser;
   }
+  @override
+  String headerValue(String name, [String defaultValue]) {
+    final values = request.headers[name];
+    return values != null ? values[0]: defaultValue;
+  }
+
   @override
   String get locale {
     final List<String> ls = locales;
@@ -179,6 +183,9 @@ class _ProxyConnect extends _AbstractConnect {
   HttpChannel get channel => _origin.channel;
   @override
   Browser get browser => _origin.browser;
+  @override
+  String headerValue(String name, [String defaultValue])
+  => _origin.headerValue(name, defaultValue);
   @override
   String get locale => _origin.locale;
   @override

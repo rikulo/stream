@@ -295,10 +295,9 @@ bool checkIfHeaders(HttpConnect connect, DateTime lastModified, String etag) {
     return true; //Ignore If, since caused by forward-by-error (see also Issue 59)
 
   final HttpRequest request = connect.request;
-  final HttpHeaders rqheaders = request.headers;
 
   //Check If-Match
-  final String ifMatch = rqheaders.value(HttpHeaders.ifMatchHeader);
+  final ifMatch = connect.headerValue(HttpHeaders.ifMatchHeader);
   if (ifMatch != null && ifMatch != "*"
   && (etag == null || !_matchETag(ifMatch, etag))) { //not match
     response.statusCode = HttpStatus.preconditionFailed;
@@ -307,7 +306,7 @@ bool checkIfHeaders(HttpConnect connect, DateTime lastModified, String etag) {
 
   //Check If-None-Match
   //Note: it shall be checked before If-Modified-Since
-  final String ifNoneMatch = rqheaders.value(HttpHeaders.ifNoneMatchHeader);
+  final ifNoneMatch = connect.headerValue(HttpHeaders.ifNoneMatchHeader);
   if (ifNoneMatch != null) {
     if (ifNoneMatch == "*"
     || (etag != null && _matchETag(ifNoneMatch, etag))) { //match
@@ -326,7 +325,7 @@ bool checkIfHeaders(HttpConnect connect, DateTime lastModified, String etag) {
   if (lastModified != null) {
     //Check If-Modified-Since
     //Ignored it if If-None-Match specified (since ETag differs)
-    final DateTime ifModifiedSince = rqheaders.ifModifiedSince;
+    final DateTime ifModifiedSince = request.headers.ifModifiedSince;
     if (ifModifiedSince != null && ifNoneMatch == null
     && lastModified.isBefore(ifModifiedSince.add(_oneSecond))) {
       response.statusCode = HttpStatus.notModified;
@@ -336,7 +335,7 @@ bool checkIfHeaders(HttpConnect connect, DateTime lastModified, String etag) {
     }
 
     //Check If-Unmodified-Since
-    final String value = rqheaders.value(HttpHeaders.ifUnmodifiedSinceHeader);
+    final value = connect.headerValue(HttpHeaders.ifUnmodifiedSinceHeader);
     if (value != null) {
       try {
         final DateTime ifUnmodifiedSince = HttpDate.parse(value);

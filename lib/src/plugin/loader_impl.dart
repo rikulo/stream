@@ -189,8 +189,7 @@ class _Range {
 }
 
 List<_Range> _parseRange(HttpConnect connect, _AssetDetail detail) {
-  final HttpHeaders rqheaders = connect.request.headers;
-  final String ifRange = rqheaders.value(HttpHeaders.ifRangeHeader);
+  final ifRange = connect.headerValue(HttpHeaders.ifRangeHeader);
   if (ifRange != null) {
     try {
       if (detail.lastModified.isAfter(HttpDate.parse(ifRange).add(_oneSecond)))
@@ -203,7 +202,7 @@ List<_Range> _parseRange(HttpConnect connect, _AssetDetail detail) {
       return null; //dirty
   }
 
-  final String srange = rqheaders.value(HttpHeaders.rangeHeader);
+  final srange = connect.headerValue(HttpHeaders.rangeHeader);
   if (srange == null)
     return null;
   if (!srange.startsWith("bytes="))

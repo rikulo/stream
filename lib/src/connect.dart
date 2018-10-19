@@ -225,6 +225,12 @@ abstract class HttpConnect {
    */
   Browser get browser;
 
+  /** Returns the first value of the given [name] of [request]'s headers.
+   * Unlike [HttpHeaders.value], this method won't throw any exception.
+   * Rather, it simply picks the first header if any.
+   */
+  String headerValue(String name, [String defaultValue]);
+
   /** The preferred Locale that the client will accept content in,
    * based on the Accept-Language header.
    */
@@ -286,6 +292,10 @@ class HttpConnectWrapper implements HttpConnect {
 
   @override
   Browser get browser => origin.browser;
+  @override
+  String headerValue(String name, [String defaultValue])
+  => origin.headerValue(name, defaultValue);
+
   @override
   String get locale => origin.locale;
   @override

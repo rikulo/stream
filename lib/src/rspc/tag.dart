@@ -106,7 +106,7 @@ Map<String, Tag> get tags {
     _tags = new HashMap<String, Tag>();
     for (Tag tag in [new PageTag(), new DartTag(), new HeaderTag(),
       new IncludeTag(), new ForwardTag(), new VarTag(),
-      new JsonTag(), new JsonJsTag(), new ScriptTag(),
+      new JsonTag(), new JsonJsTag(),
       new ForTag(), new WhileTag(), new IfTag(), new ElseTag()])
       _tags[tag.name] = tag;
   }
@@ -403,61 +403,6 @@ class JsonJsTag extends Tag {
   bool get hasClosing => false;
   @override
   String get name => "json-js";
-}
-
-/** The script tag to generate `SCRIPT` tag for loading Dart script.
- *
- * For example,
- *
- *     [:script src="/script/foo.dart"]
- *
- * will generate if the browser supports Dart
- *
- *     <script type="application/dart" src="/script/foo.dart"></script>
- *     <script src="/packages/browser/dart.js"></script>
- *
- * On the other hand, if the browser doesn't support Dart
- * or [Rsp.disableDartScript] is true, it always generate
- *
- *     <script src="/script/foo.dart.js"></script>
- * 
- * **Options**
- * * [async] - whether JS code can be loaded asynchronously (default: false).
- * * [bootstrap] - whether to generate the bootstrap JS code (default: true).
- */
-class ScriptTag extends Tag {
-  @override
-  void begin(TagContext tc, String data) {
-    String src;
-    bool bootstrap = true, basync = false;
-    final attrs = parseArgs(data);
-    for (final nm in attrs.keys) {
-      switch (nm) {
-        case "src":
-          src = attrs[nm];
-          break;
-        case "bootstrap":
-          bootstrap = attrs[nm] == "true" || attrs[nm] == "";
-          break;
-        case "async":
-          basync = attrs[nm] == "true" || attrs[nm] == "";
-          break;
-        default:
-          tc.warning("Unknow attribute, $nm");
-          break;
-      }
-    }
-    if (src == null)
-      tc.error("The src attribute is required");
-    tc.write('\n${tc.pre}response.write(Rsp.script(connect, ${toEL(src)}');
-      if (!bootstrap || basync)
-        tc.write(', $bootstrap, $basync');
-    tc.writeln('));${tc.getLineNumberComment()}');
-  }
-  @override
-  bool get hasClosing => false;
-  @override
-  String get name => "script";
 }
 
 ///A skeletal class for implementing control tags, such as [IfTag] and [WhileTag].

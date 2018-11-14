@@ -149,14 +149,6 @@ abstract class StreamServer {
    * time the build number is changed.
    *
    * You can prefix it to the image that depends on the build number too.
-   *
-   * ##The script Tag
-   *
-   * The [script](http://docs.rikulo.org/stream/latest/RSP/Standard_Tags/script.html)
-   * tag supports [uriVersionPrefix] automatically, so you don't need to
-   * (and shall not) prefix the URI with this:
-   *
-   *     [:script src="/js/init.dart"] [!-- no need to prefix uriVersionPrefix --]
    */
   String uriVersionPrefix;
   /** Preprocessor that will be used to preprocess the path of each request,

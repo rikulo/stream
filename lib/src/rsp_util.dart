@@ -130,49 +130,4 @@ class Rsp {
   static String json(data) => cvt.json.encode(data).replaceAll(_scriptPtn, r"<\/");
   static final RegExp _scriptPtn = new RegExp(r"</(?=script>)", caseSensitive: false);
     //it is possible that a string contains </script>
-
-  /** It controls [ScriptTag] (and [script]) whether to disable Dart script.
-   *
-   * For example,
-   *
-   *     [:script src="/script/foo.dart"]
-   *
-   * will generate the following SCRIPT tag if [disableDartScript] is true
-   * or the browser doesn't support Dart:
-   *
-   *     <script src="/script/foo.dart.js"></script>
-   *
-   * The following SCRIPT tags are generated only if if [disableDartScript]
-   * is false (default) and the browser doesn't support Dart:
-   *
-   *     <script type="application/dart" src="/script/foo.dart"></script>
-   *     <script src="/packages/browser/dart.js"></script>
-   */
-  static bool disableDartScript = false;
-
-  /** Returns the SCRIPT tag(s) for loading the given [src].
-   * It is used internally by [ScriptTag].
-   *
-   * + [bootstrap] - whether to generate `dart.js` if necessary.
-   * Turn it off if you have multiple dart files in the same Web page.
-   * + [basync] - whether the JS code can be loaded asynchronously
-   * (i.e., whether to generate the async parameter to the script tag).
-   * Note: it is ignored for loading Dart code.
-   */
-  static String script(HttpConnect connect, String src,
-      [bool bootstrap=true, bool basync=false]) {
-    final String sasync = basync ? " async": "";
-    final String prefix = connect.server.uriVersionPrefix;
-    int i = src.lastIndexOf('.dart'), j = i + 5;
-    if (i < 0 || (j < src.length && src[j] != '?'))
-      return '<script$sasync src="$prefix$src"></script>\n';
-
-    if (disableDartScript || !connect.browser.dart)
-      return '<script$sasync src="$prefix${src.substring(0,j)}.js${src.substring(j)}"></script>\n';
-
-    //To be safe, we don't generate async for Dart code.
-    final s = '<script type="application/dart" src="$prefix$src"></script>\n';
-    return bootstrap ?
-      s + '<script src="$prefix/packages/browser/dart.js"></script>\n': s;
-  }
 }

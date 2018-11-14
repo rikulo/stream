@@ -1,5 +1,9 @@
 # CHANGES
 
+### 2.1.0
+
+* `ScriptTag` (`[:script]`) no longer supported. Use `<script>` instead.
+
 ### 2.0.3
 
 * `HttpConnect.headerValue` introduced.

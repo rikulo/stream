@@ -183,8 +183,6 @@ Future syntax(HttpConnect connect, {foo, bool c:false}) async {
     return connect.forward(Rsp.cat("/foo?abc", {'first': "1st", 'second': foo}));
   } //if
 
-  response.write(Rsp.script(connect, "/script/foo.dart"));
-
   response.write("""    <script>
     \$("#j\\q");
     </script>

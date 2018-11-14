@@ -22,4 +22,4 @@ part "src/rspc/compiler.dart";
 part "src/rspc/tag.dart";
 part "src/rspc/tag_util.dart";
 
-const String version = "2.0.3";
+const String version = "2.1.0";

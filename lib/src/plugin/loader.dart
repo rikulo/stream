@@ -80,6 +80,8 @@ class FileAsset implements Asset {
   @override
   String toString() => file.toString();
   @override
+  int get hashCode => file.hashCode;
+  @override
   bool operator==(o) => o is FileAsset && file == o.file;
 }
 

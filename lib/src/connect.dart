@@ -344,58 +344,69 @@ class HttpStatusException extends HttpException {
 
 /// HTTP 400 exception.
 class Http400 extends HttpStatusException {
-  Http400({Uri uri}): super(400, uri: uri);
-  Http400.fromConnect(HttpConnect connect): this(uri: connect.request.uri);
+  Http400({Uri uri, String message}): super(400, uri: uri, message: message);
+  Http400.fromConnect(HttpConnect connect, {String message})
+  : this(uri: connect.request.uri, message: message);
 }
 /// HTTP 401 exception.
 class Http401 extends HttpStatusException {
-  Http401({Uri uri}): super(401, uri: uri);
-  Http401.fromConnect(HttpConnect connect): this(uri: connect.request.uri);
+  Http401({Uri uri, String message}): super(401, uri: uri, message: message);
+  Http401.fromConnect(HttpConnect connect, {String message})
+  : this(uri: connect.request.uri, message: message);
 }
 /// HTTP 402 exception.
 class Http402 extends HttpStatusException {
-  Http402({Uri uri}): super(402, uri: uri);
-  Http402.fromConnect(HttpConnect connect): this(uri: connect.request.uri);
+  Http402({Uri uri, String message}): super(402, uri: uri, message: message);
+  Http402.fromConnect(HttpConnect connect, {String message})
+  : this(uri: connect.request.uri, message: message);
 }
 /// HTTP 403 exception.
 class Http403 extends HttpStatusException {
-  Http403({Uri uri}): super(403, uri: uri);
-  Http403.fromConnect(HttpConnect connect): this(uri: connect.request.uri);
+  Http403({Uri uri, String message}): super(403, uri: uri, message: message);
+  Http403.fromConnect(HttpConnect connect, {String message})
+  : this(uri: connect.request.uri, message: message);
 }
 /// HTTP 404 exception.
 class Http404 extends HttpStatusException {
-  Http404({Uri uri}): super(404, uri: uri);
-  Http404.fromConnect(HttpConnect connect): this(uri: connect.request.uri);
+  Http404({Uri uri, String message}): super(404, uri: uri, message: message);
+  Http404.fromConnect(HttpConnect connect, {String message})
+  : this(uri: connect.request.uri, message: message);
 }
 /// HTTP 405 exception.
 class Http405 extends HttpStatusException {
-  Http405({Uri uri}): super(405, uri: uri);
-  Http405.fromConnect(HttpConnect connect): this(uri: connect.request.uri);
+  Http405({Uri uri, String message}): super(405, uri: uri, message: message);
+  Http405.fromConnect(HttpConnect connect, {String message})
+  : this(uri: connect.request.uri, message: message);
 }
 /// HTTP 406 exception.
 class Http406 extends HttpStatusException {
-  Http406({Uri uri}): super(406, uri: uri);
-  Http406.fromConnect(HttpConnect connect): this(uri: connect.request.uri);
+  Http406({Uri uri, String message}): super(406, uri: uri, message: message);
+  Http406.fromConnect(HttpConnect connect, {String message})
+  : this(uri: connect.request.uri, message: message);
 }
 /// HTTP 408 exception.
 class Http408 extends HttpStatusException {
-  Http408({Uri uri}): super(408, uri: uri);
-  Http408.fromConnect(HttpConnect connect): this(uri: connect.request.uri);
+  Http408({Uri uri, String message}): super(408, uri: uri, message: message);
+  Http408.fromConnect(HttpConnect connect, {String message})
+  : this(uri: connect.request.uri, message: message);
 }
 /// HTTP 409 exception.
 class Http409 extends HttpStatusException {
-  Http409({Uri uri}): super(409, uri: uri);
-  Http409.fromConnect(HttpConnect connect): this(uri: connect.request.uri);
+  Http409({Uri uri, String message}): super(409, uri: uri, message: message);
+  Http409.fromConnect(HttpConnect connect, {String message})
+  : this(uri: connect.request.uri, message: message);
 }
 /// HTTP 412 exception.
 class Http412 extends HttpStatusException {
-  Http412({Uri uri}): super(412, uri: uri);
-  Http412.fromConnect(HttpConnect connect): this(uri: connect.request.uri);
+  Http412({Uri uri, String message}): super(412, uri: uri, message: message);
+  Http412.fromConnect(HttpConnect connect, {String message})
+  : this(uri: connect.request.uri, message: message);
 }
 /// HTTP 429 exception.
 class Http429 extends HttpStatusException {
-  Http429({Uri uri}): super(429, uri: uri);
-  Http429.fromConnect(HttpConnect connect): this(uri: connect.request.uri);
+  Http429({Uri uri, String message}): super(429, uri: uri, message: message);
+  Http429.fromConnect(HttpConnect connect, {String message})
+  : this(uri: connect.request.uri, message: message);
 }
 
 /// HTTP 500 exception.

@@ -81,7 +81,7 @@ class _AssetCache implements AssetCache {
 Future _loadFileAt(HttpConnect connect, String uri, String dir,
     List<String> names, int j, [AssetCache cache]) async {
   if (j >= names.length)
-    throw new Http404(uri);
+    throw new Http404(uri: Uri.tryParse(uri));
 
   final File file = new File(Path.join(dir, names[j]));
   return (await file.exists()) ?

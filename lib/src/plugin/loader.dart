@@ -218,7 +218,7 @@ class FileLoader extends AssetLoader {
     if (await new Directory(path).exists())
       return _loadFileAt(connect, uri, path, connect.server.indexNames, 0, cache);
 
-    throw new Http404(uri);
+    throw new Http404(uri: Uri.tryParse(uri));
   }
 }
 

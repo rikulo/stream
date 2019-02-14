@@ -117,7 +117,7 @@ class _StreamServer implements StreamServer {
     //protect from access
     if (!connect.isForwarded && !connect.isIncluded &&
     (uri.startsWith("/webapp/") || uri == "/webapp"))
-      throw new Http403(uri);
+      throw new Http403(uri: Uri.tryParse(uri));
 
     return resourceLoader.load(connect, uri);
   }
@@ -135,7 +135,7 @@ class _StreamServer implements StreamServer {
         _logError(connect, error, stackTrace);
         shouted = true;
         error = new Http500.fromConnect(connect,
-          error != null ? error.toString(): "");
+            cause: error != null ? error.toString(): "");
       }
 
       final int code = error.statusCode;

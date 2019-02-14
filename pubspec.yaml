@@ -8,15 +8,15 @@ authors:
 homepage: http://rikulo.org/projects/stream
 documentation: http://docs.rikulo.org/stream
 dependencies:
-  rikulo_commons: any
-  logging: any
-  args: any
-  path: any
-  http: any
-  charcode: any
+  rikulo_commons: '>=3.0.0 <4.0.0'
+  logging: ">=0.11.0 <2.0.0"
+  args: '>=0.13.0 <2.0.0'
+  path: '>=1.3.0 <2.0.0'
+  http: '>=0.11.0 <2.0.0'
+  charcode: ">=1.1.0 <2.0.0"
 
 executables:
   rspc:
 
 environment:
-  sdk: '>=2.0.0-dev <3.0.0'
+  sdk: '>=2.0.0 <3.0.0'

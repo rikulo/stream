@@ -1,5 +1,9 @@
 # CHANGES
 
+### 2.2.0
+
+* `HttpStatusException`, `Http500`, `Http403` and others are changed.
+
 ### 2.1.0
 
 * `ScriptTag` (`[:script]`) no longer supported. Use `<script>` instead.

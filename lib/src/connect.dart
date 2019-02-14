@@ -346,67 +346,67 @@ class HttpStatusException extends HttpException {
 class Http400 extends HttpStatusException {
   Http400({Uri uri, String message}): super(400, uri: uri, message: message);
   Http400.fromConnect(HttpConnect connect, {String message})
-  : this(uri: connect.request.uri, message: message);
+  : super.fromConnect(connect, 400, message: message);
 }
 /// HTTP 401 exception.
 class Http401 extends HttpStatusException {
   Http401({Uri uri, String message}): super(401, uri: uri, message: message);
   Http401.fromConnect(HttpConnect connect, {String message})
-  : this(uri: connect.request.uri, message: message);
+  : super.fromConnect(connect, 401, message: message);
 }
 /// HTTP 402 exception.
 class Http402 extends HttpStatusException {
   Http402({Uri uri, String message}): super(402, uri: uri, message: message);
   Http402.fromConnect(HttpConnect connect, {String message})
-  : this(uri: connect.request.uri, message: message);
+  : super.fromConnect(connect, 402, message: message);
 }
 /// HTTP 403 exception.
 class Http403 extends HttpStatusException {
   Http403({Uri uri, String message}): super(403, uri: uri, message: message);
   Http403.fromConnect(HttpConnect connect, {String message})
-  : this(uri: connect.request.uri, message: message);
+  : super.fromConnect(connect, 403, message: message);
 }
 /// HTTP 404 exception.
 class Http404 extends HttpStatusException {
   Http404({Uri uri, String message}): super(404, uri: uri, message: message);
   Http404.fromConnect(HttpConnect connect, {String message})
-  : this(uri: connect.request.uri, message: message);
+  : super.fromConnect(connect, 404, message: message);
 }
 /// HTTP 405 exception.
 class Http405 extends HttpStatusException {
   Http405({Uri uri, String message}): super(405, uri: uri, message: message);
   Http405.fromConnect(HttpConnect connect, {String message})
-  : this(uri: connect.request.uri, message: message);
+  : super.fromConnect(connect, 405, message: message);
 }
 /// HTTP 406 exception.
 class Http406 extends HttpStatusException {
   Http406({Uri uri, String message}): super(406, uri: uri, message: message);
   Http406.fromConnect(HttpConnect connect, {String message})
-  : this(uri: connect.request.uri, message: message);
+  : super.fromConnect(connect, 406, message: message);
 }
 /// HTTP 408 exception.
 class Http408 extends HttpStatusException {
   Http408({Uri uri, String message}): super(408, uri: uri, message: message);
   Http408.fromConnect(HttpConnect connect, {String message})
-  : this(uri: connect.request.uri, message: message);
+  : super.fromConnect(connect, 408, message: message);
 }
 /// HTTP 409 exception.
 class Http409 extends HttpStatusException {
   Http409({Uri uri, String message}): super(409, uri: uri, message: message);
   Http409.fromConnect(HttpConnect connect, {String message})
-  : this(uri: connect.request.uri, message: message);
+  : super.fromConnect(connect, 409, message: message);
 }
 /// HTTP 412 exception.
 class Http412 extends HttpStatusException {
   Http412({Uri uri, String message}): super(412, uri: uri, message: message);
   Http412.fromConnect(HttpConnect connect, {String message})
-  : this(uri: connect.request.uri, message: message);
+  : super.fromConnect(connect, 412, message: message);
 }
 /// HTTP 429 exception.
 class Http429 extends HttpStatusException {
   Http429({Uri uri, String message}): super(429, uri: uri, message: message);
   Http429.fromConnect(HttpConnect connect, {String message})
-  : this(uri: connect.request.uri, message: message);
+  : super.fromConnect(connect, 429, message: message);
 }
 
 /// HTTP 500 exception.
@@ -414,12 +414,12 @@ class Http500 extends HttpStatusException {
   Http500({Uri uri, String cause})
   : super(500, uri: uri, message: cause != null ? "500: $cause": null);
   Http500.fromConnect(HttpConnect connect, {String cause})
-  : this(uri: connect.request.uri, cause: cause);
+  : super.fromConnect(connect, 500, message: cause != null ? "500: $cause": null);
 }
 /// HTTP 503 exception.
 class Http503 extends HttpStatusException {
   Http503({Uri uri, String cause})
   : super(503, uri: uri, message: cause != null ? "503: $cause": null);
   Http503.fromConnect(HttpConnect connect, {String cause})
-  : this(uri: connect.request.uri, cause: cause);
+  : super.fromConnect(connect, 503, message: cause != null ? "503: $cause": null);
 }

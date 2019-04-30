@@ -281,7 +281,7 @@ class _UriMapping {
   }
   void _parseHandler(rawhandler) {
     if (rawhandler is String) {
-      final String val = rawhandler;
+      final val = rawhandler as String;
       List segs = [];
       int k = 0, len = val.length;
       for (int i = 0; i < len; ++i) {

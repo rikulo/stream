@@ -9,7 +9,8 @@ import "dart:async";
 import "dart:collection" show HashMap;
 import "dart:convert" as cvt;
 import "package:logging/logging.dart" show Logger, Level;
-import 'package:path/path.dart' as Path;
+import "package:path/path.dart" as Path;
+import "package:charcode/ascii.dart";
 
 import "package:rikulo_commons/util.dart";
 import "package:rikulo_commons/io.dart";

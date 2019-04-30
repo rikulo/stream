@@ -1,5 +1,10 @@
 # CHANGES
 
+### 2.2.1
+
+* `Rsp.isHeaderValueValid` is added.
+* `proxyRequest` won't copy request's headers to response's if not valid.
+
 ### 2.2.0
 
 * `HttpStatusException`, `Http500`, `Http403` and others are changed.

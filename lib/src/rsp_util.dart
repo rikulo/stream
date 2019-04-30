@@ -9,6 +9,16 @@ part of stream;
  * > They are used in the generated code of RSP pages.
  */
 class Rsp {
+  /// Tests if the given [value] can be used as HTTP header's value
+  static bool isHeaderValueValid(String value) {
+    for (final byte in value.codeUnits)
+      if (!_isHeaderValueValidCC(byte))
+        return false;
+    return true;
+  }
+  static bool _isHeaderValueValidCC(int byte)
+  => (byte > 31 && byte < 128) || byte == $tab;
+
   /** Initializes a RSP page.
    * It is used by generated RSP dart code. You don't need to invoke it.
    * 

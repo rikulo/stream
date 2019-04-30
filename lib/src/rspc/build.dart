@@ -135,10 +135,10 @@ Future build(List<String> arguments, {String filenameMapper(String source),
     ..addFlag("machine", negatable: false)
     ..addFlag("full", negatable: false);
 
-  final ArgResults args = argParser.parse(arguments);
-  final List<String> changed = args["changed"];
-  final List<String> removed = args["removed"];
-  final bool clean = args["clean"];
+  final args = argParser.parse(arguments),
+    changed = args["changed"] as List<String>,
+    removed = args["removed"] as List<String>,
+    clean = args["clean"] as bool;
   
   if (clean) { // clean only
     Directory.current.list(recursive: true).listen((fse) {

@@ -303,7 +303,7 @@ class VarTag extends Tag {
   }
   @override
   void end(TagContext tc) {
-    String var2 = tc.pop(), var1 = tc.pop();
+    final var2 = tc.pop() as String, var1 = tc.pop() as String;
     tc.writeln("\n${tc.pre}connect = $var2; response = connect.response;");
     if (tc.parent.args == null) {
       tc.writeln("${tc.pre}final $var1 = _${var1}_.toString();");

@@ -87,7 +87,7 @@ bool _parseArgs(List<String> arguments, _Environ env) {
     return false;
   }
 
-  String val = args['encoding'];
+  var val = args['encoding'] as String;
   if (val != null)
     switch (val.toLowerCase()) {
       case 'ascii':

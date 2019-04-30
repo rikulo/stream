@@ -50,7 +50,8 @@ Future proxyRequest(HttpConnect connect, url, {String proxyName,
       clientRequest.followRedirects = false;
       serverRequest.headers.forEach((String name, List<String> values) {
         for (final value in values)
-          _addHeader(clientRequest.headers, name, value);
+          if (Rsp.isHeaderValueValid(value))
+            _addHeader(clientRequest.headers, name, value);
       });
       clientRequest.headers['Host'] = uri.authority;
 

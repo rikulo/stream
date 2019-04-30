@@ -8,7 +8,7 @@ void main() {
     .listen((e) {
       HttpRequest.request("/server-info")
       .then((request) {
-        Map info = json.decode(request.responseText);
+        var info = json.decode(request.responseText) as Map;
         document.body.appendHtml(
           '<div>Hi there, this is ${info["name"]} ${info["version"]}.</div>');
       });

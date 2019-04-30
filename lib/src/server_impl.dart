@@ -104,8 +104,7 @@ class _StreamServer implements StreamServer {
       if (handler is Function)
         return handler(connect) as Future;
 
-      assert(handler is String); //must be a string
-      final String target = handler;
+      final target = handler as String;
       if (_completeUriRegex.hasMatch(target)) {
         connect.redirect(target);
         return null;
@@ -138,7 +137,7 @@ class _StreamServer implements StreamServer {
             cause: error != null ? error.toString(): "");
       }
 
-      final int code = error.statusCode;
+      final code = error.statusCode as int;
       try {
         connect.response.statusCode = code;
           //spec: not to update reasonPhrase (it is up to error handler if any)
@@ -214,7 +213,7 @@ class _StreamServer implements StreamServer {
   @override
   void set sessionTimeout(int timeout) {
     _sessTimeout = timeout;
-    for (final _HttpChannel channel in channels)
+    for (final channel in channels)
       channel.httpServer.sessionTimeout = _sessTimeout;
   }
 

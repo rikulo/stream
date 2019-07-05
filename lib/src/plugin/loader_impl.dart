@@ -312,8 +312,7 @@ Future _outAssetInRanges(HttpResponse response, List<_Range> ranges,
   } else {
     //TODO: a better algorithm for reading multiparts of the asset
     return new _RangeWriter(response, ranges, contentType, assetSize,
-        (_Range range)
-        => response.addStream(asset.openRead(range.start, range.end)))
+        (range) => response.addStream(asset.openRead(range.start, range.end)))
       .write();
   }
 }

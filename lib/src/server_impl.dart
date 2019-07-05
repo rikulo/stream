@@ -357,7 +357,7 @@ class _StreamServer implements StreamServer {
   }
 
   HttpRequest _preprocess(HttpRequest req) {
-    final String path = req.uri.path,
+    final path = req.uri.path,
       np = (pathPreprocessor ?? _defaultPathPreprocess)(path);
     return path == np ? req: _wrapRequest(req, np, keepQuery: true);
   }

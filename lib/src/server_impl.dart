@@ -177,11 +177,12 @@ class _StreamServer implements StreamServer {
   }
 
   void _shout(HttpConnect connect, err, [st]) {
-    final StringBuffer buf = new StringBuffer();
+    final buf = new StringBuffer();
     try {
+      buf..write(new DateTime.now())..write(':');
+
       if (connect != null) {
-        final String uri = connect.request.uri.path;
-        buf..write("[")..write(uri)..write("] ");
+        buf..write("[")..write(connect.request.uri.path)..write("] ");
 
         final values = connect.request.headers[HttpHeaders.userAgentHeader];
         if (values != null && values.length >= 1) buf..writeln(values[0]);

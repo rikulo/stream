@@ -1,5 +1,9 @@
 # CHANGES
 
+### 2.2.2
+
+* `ResourceLoader.load` supports `useCache` to control whether to use the cache.
+
 ### 2.2.1
 
 * `Rsp.isHeaderValueValid` is added.

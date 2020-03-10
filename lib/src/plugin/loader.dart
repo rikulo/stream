@@ -23,9 +23,12 @@ abstract class ResourceLoader {
    */
   final String rootDir;
 
-  /** Loads the asset of the given URI to the given response.
-   */
-  Future load(HttpConnect connect, String uri);
+  /// Loads the asset of the given URI to the given response.
+  ///
+  /// - [useCache] - whether to use the cache.
+  /// If true (default), it will check the cache first, and update the
+  /// cache if ncessary.
+  Future load(HttpConnect connect, String uri, {bool useCache: true});
 }
 
 /** An asset (aka., resource), such as a file or a BLOB object in database.
@@ -187,8 +190,8 @@ abstract class AssetLoader implements ResourceLoader {
   Asset getAsset(String path);
 
   @override
-  Future load(HttpConnect connect, String uri)
-  => loadAsset(connect, getAsset(uri), cache);
+  Future load(HttpConnect connect, String uri, {bool useCache: true})
+  => loadAsset(connect, getAsset(uri), useCache ? cache: null);
 }
 
 /** A file-system-based asset loader.
@@ -207,16 +210,17 @@ class FileLoader extends AssetLoader {
   => new FileAsset(new File(path));
 
   @override
-  Future load(HttpConnect connect, String uri) async {
+  Future load(HttpConnect connect, String uri, {bool useCache: true}) async {
     String path = uri.substring(1); //must start with '/'
     path = Path.join(rootDir, path);
 
     final File file = new File(path);
     if (await file.exists())
-      return loadAsset(connect, new FileAsset(file), cache);
+      return loadAsset(connect, new FileAsset(file), useCache ? cache: null);
 
     if (await new Directory(path).exists())
-      return _loadFileAt(connect, uri, path, connect.server.indexNames, 0, cache);
+      return _loadFileAt(connect, uri, path, connect.server.indexNames, 0,
+          useCache ? cache: null);
 
     throw new Http404(uri: Uri.tryParse(uri));
   }
@@ -262,8 +266,7 @@ Future loadAsset(HttpConnect connect, Asset asset, [AssetCache cache]) async {
 
   List<_Range> ranges;
   if (!isIncluded) {
-    final _AssetDetail detail =
-      new _AssetDetail(asset, lastModified, assetSize, cache);
+    final detail = new _AssetDetail(asset, lastModified, assetSize, cache);
     if (!checkIfHeaders(connect, lastModified, detail.etag))
       return null;
 

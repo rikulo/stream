@@ -211,10 +211,10 @@ class FileLoader extends AssetLoader {
 
   @override
   Future load(HttpConnect connect, String uri, {bool useCache: true}) async {
-    String path = uri.substring(1); //must start with '/'
+    String path = uri.substring(1); //uri must start with '/', but path can't
     path = Path.join(rootDir, path);
 
-    final File file = new File(path);
+    final file = new File(path);
     if (await file.exists())
       return loadAsset(connect, new FileAsset(file), useCache ? cache: null);
 

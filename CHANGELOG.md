@@ -1,4 +1,7 @@
 # CHANGES
+### 2.3.0
+
+* Fix [85](https://github.com/rikulo/stream/issues/85) The method '_ReadOnlyHeaders.add' has fewer named arguments than those of overridden method 'HttpHeadersWrapper.add [Dart 2.8]
 
 ### 2.2.2+1
 

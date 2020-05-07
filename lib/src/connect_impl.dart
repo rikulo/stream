@@ -285,11 +285,13 @@ class _ReadOnlyHeaders extends HttpHeadersWrapper {
   _ReadOnlyHeaders(HttpHeaders headers): super(headers);
 
   @override
-  void add(String name, Object value) {
+  void add(String name, Object value, {bool preserveHeaderCase = false}) {
   }
+
   @override
-  void set(String name, Object value) {
+  void set(String name, Object value, {bool preserveHeaderCase = false}) {
   }
+
   @override
   void remove(String name, Object value) {
   }

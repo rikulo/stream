@@ -1,5 +1,11 @@
 # CHANGES
 
+### 2.2.2+1
+
+* Limit Dart SDK version for Dart 2.8 version breaking change.
+* Add links to github repo in pubspec.yaml.
+
+
 ### 2.2.2
 
 * `ResourceLoader.load` supports `useCache` to control whether to use the cache.

@@ -25,3 +25,4 @@ packages/
 pubspec.lock
 .buildlog
 .settings/org.eclipse.ltk.core.refactoring.prefs
+.dart_tool

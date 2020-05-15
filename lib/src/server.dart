@@ -191,8 +191,8 @@ abstract class StreamServer {
    * * [backlog] - specify the listen backlog for the underlying OS listen setup.
    * If backlog has the value of 0 (the default) a reasonable value will be chosen
    * by the system.
-   * * [zoned] - whether to start the server within a zone (i.e., `runZoned()`)
-   * Default: true.
+   * * [zoned] - whether to start the server within a zone
+   * (i.e., `runZonedGuarded()`). Default: true.
    */
   Future<HttpChannel> start({address, int port: 8080, int backlog: 0,
     bool v6Only: false, bool shared: false, bool zoned: true});

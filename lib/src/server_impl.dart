@@ -308,10 +308,7 @@ class _StreamServer implements StreamServer {
 
   void _startChannel(_HttpChannel channel, bool zoned) {
     if (zoned) {
-      runZoned(() {
-        _startNow(channel);
-      },
-      onError: _logInitError);
+      runZonedGuarded(() =>_startNow(channel), _logInitError);
     } else {
       _startNow(channel);
     }

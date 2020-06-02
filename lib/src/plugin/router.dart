@@ -3,48 +3,44 @@
 // Author: tomyeh
 part of stream_plugin;
 
-/**
- * Router for mapping URI to renderers.
- */
+/// Router for mapping URI to renderers.
 abstract class Router {
-  /** Maps the given URI to the given handler.
-   *
-   * The interpretation of [uri] and [handler] is really up to the
-   * implementation of [Router].
-   *
-   * * [handler] - if handler is null, it means removal.
-   * * [preceding] - whether to make the mapping preceding any previous mappings.
-   * In other words, if true, this mapping will be interpreted first.
-   */
+  /// Maps the given URI to the given handler.
+  ///
+  /// The interpretation of [uri] and [handler] is really up to the
+  /// implementation of [Router].
+  ///
+  /// * [handler] - if handler is null, it means removal.
+  /// * [preceding] - whether to make the mapping preceding any previous mappings.
+  /// In other words, if true, this mapping will be interpreted first.
   void map(String uri, handler, {bool preceding: false});
-  /** Maps the given URI to the given filter.
-   *
-   * The interpretation of [uri] is really up to the implementation of [Router].
-   *
-   * * [filter] - if filter is null, it means removal.
-   * * [preceding] - whether to make the mapping preceding any previous mappings.
-   * In other words, if true, this mapping will be interpreted first.
-   */
+
+  /// Maps the given URI to the given filter.
+  ///
+  /// The interpretation of [uri] is really up to the implementation of [Router].
+  ///
+  /// * [filter] - if filter is null, it means removal.
+  /// * [preceding] - whether to make the mapping preceding any previous mappings.
+  /// In other words, if true, this mapping will be interpreted first.
   void filter(String uri, RequestFilter filter, {bool preceding: false});
 
-  /** Retrieves the first matched request handler ([RequestHandler]) or
-   * forwarded URI ([String]) for the given URI.
-   */
+  /// Retrieves the first matched request handler ([RequestHandler]) or
+  /// forwarded URI ([String]) for the given URI.
   getHandler(HttpConnect connect, String uri);
-  /** Returns the index of the next matched request filter for the given URI
-   * and starting at the given index.
-   *
-   * It returns null if not found.
-   */
+
+  /// Returns the index of the next matched request filter for the given URI
+  /// and starting at the given index.
+  ///
+  /// It returns null if not found.
   int getFilterIndex(HttpConnect connect, String uri, int iFilter);
-  ///Returns the filter at the given index.
+
+  /// Returns the filter at the given index.
   RequestFilter getFilterAt(int iFilter);
-  ///Returns the error handler ([RequestHandler]) or a URI ([String])
-  ///based on the given error (i.e., the exception)
-  getErrorHandler(error);
-  ///Returns the error handler ([RequestHandler]) or a URI ([String])
-  ///based on the error code (i.e., the HTTP status code)
-  getErrorHandlerByCode(int code);
+
+  /// Returns the error handler ([RequestHandler]) or a URI ([String])
+  /// based on the error code (i.e., the HTTP status code or
+  /// an int-typed error).
+  getErrorHandler(int code);
 }
 
 /**
@@ -53,7 +49,6 @@ abstract class Router {
 class DefaultRouter implements Router {
   final _uriMapping = <_UriMapping>[], _filterMapping = <_UriMapping>[];
   final _codeMapping = new HashMap<int, dynamic>(); //mapping of status code to URI/Function
-  final _errMapping = <_ErrMapping>[]; //exception to URI/Function
 
   final _UriCache _uriCache = new _UriCache();
   int _cacheSize;
@@ -67,8 +62,9 @@ class DefaultRouter implements Router {
    * You can specify it to false if you don't put RSP files with client
    * resource files.
    */
-  DefaultRouter({Map<String, dynamic> uriMapping, Map errorMapping,
-			Map<String, RequestFilter> filterMapping,
+  DefaultRouter({Map<String, dynamic> uriMapping,
+      Map<int, dynamic> errorMapping,
+      Map<String, RequestFilter> filterMapping,
       int cacheSize: 1000, bool protectRSP: true}) {
     _cacheSize = cacheSize;
 
@@ -86,7 +82,7 @@ class DefaultRouter implements Router {
         filter(uri, filterMapping[uri]);
 
     if (errorMapping != null)
-      for (var code in errorMapping.keys) {
+      for (final code in errorMapping.keys) {
         final handler = errorMapping[code];
         if (handler is String) {
           String uri = handler;
@@ -96,24 +92,7 @@ class DefaultRouter implements Router {
           throw new ServerError("Error mapping: function (renderer) or string (URI) is required for $code");
         }
 
-        if (code is String) {
-          final scode = code as String;
-          try {
-            if (StringUtil.isCharCode(scode.codeUnitAt(0), digit:true))
-              code = int.parse(scode);
-            else
-              code = ClassUtil.forName(scode);
-          } catch (_) { //silent; handle it  later
-          }
-        } else if (code != null && code is! int) {
-          code = reflect(code).type;
-        }
-        if (code is int)
-          _codeMapping[code] = handler;
-        else if (code is ClassMirror)
-          _errMapping.add(new _ErrMapping(code, handler));
-        else
-          throw new ServerError("Error mapping: status code or exception is required, not $code");
+        _codeMapping[code] = handler;
       }
   }
 
@@ -236,16 +215,7 @@ class DefaultRouter implements Router {
     return _filterMapping[iFilter].handler as RequestFilter;
   }
   @override
-  getErrorHandler(error) {
-    if (!_errMapping.isEmpty) {
-      final caughtClass = reflect(error).type;
-      for (final mapping in _errMapping)
-        if (ClassUtil.isAssignableFrom(mapping.error, caughtClass)) //found
-          return mapping.handler;
-    }
-  }
-  @override
-  getErrorHandlerByCode(int code) => _codeMapping[code];
+  getErrorHandler(int code) => _codeMapping[code];
 }
 
 ///Renderer for 404
@@ -427,12 +397,6 @@ class _Var {
 
   @override
   String toString() => name;
-}
-
-class _ErrMapping {
-  final ClassMirror error;
-  final handler;
-  _ErrMapping(this.error, this.handler);
 }
 
 class _UriCache {

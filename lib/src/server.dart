@@ -81,18 +81,19 @@ abstract class StreamServer {
    * * [filterMapping] - a map of filter mapping, `<String uri, RequestFilter filter>`.
    * The key is a regular expression used to match the request URI.
    * The signature of a filter is `void foo(HttpConnect connect, void chain(HttpConnect conn))`.
-   * * [errorMapping] - a map of error mapping. The key can be a number, an instance of
-   * exception, a string representing a number, or a string representing the exception class.
+   * * [errorMapping] - a map of error mapping. The key can be a number representing
+   * the status code, e.g., 404 and 403.
    * The value can be an URI or a renderer function. The number is used to represent a status code,
-   * such as 404 and 500. The exception is used for matching the caught exception.
-   * Notice that, if you specify the name of the exception to handle,
-   * it must include the library name and the class name, such as `"stream.ServerError"`.
+   * such as 404 and 500.
+   * **Trick**: You can use a special number to indicate a special case.
+   * For example, in our sample app (features), we use -900 to denote
+   * an exception that can be recovered.
    * * [disableLog] - whether to disable logs.
    * If false (default), [Logger.root] will be set to [Level.INFO], and
    * a listener will be added [logger].
    */
   factory StreamServer({Map<String, dynamic> uriMapping,
-      Map errorMapping, Map<String, RequestFilter> filterMapping,
+      Map<int, dynamic> errorMapping, Map<String, RequestFilter> filterMapping,
       String homeDir, bool disableLog: false})
   => new _StreamServer(
       new DefaultRouter(uriMapping: uriMapping,

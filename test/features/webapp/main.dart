@@ -13,6 +13,9 @@ part "forwarderView.rsp.dart";
 part 'json.rsp.dart'; //auto-inject from test/features/json.rsp.html
 part 'lastModified.rsp.dart'; //auto-inject from ../lastModified.rsp.html
 
+/// A special error to be handled specially (recover it).
+const recoverableError = -900;
+
 void main() {
   new StreamServer(
     uriMapping: _uriMapping, errorMapping: _errMapping, filterMapping: _filterMapping)
@@ -50,7 +53,7 @@ var _uriMapping = <String, dynamic> {
       ..write("<html><body><p>Check the server console if the server stays alive and log the error.</p></body></html>");
   },
   "/recoverable-error": (HttpConnect connect) {
-    throw new RecoverError();
+    throw recoverableError;
   },
   "/log5": (HttpConnect connect) {
     connect.response
@@ -81,9 +84,9 @@ var _uriMapping = <String, dynamic> {
 };
 
 //Error mapping
-var _errMapping = <String, dynamic> {
-  "404": "/404.html",
-  "500": (HttpConnect connect) {
+var _errMapping = <int, dynamic> {
+  404: "/404.html",
+  500: (HttpConnect connect) {
     connect.response
       ..headers.contentType = ContentType.parse("text/html")
       ..write("""
@@ -96,7 +99,7 @@ var _errMapping = <String, dynamic> {
 </html>
         """);
   },
-  "features.RecoverError": (HttpConnect connect) {
+  recoverableError: (HttpConnect connect) {
     connect.errorDetail = null; //clear error
     connect.response
       ..headers.contentType = ContentType.parse("text/plain")
@@ -118,11 +121,7 @@ var _filterMapping = <String, RequestFilter> {
 
 //Forward//
 Future forward(HttpConnect connect)
-	=> connect.forward("/forwardee.html?first=1st&second=2nd");
-
-//Recover from an error//
-class RecoverError {
-}
+  => connect.forward("/forwardee.html?first=1st&second=2nd");
 
 //Search//
 class Criteria {

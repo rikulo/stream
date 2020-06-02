@@ -129,9 +129,7 @@ class _StreamServer implements StreamServer {
     bool shouted = false;
     connect.errorDetail = new ErrorDetail(error, stackTrace);
 
-    var handler;
-    if (error is int) handler = _router.getErrorHandler(error);
-
+    var handler = _router.getErrorHandler(error);
     if (handler == null) {
       if (error is! HttpStatusException) {
         _logError(connect, error, stackTrace);

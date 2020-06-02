@@ -88,6 +88,8 @@ abstract class StreamServer {
    * **Trick**: You can use a special number to indicate a special case.
    * For example, in our sample app (features), we use -900 to denote
    * an exception that can be recovered.
+   * **Trick**: You can also override ([DefaultRouter.getErrorHandler]) to
+   * detect the type and return a proper handle it for it.
    * * [disableLog] - whether to disable logs.
    * If false (default), [Logger.root] will be set to [Level.INFO], and
    * a listener will be added [logger].

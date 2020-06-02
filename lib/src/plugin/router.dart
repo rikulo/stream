@@ -38,9 +38,12 @@ abstract class Router {
   RequestFilter getFilterAt(int iFilter);
 
   /// Returns the error handler ([RequestHandler]) or a URI ([String])
-  /// based on the error code (i.e., the HTTP status code or
-  /// an int-typed error).
-  getErrorHandler(int code);
+  /// based on the error thrown by a request handler.
+  /// 
+  /// You can override this method to detect the type of the error
+  /// and then return a handler for it. The handler can retrieve
+  /// the error via [connect.errorDetail].
+  getErrorHandler(error);
 }
 
 /**
@@ -48,7 +51,7 @@ abstract class Router {
  */
 class DefaultRouter implements Router {
   final _uriMapping = <_UriMapping>[], _filterMapping = <_UriMapping>[];
-  final _codeMapping = new HashMap<int, dynamic>(); //mapping of status code to URI/Function
+  final _errorMapping = new HashMap<int, dynamic>(); //mapping of status code to URI/Function
 
   final _UriCache _uriCache = new _UriCache();
   int _cacheSize;
@@ -92,7 +95,7 @@ class DefaultRouter implements Router {
           throw new ServerError("Error mapping: function (renderer) or string (URI) is required for $code");
         }
 
-        _codeMapping[code] = handler;
+        _errorMapping[code] = handler;
       }
   }
 
@@ -215,7 +218,7 @@ class DefaultRouter implements Router {
     return _filterMapping[iFilter].handler as RequestFilter;
   }
   @override
-  getErrorHandler(int code) => _codeMapping[code];
+  getErrorHandler(error) => _errorMapping[error];
 }
 
 ///Renderer for 404

@@ -6,6 +6,7 @@
     1. You can't specify the class name in the error mapping.
     2. The type of the `errorMapping` arugment becomes `Map<int, dynamic>`
     3. You'd like to handle a particular exception specially. You shall throw a special integer, say, -900, and then map it to your handler.
+    Or, you can override `DefaultRouter.getErrorHandler` to detect the error.
 
 ### 2.3.0
 

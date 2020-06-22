@@ -7,7 +7,7 @@ const String _version = "2.5.0";
 const String _serverHeader = "Stream/$_version";
 
 ///The error handler for HTTP connection.
-typedef void _ConnectErrorCallback(HttpConnect connect, err, stackTrace);
+typedef void _ConnectErrorCallback(HttpConnect connect, error, StackTrace stackTrace);
 ///The callback of onIdle
 typedef void _OnIdleCallback();
 ///The callback of countConnection
@@ -120,7 +120,7 @@ class _StreamServer implements StreamServer {
 
     return resourceLoader.load(connect, uri);
   }
-  Future _handleErr(HttpConnect connect, error, stackTrace) async {
+  Future _handleErr(HttpConnect connect, error, StackTrace stackTrace) async {
     if (connect.errorDetail != null) { //called twice; ignore 2nd one
       _logError(connect, error, stackTrace);
       return; //done
@@ -160,10 +160,10 @@ class _StreamServer implements StreamServer {
     }
   }
 
-  void _logInitError(error, stackTrace)
+  void _logInitError(error, StackTrace stackTrace)
   => _logError(null, error, stackTrace);
 
-  void _logError(HttpConnect connect, error, [stackTrace]) {
+  void _logError(HttpConnect connect, error, [StackTrace stackTrace]) {
     if (_onError != null) {
       try {
         _onError(connect, error, stackTrace);
@@ -176,7 +176,7 @@ class _StreamServer implements StreamServer {
     }
   }
 
-  void _shout(HttpConnect connect, err, [st]) {
+  void _shout(HttpConnect connect, err, [StackTrace st]) {
     final buf = new StringBuffer();
     try {
       buf..write(new DateTime.now())..write(':');
@@ -242,7 +242,7 @@ class _StreamServer implements StreamServer {
   }
 
   @override
-  void onError(void onError(HttpConnect connect, err, stackTrace)) {
+  void onError(void onError(HttpConnect connect, error, StackTrace stackTrace)) {
     _onError = onError;
   }
   @override

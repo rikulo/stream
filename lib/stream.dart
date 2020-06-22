@@ -18,6 +18,7 @@ import "package:rikulo_commons/browser.dart";
 import "package:rikulo_commons/logging.dart";
 
 import "plugin.dart";
+import "src/version.dart" as version;
 
 export "package:rikulo_commons/browser.dart" show Browser;
 

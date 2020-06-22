@@ -16,10 +16,10 @@ import "package:rikulo_commons/util.dart";
 import "package:rikulo_commons/io.dart" show getContentType;
 import "package:charcode/ascii.dart";
 
+import "src/version.dart";
+
 part "src/rspc/main.dart";
 part "src/rspc/build.dart";
 part "src/rspc/compiler.dart";
 part "src/rspc/tag.dart";
 part "src/rspc/tag_util.dart";
-
-const String version = "2.5.0";

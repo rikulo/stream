@@ -1,5 +1,9 @@
 # CHANGES
 
+### 2.5.1
+
+* `Server.onError()` expects `StackTrace` rather than `dynamic`.
+
 ### 2.5.0
 
 * [86](https://github.com/rikulo/stream/issues/86): the error mapping can map only error codes (integers). It implies

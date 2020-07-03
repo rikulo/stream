@@ -322,8 +322,8 @@ class _StreamServer implements StreamServer {
         ..date = new DateTime.now();
 
       //protect from aborted connection
-      final HttpConnect connect = new _HttpConnect(channel, req, req.response);
-      final shallCount = _shallCount?.call(connect) != false;
+      final connect = new _HttpConnect(channel, req, req.response),
+        shallCount = _shallCount?.call(connect) != false;
       if (shallCount) ++_connectionCount;
 
       try {
@@ -350,7 +350,7 @@ class _StreamServer implements StreamServer {
           }
         }
       }
-    });
+    }, onError: _logInitError);
     _channels.add(channel);
   }
 

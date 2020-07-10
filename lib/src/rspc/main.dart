@@ -14,9 +14,12 @@ class _Stats {
   int nSkipped = 0;
 
   void onCompile(String source, {bool skipped: false}) {
-    print(skipped ? "$source not modified": "Compiling $source");
-    if (skipped) ++nSkipped;
-    else ++nCompiled;
+    if (skipped) {
+      print("$source not modified");
+      ++nSkipped;
+    } else {
+      ++nCompiled;
+    }
   }
   void printSummary() {
     if (nCompiled + nSkipped > 1) { //don't print if single file

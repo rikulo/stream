@@ -1,5 +1,9 @@
 # CHANGES
 
+### 2.5.1+3
+
+* Fix #87: File name containing a space
+
 ### 2.5.1
 
 * `Server.onError()` expects `StackTrace` rather than `dynamic`.

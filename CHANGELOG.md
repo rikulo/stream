@@ -1,7 +1,8 @@
 # CHANGES
 
-### 2.5.1+3
+### 2.5.1+5
 
+* Throws 404 if path contains invalid UTF characters
 * Fix #87: File name containing a space
 
 ### 2.5.1

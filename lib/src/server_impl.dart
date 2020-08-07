@@ -118,7 +118,14 @@ class _StreamServer implements StreamServer {
     (uri.startsWith("/webapp/") || uri == "/webapp"))
       throw new Http403(uri: Uri.tryParse(uri));
 
-    return resourceLoader.load(connect, Uri.decodeComponent(uri));
+    String path;
+    try {
+      path = Uri.decodeComponent(uri);
+    } catch (_) {
+      throw new Http404.fromConnect(connect);
+    }
+
+    return resourceLoader.load(connect, path);
   }
   Future _handleErr(HttpConnect connect, error, StackTrace stackTrace) async {
     if (connect.errorDetail != null) { //called twice; ignore 2nd one

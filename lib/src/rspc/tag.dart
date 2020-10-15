@@ -322,11 +322,11 @@ class VarTag extends Tag {
  *
  * It generates
  *
- *     <script id="name" type="text/plain">JSON.encode(expression)</script>
+ *     <script id="name" type="text/plain">jsonEncode(expression)</script>
  *
  * And, you can retrieve it in Dart with:
  *
- *     var data = JSON.decode(document.query("#data").innerHtml)
+ *     var data = jsonDecode(document.query("#data").innerHtml)
  */
 class JsonTag extends Tag {
   @override
@@ -368,7 +368,7 @@ class JsonTag extends Tag {
  *
  * Then, it generates a SCRIPT tag something similar as follows:
  *
- *     <script>name=JSON.encode(expression)</script>
+ *     <script>name=jsonEcode(expression)</script>
  *
  * Notice: it is a JavaScript object. If you'd like to handle it in Dart,
  * it is better to use [JsonTag] instead.

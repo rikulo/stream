@@ -134,9 +134,7 @@ class Rsp {
     return uri + (query == null ? "?$query2": "$query&$query2");
   }
 
-  /** Serializes the given object into a JSON string by use of
-   * [JSON.encode](http://api.dartlang.org/docs/releases/latest/dart_convert.html#JSON).
-   */
+  /// Serializes the given object into a JSON string by use of `jsonEncode`.
   static String json(data) => cvt.json.encode(data).replaceAll(_scriptPtn, r"<\/");
   static final RegExp _scriptPtn = new RegExp(r"</(?=script>)", caseSensitive: false);
     //it is possible that a string contains </script>

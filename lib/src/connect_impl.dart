@@ -61,6 +61,8 @@ abstract class _AbstractConnect implements HttpConnect {
   @override
   final HttpResponse response;
   @override
+  bool autoClose = true;
+  @override
   HttpConnect get forwarder => null;
   @override
   HttpConnect get includer => null;

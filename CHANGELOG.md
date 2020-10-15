@@ -1,5 +1,9 @@
 # CHANGES
 
+### 2.6.0
+
+* `HttpConnect.autoClose` added to control whether to close the response at the end.
+
 ### 2.5.1+5
 
 * Throws 404 if path contains invalid UTF characters

@@ -75,7 +75,7 @@ typedef Future RequestFilter(HttpConnect connect, Future chain(HttpConnect conn)
  *       final info = {"name": "Rikulo Stream", "version": connect.server.version};
  *       connect.response
  *         ..headers.contentType = getContentType("json")
- *         ..write(JSON.encode(info));
+ *         ..write(jsonEncode(info));
  *     }
  *
  * On the other hand, if a request is handled asynchronously, it *must* return
@@ -251,6 +251,10 @@ abstract class HttpConnect {
    * for internal use.
    */
   Map<String, dynamic> get dataset;
+
+  /// Returns whether to close [response] after serving a request.
+  /// Default: true.
+  bool autoClose = true;
 }
 
 ///The HTTP connection wrapper. It simplifies the overriding of a connection.
@@ -309,6 +313,13 @@ class HttpConnectWrapper implements HttpConnect {
 
   @override
   Map<String, dynamic> get dataset => origin.dataset;
+
+  @override
+  bool get autoClose => origin.autoClose;
+  @override
+  void set autoClose(bool auto) {
+    origin.autoClose = auto;
+  }
 }
 
 ///The error detailed information.

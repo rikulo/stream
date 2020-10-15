@@ -343,7 +343,8 @@ class _StreamServer implements StreamServer {
         }
       } finally {
         try {
-          await connect.response.close();
+          if (connect.autoClose)
+            await connect.response.close();
         } catch (ex, st) {
           _logError(connect, ex, st);
         } finally {

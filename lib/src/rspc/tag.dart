@@ -101,18 +101,16 @@ abstract class Tag {
  * The name of tag must start with a lower-case letter (a-z), and it can
  * have only letters (a-z and A-Z).
  */
-Map<String, Tag> get tags {
-  if (_tags == null) {
-    _tags = new HashMap<String, Tag>();
-    for (Tag tag in [new PageTag(), new DartTag(), new HeaderTag(),
+Map<String, Tag> get _tags {
+  final _tags = new HashMap<String, Tag>();
+  for (Tag tag in [new PageTag(), new DartTag(), new HeaderTag(),
       new IncludeTag(), new ForwardTag(), new VarTag(),
       new JsonTag(), new JsonJsTag(),
       new ForTag(), new WhileTag(), new IfTag(), new ElseTag()])
       _tags[tag.name] = tag;
-  }
   return _tags;
 }
-Map<String, Tag> _tags;
+/*late*/ Map<String, Tag> tags = _tags;
 
 ///The page tag.
 class PageTag extends Tag {
@@ -226,7 +224,7 @@ class IncludeTag extends Tag {
   @override
   void begin(TagContext tc, String data) {
     tc.data = new ArgInfo(tc, data);
-    tc.args = new LinkedHashMap<String, String>(); //order is important
+    tc.args = new LinkedHashMap<String/*!*/, String>(); //order is important
   }
   @override
   void end(TagContext tc) {
@@ -244,7 +242,7 @@ class IncludeTag extends Tag {
   String get name => "include";
 }
 ///merge arguments
-Map<String, String> _mergeArgs(Map<String, String> dst, Map<String, String> src) {
+Map<String/*!*/, String/*!*/> _mergeArgs(Map<String/*!*/, String/*!*/> dst, Map<String/*!*/, String> src) {
   if (src != null)
     for (final nm in src.keys)
       dst[nm] = "[=${src[nm]}.toString()]";
@@ -298,13 +296,13 @@ class VarTag extends Tag {
     tc..push(var1)..push(var2);
 
     if (tc.parent.args == null) var1 = "_${var1}_";
-    tc.writeln("\n${tc.pre}final $var1 = new StringBuffer(), $var2 = connect;${tc.getLineNumberComment()}\n"
-      "${tc.pre}connect = new HttpConnect.stringBuffer(connect, $var1); response = connect.response;");
+    tc.writeln("\n${tc.pre}final $var1 = new StringBuffer();\n${tc.pre}final $var2 = connect;${tc.getLineNumberComment()}\n"
+      "${tc.pre}connect = new HttpConnect.stringBuffer(connect, $var1);\n${tc.pre}response = connect.response;");
   }
   @override
   void end(TagContext tc) {
     final var2 = tc.pop() as String, var1 = tc.pop() as String;
-    tc.writeln("\n${tc.pre}connect = $var2; response = connect.response;");
+    tc.writeln("\n${tc.pre}connect = $var2;\n${tc.pre}response = connect.response;");
     if (tc.parent.args == null) {
       tc.writeln("${tc.pre}final $var1 = _${var1}_.toString();");
     }

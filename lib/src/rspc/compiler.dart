@@ -12,14 +12,17 @@ class Compiler {
   final IOSink destination;
   final String destinationName;
   final Encoding encoding;
-  final bool verbose, lineNumber;
+  final bool/*!*/ verbose;
+  final bool lineNumber;
   //the closure's partOf, import, name, args...
   String _partOf, _parts, _import, _name, _args, _desc, _contentType, _dart;
   final List<String> _defImports;
   final List<_TagContext> _tagCtxs = [];
-  _TagContext _current;
+  /*late*/_TagContext _current;
   //The position, length and _line of the source
-  int _pos = 0, _len, _line = 1;
+  int _pos = 0;
+  int _len = 1;
+  int _line = 1;
   //Look-ahead tokens
   final List _lookAhead = [];
   final List<_QuedTag> _headers = []; //the queued headers
@@ -136,15 +139,18 @@ class Compiler {
   void _start([int line]) {
     if (line == null) line = _line;
     if (_name == null) {
+      final sourceName = this.sourceName;
       if (sourceName == null || sourceName.isEmpty)
         _error("The page tag with the name attribute is required", line);
 
-      _name = Path.basename(sourceName);
-      int i = _name.indexOf('.');
-      _name = StringUtil.camelize(i < 0 ? _name: _name.substring(0, i));
+      var name = Path.basename(sourceName);
+      int i = name.indexOf('.');
+      name = StringUtil.camelize(i < 0 ? name: name.substring(0, i));
+      _name = name;
+
         //don't use basenameWithoutExtension since there might be multiple '.'
-      for (i = _name.length; --i >= 0;) { //check if _name is legal
-        final cc = _name.codeUnitAt(i);
+      for (i = name.length; --i >= 0;) { //check if _name is legal
+        final cc = name.codeUnitAt(i);
         if (!isValidVarCharCode(cc, i == 0))
           _error("Unable to generate a legal function name from $sourceName. "
             "Please specify the name with the page tag.", line);
@@ -181,7 +187,8 @@ class Compiler {
       int i = lib.lastIndexOf('.'); //remove only one extension
       if (i >= 0) lib = lib.substring(0, i);
 
-      final sb = new StringBuffer(), len = lib.length;
+      final sb = new StringBuffer();
+      final len = lib.length;
       for (i = 0; i < len; ++i) {
         final cc = lib.codeUnitAt(i);
         if (isValidVarCharCode(cc, i == 0)) sb.writeCharCode(cc);
@@ -289,7 +296,7 @@ class Compiler {
   }
 
   ///Include the given URI.
-  void includeUri(String uri, [Map<String, String> args, int line]) {
+  void includeUri(String/*!*/ uri, [Map<String, String> args, int line]) {
     if (verbose) _info("Include $uri", line);
 
     _write("\n${_current.pre}await connect.include(");
@@ -304,7 +311,7 @@ class Compiler {
     _writeln(");${_getLineNumberComment(line)}");
   }
   ///Include the output of the given renderer
-  void include(String method, [Map<String, String> args, int line]) {
+  void include(String/*!*/ method, [Map<String, String> args, int line]) {
     if (verbose) _info("Include $method", line);
 
     _write("\n${_current.pre}await $method(new HttpConnect.chain(connect)");
@@ -313,7 +320,7 @@ class Compiler {
   }
 
   ///Forward to the given URI.
-  void forwardUri(String uri, [Map<String, String> args, int line]) {
+  void forwardUri(String/*!*/ uri, [Map<String, String> args, int line]) {
     if (verbose) _info("Forward $uri", line);
 
     _write("\n${_current.pre}return connect.forward(");
@@ -328,7 +335,7 @@ class Compiler {
     _writeln(");${_getLineNumberComment(line)}");
   }
   //Forward to the given renderer
-  void forward(String method, [Map<String, String> args, int line]) {
+  void forward(String/*!*/ method, [Map<String, String> args, int line]) {
     if (verbose) _info("Forward $method", line);
 
     _write("\n${_current.pre}return ${method}(connect");
@@ -563,7 +570,8 @@ class Compiler {
     if (destinationName == null)
       _error("The partOf attribute refers to a dart file is allowed only if destination is specified");
 
-    String libpath = _partOf, mypath = destinationName;
+    String libpath = _partOf;
+    var mypath = destinationName;
     if (!Path.isAbsolute(libpath))
       libpath = Path.join(Path.dirname(mypath), libpath);
     mypath = Path.relative(mypath, from: Path.dirname(libpath));
@@ -588,7 +596,9 @@ class Compiler {
     bool comment0 = false, comment1 = false;
     final libimports = new Set<String>(), libparts = new Set<String>();
     final data = libfile.readAsStringSync();
-    int len = data.length, importPos, partPos = len;
+    int len = data.length;
+    int importPos;
+    var partPos = len;
     for (int i = 0, j; i < len; ++i) {
       final cc = data.codeUnitAt(i);
       if (comment0) { //look for \n
@@ -728,7 +738,7 @@ class Compiler {
 
 ///Syntax error.
 class SyntaxError extends Error {
-  String _msg;
+  /*late*/String _msg;
   ///The source name
   final String sourceName;
   ///The line number
@@ -737,7 +747,7 @@ class SyntaxError extends Error {
   SyntaxError(this.sourceName, this.line, String message) {
     _msg = "$sourceName:$line: $message";
   }
-  String get message => _msg;
+  String/*!*/ get message => _msg;
 }
 
 class _TagContext extends TagContext {
@@ -745,7 +755,7 @@ class _TagContext extends TagContext {
 
   ///The line number
   @override
-  final int line;
+  final int/*!*/ line;
 
   _TagContext.root(Compiler compiler, IOSink output)
     : _pre = "", line = 1, super(null, null, compiler, output);
@@ -811,7 +821,7 @@ int _skipWhitespace(String data, int i) {
   return i;
 }
 ///shorten the path to display
-String _shorten(String path, String reference) {
+String _shorten(String/*!*/ path, String reference) {
   try {
     if (reference != null && !reference.isEmpty) {
       if (Path.extension(reference) != "")
@@ -825,7 +835,7 @@ String _shorten(String path, String reference) {
   return _unipath(nm.isEmpty ? path: nm);
 }
 
-String _unipath(String path)
+String/*!*/ _unipath(String/*!*/ path)
 => Path.separator == '\\' ? path.replaceAll('\\', '/'): path;
 
 final Random _random = new Random();

@@ -12,28 +12,34 @@ Future include(HttpConnect connect, {foo, more, less}) async {
   if (!Rsp.init(connect, "text/html; charset=utf-8"))
     return null;
 
-  final _less_ = new StringBuffer(), _0 = connect;
-  connect = new HttpConnect.stringBuffer(connect, _less_); response = connect.response;
+  final _less_ = new StringBuffer();
+  final _0 = connect;
+  connect = new HttpConnect.stringBuffer(connect, _less_);
+  response = connect.response;
 
   response.write("""less is more
 """);
 
-  connect = _0; response = connect.response;
+  connect = _0;
+  response = connect.response;
   final less = _less_.toString();
 
   response.write("""
 
 """);
 
-  final _1 = new StringBuffer(), _2 = connect;
-  connect = new HttpConnect.stringBuffer(connect, _1); response = connect.response;
+  final _1 = new StringBuffer();
+  final _2 = connect;
+  connect = new HttpConnect.stringBuffer(connect, _1);
+  response = connect.response;
 
   response.write("""  More information
 """);
 
   await include(new HttpConnect.chain(connect), more: "recursive");
 
-  connect = _2; response = connect.response;
+  connect = _2;
+  response = connect.response;
 
   await include(new HttpConnect.chain(connect), foo: true, less: less, more: _1.toString());
 

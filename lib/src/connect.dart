@@ -163,7 +163,7 @@ abstract class HttpConnect {
    * since `HttpResponse.redirect()` will close the connection (which
    * will be called automatically under Rikulo Stream).
    */
-  void redirect(String url, {int status: HttpStatus.movedTemporarily});
+  void redirect(String/*!*/ url, {int status: HttpStatus.movedTemporarily});
 
   /** Forward this connection to the given [uri].
    *
@@ -250,7 +250,7 @@ abstract class HttpConnect {
    * Note: the name of the keys can't start with "stream.", which is reserved
    * for internal use.
    */
-  Map<String, dynamic> get dataset;
+  Map<String/*!*/, dynamic>/*!*/ get dataset;
 
   /// Returns whether to close [response] after serving a request.
   /// Default: true.

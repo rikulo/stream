@@ -17,48 +17,60 @@ Future home(HttpConnect connect) async {
   <body>
 """);
 
-  final _0 = new StringBuffer(), _1 = connect;
-  connect = new HttpConnect.stringBuffer(connect, _0); response = connect.response;
+  final _0 = new StringBuffer();
+  final _1 = connect;
+  connect = new HttpConnect.stringBuffer(connect, _0);
+  response = connect.response;
 
   await connect.include("/header.html");
 
-  connect = _1; response = connect.response;
+  connect = _1;
+  response = connect.response;
 
   response.write("""
 
 """);
 
-  final _2 = new StringBuffer(), _3 = connect;
-  connect = new HttpConnect.stringBuffer(connect, _2); response = connect.response;
+  final _2 = new StringBuffer();
+  final _3 = connect;
+  connect = new HttpConnect.stringBuffer(connect, _2);
+  response = connect.response;
 
   await sidebar(new HttpConnect.chain(connect));
 
-  connect = _3; response = connect.response;
+  connect = _3;
+  response = connect.response;
 
   response.write("""
 
 """);
 
-  final _4 = new StringBuffer(), _5 = connect;
-  connect = new HttpConnect.stringBuffer(connect, _4); response = connect.response;
+  final _4 = new StringBuffer();
+  final _5 = connect;
+  connect = new HttpConnect.stringBuffer(connect, _4);
+  response = connect.response;
 
   await connect.include("/footer.html");
 
-  connect = _5; response = connect.response;
+  connect = _5;
+  response = connect.response;
 
   response.write("""
 
 """);
 
-  final _6 = new StringBuffer(), _7 = connect;
-  connect = new HttpConnect.stringBuffer(connect, _6); response = connect.response;
+  final _6 = new StringBuffer();
+  final _7 = connect;
+  connect = new HttpConnect.stringBuffer(connect, _6);
+  response = connect.response;
 
   response.write("""  <h1>Hello Templating</h1>
   <p>In this example, we demostrate how to define the shared layout (aka., the template), define page fragments and assemble them into a complete page. It is based on the so-called *Composite View* pattern.</p>
   <p>For more information, please refer to <a href="http://docs.rikulo.org/stream/latest/RSP/Fundamentals/Templating-_Composite_View_Pattern.html">Templating: Composite View Pattern</a>.</p>
 """);
 
-  connect = _7; response = connect.response;
+  connect = _7;
+  response = connect.response;
 
   await classic(new HttpConnect.chain(connect), header: _0.toString(), sidebar: _2.toString(), footer: _4.toString(), body: _6.toString());
 

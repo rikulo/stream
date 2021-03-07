@@ -10,7 +10,7 @@ DIR=$( cd $( dirname "${BASH_SOURCE[0]}" ) && pwd )
 pushd $DIR/..
 echo Compile RSP files
 find . -name *.rsp.dart | xargs rm -rf
-dart tool/rspc.dart */*/*.rsp.html
+bash tool/rspc */*/*.rsp.html
 
 echo Analyzing library for warnings or type errors
 dartanalyzer --fatal-warnings lib/*.dart \

@@ -171,11 +171,12 @@ class DefaultRouter implements Router {
 
     if (handler == null) {
       _UriMapping mp;
-      for (mp in _uriMapping)
+      for (mp in _uriMapping){
         if (mp.match(connect, uri)) {
           handler = mp.handler;
           break;
         }
+      }
 
       //store to cache
       if (shallCache(connect, uri)) {
@@ -413,9 +414,10 @@ class _UriCache {
     _cache = null;
   }
 
-  Map<String, dynamic> getCache(HttpConnect connect, List<_UriMapping> mappings) {
+  Map<String, dynamic>/*!*/ getCache(HttpConnect connect, List<_UriMapping> mappings) {
+    Map<String, dynamic>/*!*/ cache = _multimethod == null ? LinkedHashMap() : _cache;
     if (_multimethod == null) { //not initialized yet
-      _cache = new LinkedHashMap<String, dynamic>();
+      _cache = cache;
 
       _multimethod = false;
       for (final _UriMapping m in mappings)
@@ -426,8 +428,8 @@ class _UriCache {
     }
 
     return _multimethod ? 
-      _cache.putIfAbsent(connect.request.method,
+      cache.putIfAbsent(connect.request.method,
           () => new LinkedHashMap<String, dynamic>()) as Map<String, dynamic>:
-      _cache;
+      cache;
   }
 }

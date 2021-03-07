@@ -37,8 +37,8 @@ String toEL(String data, {bool direct: true}) {
   for (int i = 0, len = data.length; i < len; ++i) {
     final cc = data.codeUnitAt(i);
     if (cc == $lbracket && i + 1 < len && data.codeUnitAt(i + 1) == $equal) { //found
-      final j = _skipToELEnd(data, i + 2),
-          val = data.substring(i + 2, j).trim();
+      final j = _skipToELEnd(data, i + 2);
+      final val = data.substring(i + 2, j).trim();
       if (direct && i == 0 && j + 1 == len) //single EL
         return val;
       if (!val.isEmpty)
@@ -150,7 +150,7 @@ class ArgInfo {
   ///Whether the first argument is an ID.
   final bool isID;
   ///Map of arguments, excluding [first]
-  final Map<String, String> args;
+  final Map<String, String/*!*/> args;
 
   /** Parses the given string.
    *
@@ -211,7 +211,7 @@ class ArgInfo {
   ArgInfo._(this.first, this.isID, this.args);
 }
 
-typedef void _Output(TagContext tc, String id, Map<String, String> args);
+typedef void _Output(TagContext tc, String/*!*/ id, Map<String, String> args);
 
 /** A tag simplifies the implementation of simple tags. For example,
  *

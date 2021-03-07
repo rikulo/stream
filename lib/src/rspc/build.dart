@@ -30,7 +30,7 @@ void compile(String source, IOSink out, {String sourceName, String destinationNa
 Future<bool> compileFile(String sourceName, {String destinationName,
     bool verbose: false, bool newer: false,
     bool lineNumber: false, Encoding encoding: utf8, List<String> imports,
-    void onCompile(String source, {bool skipped})}) async {
+    void onCompile(String source, {bool/*!*/ skipped})}) async {
   final source = new File(sourceName);
   if (!await source.exists()) {
     print("File not found: ${sourceName}");
@@ -135,10 +135,10 @@ Future build(List<String> arguments, {String filenameMapper(String source),
     ..addFlag("machine", negatable: false)
     ..addFlag("full", negatable: false);
 
-  final args = argParser.parse(arguments),
-    changed = args["changed"] as List<String>,
-    removed = args["removed"] as List<String>,
-    clean = args["clean"] as bool;
+  final args = argParser.parse(arguments);
+  final changed = args["changed"] as List<String>;
+  final removed = args["removed"] as List<String>;
+  final clean = args["clean"] as bool;
   
   if (clean) { // clean only
     Directory.current.list(recursive: true).listen((fse) {

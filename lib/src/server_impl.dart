@@ -297,7 +297,8 @@ class _StreamServer implements StreamServer {
     return channel;
   }
   void _logHttpStarted(HttpChannel channel) {
-    final address = channel.address, port = channel.port;
+    final address = channel.address;
+    final port = channel.port;
     logger.info(
       "Rikulo Stream Server $_version starting${channel.isSecure ? ' HTTPS': ''} on "
       "${address is InternetAddress ? address.address: address}:$port\n"
@@ -329,8 +330,8 @@ class _StreamServer implements StreamServer {
         ..date = new DateTime.now();
 
       //protect from aborted connection
-      final connect = new _HttpConnect(channel, req, req.response),
-        shallCount = _shallCount?.call(connect) != false;
+      final connect = new _HttpConnect(channel, req, req.response);
+      final shallCount = _shallCount?.call(connect) != false;
       if (shallCount) ++_connectionCount;
 
       try {
@@ -376,7 +377,7 @@ class _StreamServer implements StreamServer {
   Future stop() {
     if (!isRunning)
       throw new StateError("Not running");
-    final List<Future> ops = new List(channels.length);
+    final List<Future> ops = new List.filled(channels.length, null);
     for (int i = channels.length; --i >= 0;)
       ops[i] = channels[i].close();
     return Future.wait(ops);

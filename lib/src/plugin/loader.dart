@@ -21,7 +21,7 @@ abstract class ResourceLoader {
 
   /** The root directory.
    */
-  final String rootDir;
+  final String/*!*/ rootDir;
 
   /// Loads the asset of the given URI to the given response.
   ///

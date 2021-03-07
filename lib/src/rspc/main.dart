@@ -5,7 +5,7 @@ part of stream_rspc;
 
 class _Environ {
   Encoding encoding = utf8;
-  bool verbose = false, lineNumber = false, newer = false;
+  bool/*!*/ verbose = false, lineNumber = false, newer = false;
   List<String> sources;
 }
 
@@ -13,7 +13,7 @@ class _Stats {
   int nCompiled = 0;
   int nSkipped = 0;
 
-  void onCompile(String source, {bool skipped: false}) {
+  void onCompile(String source, {bool/*!*/ skipped: false}) {
     if (skipped) {
       print("$source not modified");
       ++nSkipped;

@@ -38,9 +38,9 @@ Future proxyRequest(HttpConnect connect, url, {String proxyName,
     throw new ArgumentError.value(url, 'url', 'url must be a String or Uri.');
   }
 
-  final client = new http.Client(),
-    serverRequest = connect.request,
-    serverResponse = connect.response;
+  final client = new http.Client();
+  final serverRequest = connect.request;
+  final serverResponse = connect.response;
   http.StreamedResponse clientResponse;
 
   for (List<int> requestBody;;) {

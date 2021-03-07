@@ -38,8 +38,10 @@ final infos = {
     <div style="border: 1px solid red">
 """);
 
-  final _0 = new StringBuffer(), _1 = connect;
-  connect = new HttpConnect.stringBuffer(connect, _0); response = connect.response;
+  final _0 = new StringBuffer();
+  final _1 = connect;
+  connect = new HttpConnect.stringBuffer(connect, _0);
+  response = connect.response;
 
   response.write("""  <h1>This is a header</h1>
   <p>Passed from the includer for showing """);
@@ -50,10 +52,13 @@ final infos = {
   response.write("""</p>
 """);
 
-  connect = _1; response = connect.response;
+  connect = _1;
+  response = connect.response;
 
-  final _2 = new StringBuffer(), _3 = connect;
-  connect = new HttpConnect.stringBuffer(connect, _2); response = connect.response;
+  final _2 = new StringBuffer();
+  final _3 = connect;
+  connect = new HttpConnect.stringBuffer(connect, _2);
+  response = connect.response;
 
   response.write("""  <h2>This is a footer</h2>
   <p>It also includes another page:</p>
@@ -61,7 +66,8 @@ final infos = {
 
   await connect.include("/frag.html");
 
-  connect = _3; response = connect.response;
+  connect = _3;
+  response = connect.response;
 
   await fragView(new HttpConnect.chain(connect), infos: infos, header: _0.toString(), footer: _2.toString());
 

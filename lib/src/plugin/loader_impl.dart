@@ -10,7 +10,7 @@ class _AssetDetail {
   final Asset asset;
   final DateTime lastModified;
   final int assetSize;
-  final AssetCache cache;
+  final AssetCache/*?*/ cache;
 
   _AssetDetail(this.asset, this.lastModified, this.assetSize, this.cache);
 
@@ -168,7 +168,7 @@ const Duration _oneSecond = const Duration(seconds: 1);
 //--- ---//
 class _Range {
   ///The start (inclusive).
-  final int start;
+  final int/*!*/ start;
   ///The end (exclusive).
   final int end;
   final int length;
@@ -216,7 +216,7 @@ List<_Range> _parseRange(HttpConnect connect, _AssetDetail detail) {
     if (matches == null)
       return _rangeError(connect);
 
-    final List<int> values = new List(2);
+    final List<int> values = List.filled(2, 0);
     for (int i = 0; i < 2; ++i) {
       final match = matches[i + 1];
       if (!match.isEmpty)

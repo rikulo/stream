@@ -139,11 +139,11 @@ class Compiler {
   void _start([int? line]) {
     if (line == null) line = _line;
     if (_name == null) {
-      final sourceName = this.sourceName!;
+      final sourceName = this.sourceName;
       if (sourceName == null || sourceName.isEmpty)
         _error("The page tag with the name attribute is required", line);
 
-      var name = Path.basename(sourceName);
+      var name = Path.basename(sourceName!);
       int i = name.indexOf('.');
       name = StringUtil.camelize(i < 0 ? name: name.substring(0, i));
       _name = name;

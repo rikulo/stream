@@ -128,9 +128,9 @@ Future syntax(HttpConnect connect, {dynamic foo, bool c:false}) async {
 
 """);
 
-  final _whatever_ = new StringBuffer();
+  final _whatever_ = StringBuffer();
   final _0 = connect;
-  connect = new HttpConnect.stringBuffer(connect, _whatever_);
+  connect = HttpConnect.stringBuffer(connect, _whatever_);
   response = connect.response;
 
   response.write("""    define a variable
@@ -158,9 +158,9 @@ Future syntax(HttpConnect connect, {dynamic foo, bool c:false}) async {
 
   await connect.include("/abc");
 
-  final _1 = new StringBuffer();
+  final _1 = StringBuffer();
   final _2 = connect;
-  connect = new HttpConnect.stringBuffer(connect, _1);
+  connect = HttpConnect.stringBuffer(connect, _1);
   response = connect.response;
 
   response.write("""      The content for foo

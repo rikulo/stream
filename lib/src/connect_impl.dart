@@ -369,7 +369,7 @@ HttpResponse _wrapResponse(HttpResponse response, bool included)
 => !included || response is _IncludedResponse ? response: new _IncludedResponse(response);
 
 String _toAbsUri(HttpRequest request, String uri) {
-  if (uri != null && !uri.startsWith('/')) {
+  if (!uri.startsWith('/')) {
     final pre = request.uri.path;
     final i = pre.lastIndexOf('/');
     if (i >= 0)

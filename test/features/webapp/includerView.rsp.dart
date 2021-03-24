@@ -38,9 +38,9 @@ final infos = {
     <div style="border: 1px solid red">
 """);
 
-  final _0 = new StringBuffer();
+  final _0 = StringBuffer();
   final _1 = connect;
-  connect = new HttpConnect.stringBuffer(connect, _0);
+  connect = HttpConnect.stringBuffer(connect, _0);
   response = connect.response;
 
   response.write("""  <h1>This is a header</h1>
@@ -55,9 +55,9 @@ final infos = {
   connect = _1;
   response = connect.response;
 
-  final _2 = new StringBuffer();
+  final _2 = StringBuffer();
   final _3 = connect;
-  connect = new HttpConnect.stringBuffer(connect, _2);
+  connect = HttpConnect.stringBuffer(connect, _2);
   response = connect.response;
 
   response.write("""  <h2>This is a footer</h2>

@@ -1,8 +1,8 @@
 [!-- Syntax Test --]
-[:page contentType="[=foo.contentType as String]" args="foo, bool c:false"
+[:page contentType="[=foo.contentType as String]" args="dynamic foo, bool c:false"
 	import="dart:collection show LinkedHashMap"
   dart="var someExternal = 123;"/]
-[:header age="129" accept-ranges="[=foo.acceptRanges]" ]
+[:header age="129" accept-ranges="[=foo.acceptRanges as Object]" ]
 [:header Cache-Control="no-cache"]
 <!DOCTYPE html>
 <html>

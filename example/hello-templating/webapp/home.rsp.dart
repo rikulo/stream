@@ -17,9 +17,9 @@ Future home(HttpConnect connect) async {
   <body>
 """);
 
-  final _0 = new StringBuffer();
+  final _0 = StringBuffer();
   final _1 = connect;
-  connect = new HttpConnect.stringBuffer(connect, _0);
+  connect = HttpConnect.stringBuffer(connect, _0);
   response = connect.response;
 
   await connect.include("/header.html");
@@ -31,9 +31,9 @@ Future home(HttpConnect connect) async {
 
 """);
 
-  final _2 = new StringBuffer();
+  final _2 = StringBuffer();
   final _3 = connect;
-  connect = new HttpConnect.stringBuffer(connect, _2);
+  connect = HttpConnect.stringBuffer(connect, _2);
   response = connect.response;
 
   await sidebar(new HttpConnect.chain(connect));
@@ -45,9 +45,9 @@ Future home(HttpConnect connect) async {
 
 """);
 
-  final _4 = new StringBuffer();
+  final _4 = StringBuffer();
   final _5 = connect;
-  connect = new HttpConnect.stringBuffer(connect, _4);
+  connect = HttpConnect.stringBuffer(connect, _4);
   response = connect.response;
 
   await connect.include("/footer.html");
@@ -59,9 +59,9 @@ Future home(HttpConnect connect) async {
 
 """);
 
-  final _6 = new StringBuffer();
+  final _6 = StringBuffer();
   final _7 = connect;
-  connect = new HttpConnect.stringBuffer(connect, _6);
+  connect = HttpConnect.stringBuffer(connect, _6);
   response = connect.response;
 
   response.write("""  <h1>Hello Templating</h1>

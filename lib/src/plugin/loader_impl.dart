@@ -152,7 +152,8 @@ String _getETag(DateTime lastModified, int assetSize)
 => '"$assetSize-${lastModified.millisecondsSinceEpoch.toRadixString(16)}"';
 
 bool _isTextType(ContentType? ctype) {
-  String ptype, subType;
+  String? ptype;
+  String? subType;
   return ctype == null || (ptype = ctype.primaryType) == "text"
     || ((subType = ctype.subType) != null && subType.endsWith("+xml"))
     || (ptype == "application" && _textSubtype.containsKey(subType));

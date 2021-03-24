@@ -3,7 +3,7 @@
 part of hello_mvc;
 
 /** Template, listView, for rendering the view. */
-Future listView(HttpConnect connect, { required String path, required List<FileInfo> infos}) async {
+Future listView(HttpConnect connect, {required String path, required List<FileInfo> infos}) async {
   HttpResponse response = connect.response;
   if (!Rsp.init(connect, "text/html; charset=utf-8"))
     return null;

@@ -12,9 +12,9 @@ Future include(HttpConnect connect, {foo, more, less}) async {
   if (!Rsp.init(connect, "text/html; charset=utf-8"))
     return null;
 
-  final _less_ = new StringBuffer();
+  final _less_ = StringBuffer();
   final _0 = connect;
-  connect = new HttpConnect.stringBuffer(connect, _less_);
+  connect = HttpConnect.stringBuffer(connect, _less_);
   response = connect.response;
 
   response.write("""less is more
@@ -28,9 +28,9 @@ Future include(HttpConnect connect, {foo, more, less}) async {
 
 """);
 
-  final _1 = new StringBuffer();
+  final _1 = StringBuffer();
   final _2 = connect;
-  connect = new HttpConnect.stringBuffer(connect, _1);
+  connect = HttpConnect.stringBuffer(connect, _1);
   response = connect.response;
 
   response.write("""  More information

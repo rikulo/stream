@@ -223,7 +223,7 @@ class DefaultRouter implements Router {
 }
 
 ///Renderer for 404
-final RequestHandler _f404 = (HttpConnect _) {throw new Http404();} as Future<dynamic> Function(HttpConnect);
+final RequestHandler _f404 = (HttpConnect _) {throw new Http404();};
 
 typedef Future _WSHandler(WebSocket socket);
 

@@ -27,7 +27,7 @@ class Rsp {
    *
    * * [contentType] - ignored if null or empty.
    */
-  static bool init(HttpConnect connect, String contentType,
+  static bool init(HttpConnect connect, String? contentType,
     {DateTime? lastModified, String? etag}) {
     if (!connect.isIncluded) {
       final HttpResponse response = connect.response;
@@ -120,7 +120,7 @@ class Rsp {
 
   /** Concatenates a path with a map of parameters.
    */
-  static String cat(String uri, Map<String, dynamic> parameters) {
+  static String cat(String uri, Map<String, dynamic>? parameters) {
     if (parameters == null || parameters.isEmpty)
       return uri;
 

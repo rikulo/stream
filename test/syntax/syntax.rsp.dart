@@ -10,11 +10,11 @@ import 'dart:collection' show LinkedHashMap;
 var someExternal = 123;
 
 /** Template, syntax, for rendering the view. */
-Future syntax(HttpConnect connect, {foo, bool c:false}) async {
+Future syntax(HttpConnect connect, {dynamic foo, bool c:false}) async {
   HttpResponse response = connect.response;
 
   response.headers..add("age", "129")
-    ..add("accept-ranges", foo.acceptRanges);
+    ..add("accept-ranges", foo.acceptRanges as Object);
 
   response.headers..add("Cache-Control", "no-cache");
 

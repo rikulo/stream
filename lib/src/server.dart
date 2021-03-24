@@ -94,9 +94,9 @@ abstract class StreamServer {
    * If false (default), [Logger.root] will be set to [Level.INFO], and
    * a listener will be added [logger].
    */
-  factory StreamServer({Map<String, dynamic> uriMapping,
-      Map<int, dynamic> errorMapping, Map<String, RequestFilter> filterMapping,
-      String homeDir, bool disableLog: false})
+  factory StreamServer({Map<String, dynamic>? uriMapping,
+      Map<int, dynamic>? errorMapping, Map<String, RequestFilter>? filterMapping,
+      String? homeDir, bool disableLog: false})
   => new _StreamServer(
       new DefaultRouter(uriMapping: uriMapping,
         errorMapping: errorMapping, filterMapping: filterMapping),
@@ -105,7 +105,7 @@ abstract class StreamServer {
   /** Constructs a server with the given router.
    * It is used if you'd like to use your own router, rather than the default one.
    */
-  factory StreamServer.router(Router router, {String homeDir,
+  factory StreamServer.router(Router router, {String? homeDir,
       bool disableLog: false})
   => new _StreamServer(router, homeDir, disableLog);
 
@@ -115,7 +115,7 @@ abstract class StreamServer {
   /** The path of the home directory. It is the directory that static resources
    * are loaded from.
    */
-  String get homeDir;
+  String? get homeDir;
   /** A list of names that will be used to locate the resource if
    * the given path is a directory.
    *
@@ -126,7 +126,7 @@ abstract class StreamServer {
   /** The timeout, in seconds, for sessions of this server.
    * Default: 1200 (unit: seconds)
    */
-  int sessionTimeout;
+  int sessionTimeout = 1200;
 
   /** The prefix used to denote a different version of JavaScript or Dart code,
    * such that the browser will reload the JavaScript files automatically.
@@ -153,7 +153,7 @@ abstract class StreamServer {
    *
    * You can prefix it to the image that depends on the build number too.
    */
-  String uriVersionPrefix;
+  String uriVersionPrefix = "";
   /** Preprocessor that will be used to preprocess the path of each request,
    * if specified.
    * 
@@ -165,7 +165,7 @@ abstract class StreamServer {
    * After all, browsers with cached content might request a file with
    * an older version.
    */
-  PathPreprocessor pathPreprocessor;
+  PathPreprocessor? pathPreprocessor;
 
   /** Indicates whether the server is running.
    */
@@ -286,7 +286,7 @@ abstract class StreamServer {
    *     [:/if]
    */
   Future forward(HttpConnect connect, String uri, {
-    HttpRequest request, HttpResponse response});
+    HttpRequest? request, HttpResponse? response});
   /** Includes the given [uri].
    *
    * If [request] and/or [response] is ignored, [connect]'s request and/or response is assumed.
@@ -314,13 +314,13 @@ abstract class StreamServer {
    * Otherwise, it will cause exception if the forwarded page updates the HTTP headers.
    */
   Future include(HttpConnect connect, String uri, {
-    HttpRequest request, HttpResponse response});
+    HttpRequest? request, HttpResponse? response});
 
   /** The resource loader used to load the static resources.
    * It is called if the path of a request doesn't match any of the URL
    * mapping given in the constructor.
    */
-  ResourceLoader resourceLoader;
+  ResourceLoader? resourceLoader;
 
   /** The application-specific error handler to listen all uncaught errors
    * that ever happen in this server.
@@ -336,7 +336,7 @@ abstract class StreamServer {
    * Once [onError] is assigned, the default logging will be disabled,
    * i.e., it is [onError]'s job to log it.
    */
-  void onError(void onError(HttpConnect connect, error, StackTrace stackTrace));
+  void onError(void onError(HttpConnect? connect, error, StackTrace? stackTrace));
 
   /** Specifies a callback called when the server is idle, i.e.,
    * not serving any requests ([connectionCount] is 0).

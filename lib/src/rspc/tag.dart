@@ -7,23 +7,23 @@ part of stream_rspc;
  */
 abstract class TagContext {
   /// The parent tag context, or null if this is root.
-  final TagContext parent;
+  final TagContext? parent;
   /** The output stream to generate the Dart code.
    * You can change it to have the child tag to generate the Dart code
    * to, say, a buffer.
    */
   IOSink output;
   ///The tag
-  final Tag tag;
+  final Tag? tag;
   /** The map of arguments. If a tag assigns a non-null value, it means
    * the child tags must be `var`.
    *
    * The key is the argument's name, while the value is the local variable's name.
    * The local variable is used to hold the value.
    */
-  Map<String, String> args;
+  Map<String, String>? args;
   ///Tag-specific data. A tag can store anything here.
-  var data;
+  late var data;
   final Compiler compiler;
   ///The line number of the starting of this context
   int get line;
@@ -45,11 +45,11 @@ abstract class TagContext {
   pop();
 
   ///Returns the comment containing the line number.
-  String getLineNumberComment([int line])
+  String getLineNumberComment([int? line])
   => compiler.lineNumber ? ' //#${line??this.line}': '';
 
   ///Writes a string to [output] in the compiler's encoding.
-  void write(String str) {
+  void write(String? str) {
     output.write(str);
   }
   ///Writes a character code.
@@ -57,15 +57,15 @@ abstract class TagContext {
     output.writeCharCode(code);
   }
   ///Write a string plus a linefeed to [output] in the compiler's encoding.
-  void writeln([String str]) {
+  void writeln([String? str]) {
     if (str != null)
       write(str);
     write("\n");
   }
   ///Throws an exception (and stops execution).
-  void error(String message, [int line]);
+  void error(String message, [int? line]);
   ///Display an warning.
-  void warning(String message, [int line]);
+  void warning(String message, [int? line]);
 }
 
 /**
@@ -110,13 +110,13 @@ Map<String, Tag> get _tags {
       _tags[tag.name] = tag;
   return _tags;
 }
-/*late*/ Map<String, Tag> tags = _tags;
+late Map<String, Tag> tags = _tags;
 
 ///The page tag.
 class PageTag extends Tag {
   @override
   void begin(TagContext tc, String data) {
-    String partOf, parts, imports, name, desc, args, ctype, dart, lastModified, etag;
+    String? partOf, parts, imports, name, desc, args, ctype, dart, lastModified, etag;
     final attrs = parseArgs(data);
     for (final nm in attrs.keys) {
       final val = attrs[nm];
@@ -141,7 +141,7 @@ class PageTag extends Tag {
         case "args":
         case "arguments":
           args = val;
-          if (args.trim().isEmpty)
+          if (args!.trim().isEmpty)
             args = null;
           break;
         case "description":
@@ -224,7 +224,7 @@ class IncludeTag extends Tag {
   @override
   void begin(TagContext tc, String data) {
     tc.data = new ArgInfo(tc, data);
-    tc.args = new LinkedHashMap<String/*!*/, String>(); //order is important
+    tc.args = new LinkedHashMap<String, String>(); //order is important
   }
   @override
   void end(TagContext tc) {
@@ -242,7 +242,7 @@ class IncludeTag extends Tag {
   String get name => "include";
 }
 ///merge arguments
-Map<String/*!*/, String/*!*/> _mergeArgs(Map<String/*!*/, String/*!*/> dst, Map<String/*!*/, String> src) {
+Map<String, String?> _mergeArgs(Map<String, String?> dst, Map<String, String?>? src) {
   if (src != null)
     for (final nm in src.keys)
       dst[nm] = "[=${src[nm]}.toString()]";
@@ -289,21 +289,21 @@ class VarTag extends Tag {
   @override
   void begin(TagContext tc, String data) {
     final argInfo = new ArgInfo(tc, data, stringFirst: false);
-    final parentArgs = tc.parent.args;
-    var var1 = parentArgs != null ?
+    final Map<String?, String>? parentArgs = tc.parent?.args;
+    String? var1 = parentArgs != null ?
           (parentArgs[argInfo.first] = tc.nextVar()): argInfo.first,
       var2 = tc.nextVar();
     tc..push(var1)..push(var2);
 
-    if (tc.parent.args == null) var1 = "_${var1}_";
-    tc.writeln("\n${tc.pre}final $var1 = new StringBuffer();\n${tc.pre}final $var2 = connect;${tc.getLineNumberComment()}\n"
-      "${tc.pre}connect = new HttpConnect.stringBuffer(connect, $var1);\n${tc.pre}response = connect.response;");
+    if (tc.parent?.args == null) var1 = "_${var1}_";
+    tc.writeln("\n${tc.pre}final $var1 = StringBuffer();\n${tc.pre}final $var2 = connect;${tc.getLineNumberComment()}\n"
+      "${tc.pre}connect = HttpConnect.stringBuffer(connect, $var1);\n${tc.pre}response = connect.response;");
   }
   @override
   void end(TagContext tc) {
-    final var2 = tc.pop() as String, var1 = tc.pop() as String;
+    final var2 = tc.pop() as String?, var1 = tc.pop() as String?;
     tc.writeln("\n${tc.pre}connect = $var2;\n${tc.pre}response = connect.response;");
-    if (tc.parent.args == null) {
+    if (tc.parent?.args == null) {
       tc.writeln("${tc.pre}final $var1 = _${var1}_.toString();");
     }
   }
@@ -477,7 +477,7 @@ class ElseTag extends Tag {
   //The implementation is a bit tricky: it pretends to be an tag without the closing.
   @override
   void begin(TagContext tc, String data) {
-    if (!(tc.parent.tag is IfTag))
+    if (!(tc.parent!.tag is IfTag))
       tc.error("Unexpected else tag");
 
     tc.unindent();
@@ -485,7 +485,7 @@ class ElseTag extends Tag {
     if (data.isEmpty) {
       tc.writeln("\n${tc.pre}} else {${tc.getLineNumberComment()}");
     } else {
-      String cond;
+      late String cond;
       if (data.length < 4 || !data.startsWith("if")
       || !$whitespaces.contains(data.codeUnitAt(2))
       || (cond = data.substring(3).trim()).isEmpty)

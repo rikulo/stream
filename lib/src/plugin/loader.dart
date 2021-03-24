@@ -21,14 +21,14 @@ abstract class ResourceLoader {
 
   /** The root directory.
    */
-  final String/*!*/ rootDir;
+  String? rootDir;
 
   /// Loads the asset of the given URI to the given response.
   ///
   /// - [useCache] - whether to use the cache.
   /// If true (default), it will check the cache first, and update the
   /// cache if ncessary.
-  Future load(HttpConnect connect, String uri, {bool useCache: true});
+  Future? load(HttpConnect connect, String uri, {bool useCache: true});
 }
 
 /** An asset (aka., resource), such as a file or a BLOB object in database.
@@ -57,7 +57,7 @@ abstract class Asset {
    * * [start] - the starting offset (inclusive)
    * * [end] - the ending offset (exclusive)
    */
-  Stream<List<int>> openRead([int start, int end]);
+  Stream<List<int>> openRead([int? start, int? end]);
   ///Read the entire asset's contents as a list of bytes.
   Future<List<int>> readAsBytes();
 }
@@ -76,7 +76,7 @@ class FileAsset implements Asset {
   @override
   Future<int> length() => file.length();
   @override
-  Stream<List<int>> openRead([int start, int end]) => file.openRead(start, end);
+  Stream<List<int>> openRead([int? start, int? end]) => file.openRead(start, end);
   @override
   Future<List<int>> readAsBytes() => file.readAsBytes();
 
@@ -97,11 +97,11 @@ abstract class AssetCache {
   /** Returns the value of the ETag header. If null is returned, ETag header
    * won't be generated.
    */
-  String getETag(Asset asset, DateTime lastModified, int assetSize);
+  String? getETag(Asset asset, DateTime lastModified, int assetSize);
   /** Returns the duration for the Expires and max-age headers.
    * If null is returned, the Expires and max-age headers won't be generated.
    */
-  Duration getExpires(Asset asset);
+  Duration? getExpires(Asset asset);
 
   /** Whether the given asset shall be cached.
    *
@@ -109,7 +109,7 @@ abstract class AssetCache {
    */
   bool shallCache(Asset asset, int assetSize);
   ///Returns the content of asset, or null if not cached or expires (unit: bytes) .
-  List<int> getContent(Asset asset, DateTime lastModified);
+  List<int>? getContent(Asset asset, DateTime lastModified);
   ///Stores the content of the asset (unit: bytes) into the cache.
   void setContent(Asset asset, DateTime lastModified, List<int> content);
 }
@@ -133,7 +133,7 @@ abstract class AssetLoader implements ResourceLoader {
   }
 
   @override
-  final String rootDir;
+  String? rootDir;
 
   /** The total cache size (unit: bytes). Default: 3 * 1024 * 1024.
    * Note: [cacheSize] must be larger than [cacheThreshold].
@@ -150,7 +150,7 @@ abstract class AssetLoader implements ResourceLoader {
    * You can assign null to it to disable the caching.
    * Or, overriding [shallCache] to have fine-control of what to cache.
    */
-  AssetCache cache;
+  AssetCache? cache;
 
   ///Whether to generate the ETag header. Default: true.
   bool useETag = true;
@@ -164,7 +164,7 @@ abstract class AssetLoader implements ResourceLoader {
    * if [useETag] is true.
    * You can override this method if necessary.
    */
-  String getETag(Asset asset, DateTime lastModified, int assetSize)
+  String? getETag(Asset asset, DateTime lastModified, int assetSize)
   => useETag ? _getETag(lastModified, assetSize): null;
   /** Returns the duration for the Expires and max-age headers.
    * If null is returned, the Expires and max-age headers won't be generated.
@@ -172,7 +172,7 @@ abstract class AssetLoader implements ResourceLoader {
    * Default: 30 days if [useExpres] is true.
    * You can override this method if necessary.
    */
-  Duration getExpires(Asset asset) => useExpires ? const Duration(days: 30): null;
+  Duration? getExpires(Asset asset) => useExpires ? const Duration(days: 30): null;
 
   /** Whether the given asset shall be cached.
    *
@@ -190,7 +190,7 @@ abstract class AssetLoader implements ResourceLoader {
   Asset getAsset(String path);
 
   @override
-  Future load(HttpConnect connect, String uri, {bool useCache: true})
+  Future? load(HttpConnect connect, String uri, {bool useCache: true})
   => loadAsset(connect, getAsset(uri), useCache ? cache: null);
 }
 
@@ -210,9 +210,9 @@ class FileLoader extends AssetLoader {
   => new FileAsset(new File(path));
 
   @override
-  Future load(HttpConnect connect, String uri, {bool useCache: true}) async {
+  Future? load(HttpConnect connect, String uri, {bool useCache: true}) async {
     String path = uri.substring(1); //uri must start with '/', but path can't
-    path = Path.join(rootDir, path);
+    path = Path.join(rootDir!, path);
 
     final file = new File(path);
     if (await file.exists())
@@ -234,10 +234,10 @@ class FileLoader extends AssetLoader {
  * 
  * It throws [Http404] if [Asset.lastModified] throws an exception.
  */
-Future loadAsset(HttpConnect connect, Asset asset, [AssetCache cache]) async {
+Future? loadAsset(HttpConnect connect, Asset asset, [AssetCache? cache]) async {
   final HttpResponse response = connect.response;
   final bool isIncluded = connect.isIncluded;
-  ContentType contentType;
+  ContentType? contentType;
   if (!isIncluded) {
     final ext = Path.extension(asset.path);
     if (!ext.isEmpty) {
@@ -254,8 +254,8 @@ Future loadAsset(HttpConnect connect, Asset asset, [AssetCache cache]) async {
     throw new Http404.fromConnect(connect);
   }
 
-  List<int> content;
-  int assetSize;
+  List<int>? content;
+  int? assetSize;
   if (cache != null) {
     content = cache.getContent(asset, lastModified);
     if (content != null)
@@ -264,7 +264,7 @@ Future loadAsset(HttpConnect connect, Asset asset, [AssetCache cache]) async {
   if (assetSize == null)
     assetSize = await asset.length();
 
-  List<_Range> ranges;
+  List<_Range>? ranges;
   if (!isIncluded) {
     final detail = new _AssetDetail(asset, lastModified, assetSize, cache);
     if (!checkIfHeaders(connect, lastModified, detail.etag))
@@ -294,7 +294,7 @@ Future loadAsset(HttpConnect connect, Asset asset, [AssetCache cache]) async {
  * * [lastModified] - when it was last modified. Ignored if null.
  * * [etag] - the ETag. Ignored if null.
  */
-bool checkIfHeaders(HttpConnect connect, DateTime lastModified, String etag) {
+bool checkIfHeaders(HttpConnect connect, DateTime? lastModified, String? etag) {
   final HttpResponse response = connect.response;
   if (response.statusCode >= 300)
     return true; //Ignore If, since caused by forward-by-error (see also Issue 59)
@@ -330,7 +330,7 @@ bool checkIfHeaders(HttpConnect connect, DateTime lastModified, String etag) {
   if (lastModified != null) {
     //Check If-Modified-Since
     //Ignored it if If-None-Match specified (since ETag differs)
-    final DateTime ifModifiedSince = request.headers.ifModifiedSince;
+    final DateTime? ifModifiedSince = request.headers.ifModifiedSince;
     if (ifModifiedSince != null && ifNoneMatch == null
     && lastModified.isBefore(ifModifiedSince.add(_oneSecond))) {
       response.statusCode = HttpStatus.notModified;

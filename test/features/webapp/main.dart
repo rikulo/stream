@@ -70,7 +70,7 @@ var _uriMapping = <String, dynamic> {
     });
   },
   "/redirect": (HttpConnect connect) {
-    connect.redirect(connect.request.uri.queryParameters["uri"]);
+    connect.redirect(connect.request.uri.queryParameters["uri"]!);
   },
   "/quire": "https://quire.io",
   "/json": json,
@@ -91,10 +91,10 @@ var _errMapping = <int, dynamic> {
       ..headers.contentType = ContentType.parse("text/html")
       ..write("""
 <html>
-<head><title>500: ${connect.errorDetail.error.runtimeType}</title></head>
+<head><title>500: ${connect.errorDetail?.error.runtimeType}</title></head>
 <body>
- <h1>500: ${connect.errorDetail.error}</h1>
- <pre><code>${connect.errorDetail.stackTrace}</code></pre>
+ <h1>500: ${connect.errorDetail?.error}</h1>
+ <pre><code>${connect.errorDetail?.stackTrace}</code></pre>
 </body>
 </html>
         """);
@@ -109,11 +109,11 @@ var _errMapping = <int, dynamic> {
 
 //Filtering
 var _filterMapping = <String, RequestFilter> {
-  "/log.*": (HttpConnect connect, Future chain(HttpConnect conn)) {
+  "/log.*": (HttpConnect connect, Future? chain(HttpConnect conn)) {
     connect.server.logger.info("Filter 1: ${connect.request.uri}");
     return chain(connect);
   },
-  "/log[0-9]*": (HttpConnect connect, Future chain(HttpConnect conn)) {
+  "/log[0-9]*": (HttpConnect connect, Future? chain(HttpConnect conn)) {
     connect.server.logger.info("Filter 2: ${connect.request.uri}");
     return chain(connect);
   }
@@ -126,8 +126,8 @@ Future forward(HttpConnect connect)
 //Search//
 class Criteria {
   String text = "";
-  DateTime since;
-  int within;
+  DateTime? since;
+  int? within;
   bool hasAttachment = false;
 }
 Future search(HttpConnect connect) {

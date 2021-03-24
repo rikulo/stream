@@ -11,9 +11,9 @@ bool isValidVarCharCode(int cc, bool firstChar)
 /** Test if the given value is enclosed with `[= ]`.
  * If null, false is returned.
  */
-bool isEL(String data) {
+bool isEL(String? data) {
   for (int i = 0, len = data != null ? data.length: 0; i < len; ++i) {
-    final cc = data.codeUnitAt(i);
+    final cc = data!.codeUnitAt(i);
     if (cc == $backslash)
       ++i;
     else if (cc == $lbracket && i + 1 < len && data.codeUnitAt(i + 1) == $equal)
@@ -29,7 +29,7 @@ bool isEL(String data) {
  * If true and `data` contains nothing but a single expression, the expression
  * is output directly
  */
-String toEL(String data, {bool direct: true}) {
+String toEL(String? data, {bool direct: true}) {
   if (data == null)
     return direct ? "null": '""';
 
@@ -57,7 +57,8 @@ String toEL(String data, {bool direct: true}) {
     val.indexOf("'") >= 0 ? '"""$val"""': "'$val'": '"$val"';
 }
 int _skipToELEnd(String data, int from) {
-  int sep, nbkt = 0;
+  int? sep;
+  int nbkt = 0;
   for (int len = data.length; from < len; ++from) {
     final cc = data.codeUnitAt(from);
     if (cc == $backslash) {
@@ -82,7 +83,7 @@ int _skipToELEnd(String data, int from) {
 /** Parses the given string into a map of arguments.
  * It assumes the string is in the format of: `arg0="value0" arg1="value1"`
  */
-Map<String, String> parseArgs(String data)
+Map<String, String?> parseArgs(String data)
 => MapUtil.parse(data, backslash:false, defaultValue:"");
 
 /** Output the given text to the generated Dart file.
@@ -92,7 +93,7 @@ Map<String, String> parseArgs(String data)
  *
  * Of course, it will escape the text properly if necessary.
  */
-void outText(TagContext tc, String text, [int line]) {
+void outText(TagContext tc, String text, [int? line]) {
   if (text.isEmpty)
     return; //nothing to do
 
@@ -128,7 +129,7 @@ void outText(TagContext tc, String text, [int line]) {
  * However, the keys are output directly, so make sure it does not
  * contain invalid characters.
  */
-void outMap(TagContext tc, Map<String, String> map) {
+void outMap(TagContext tc, Map<String, String?> map) {
   tc.write("{");
   bool first = true;
   for (final key in map.keys) {
@@ -146,11 +147,11 @@ void outMap(TagContext tc, Map<String, String> map) {
 ///Parse the information of the arguments.
 class ArgInfo {
   ///The first argument, or null if not available
-  final String first;
+  final String? first;
   ///Whether the first argument is an ID.
   final bool isID;
   ///Map of arguments, excluding [first]
-  final Map<String, String/*!*/> args;
+  final Map<String, String?> args;
 
   /** Parses the given string.
    *
@@ -162,16 +163,16 @@ class ArgInfo {
    *
    * If both are null, you can use [parse] instead. It is simpler.
    */
-  factory ArgInfo(TagContext tc, String data,
+  factory ArgInfo(TagContext tc, String? data,
       {bool idFirst:true, bool stringFirst:true}) {
-    String first;
+    String? first;
     bool isID = false;
     if (idFirst || stringFirst) {
       if (data != null && !(data = data.trim()).isEmpty) {
         final c0 = data.codeUnitAt(0), len = data.length;
         if (stringFirst && (c0 == $double_quote || c0 == $single_quote)) {
           for (int i = 1; i < len; ++i) {
-            final cc = data.codeUnitAt(i);
+            final cc = data!.codeUnitAt(i);
             if (cc == c0) {
               first = data.substring(1, i);
               data = data.substring(i + 1);
@@ -206,12 +207,12 @@ class ArgInfo {
         tc.error(sb.toString());
       }
     }
-    return new ArgInfo._(first, isID, parseArgs(data));
+    return new ArgInfo._(first, isID, parseArgs(data!));
   }
   ArgInfo._(this.first, this.isID, this.args);
 }
 
-typedef void _Output(TagContext tc, String/*!*/ id, Map<String, String> args);
+typedef void _Output(TagContext tc, String? id, Map<String, String?> args);
 
 /** A tag simplifies the implementation of simple tags. For example,
  *
@@ -248,7 +249,7 @@ class SimpleTag extends Tag {
    * with a value, `id` is null and the first argument is part of `args`.
    */
   SimpleTag(String this.name,
-      void output(TagContext tc, String id, Map<String, String> args)):
+      void output(TagContext tc, String? id, Map<String, String?> args)):
       _output = output;
 
   @override

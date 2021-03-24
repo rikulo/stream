@@ -52,6 +52,6 @@ void main() {
     print("${_times[i]['what']}: ${_times[i]['time'].millisecondsSinceEpoch - _times[i - 1]['time'].millisecondsSinceEpoch}");
 
   final match = group.firstMatch("/group/matching");
-  for (int gc = match.groupCount, i = 0; i < gc; ++i)
+  for (int gc = match!.groupCount, i = 0; i < gc; ++i)
     print("$i: ${match.group(i)}");
 }

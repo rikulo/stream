@@ -24,8 +24,8 @@ import "stream.dart";
 /// * [shallRetry] a callback to decide whether to retry when
 /// [proxyRequest] receives an exception.
 /// Ignored if omitted.
-Future proxyRequest(HttpConnect connect, url, {String proxyName,
-      FutureOr<bool> shallRetry(ex, StackTrace st)}) async {
+Future proxyRequest(HttpConnect connect, url, {String? proxyName,
+      FutureOr<bool> shallRetry(ex, StackTrace st)?}) async {
   //COPRYRIGHT NOTICE:
   //The code is ported from [shelf_proxy](https://github.com/dart-lang/shelf_proxy)
 
@@ -43,7 +43,7 @@ Future proxyRequest(HttpConnect connect, url, {String proxyName,
   final serverResponse = connect.response;
   http.StreamedResponse clientResponse;
 
-  for (List<int> requestBody;;) {
+  for (List<int>? requestBody;;) {
     try {
       final clientRequest =
           new http.StreamedRequest(serverRequest.method, uri);
@@ -61,11 +61,11 @@ Future proxyRequest(HttpConnect connect, url, {String proxyName,
           '${serverRequest.protocolVersion} ${proxyName??"Stream"}');
 
       if (requestBody == null) { //first time
-        _Listener<List<int>> copyTo;
+        _Listener<List<int>>? copyTo;
         if (shallRetry != null) {
           requestBody = <int>[];
           copyTo = (List<int> event) {
-            requestBody.addAll(event);
+            requestBody!.addAll(event);
             clientRequest.sink.add(event);
           };
         }
@@ -116,7 +116,7 @@ Future proxyRequest(HttpConnect connect, url, {String proxyName,
   if (clientResponse.isRedirect
   && clientResponse.headers.containsKey('location')) {
     var location =
-        uri.resolve(clientResponse.headers['location']).toString();
+        uri.resolve(clientResponse.headers['location']!).toString();
     if (p.url.isWithin(uri.toString(), location)) {
       serverResponse.headers.set('location',
           '/' + p.url.relative(location, from: uri.toString()));
@@ -130,17 +130,17 @@ Future proxyRequest(HttpConnect connect, url, {String proxyName,
 
 void _addHeader(Map<String, String> headers, String name, String value) {
   if (headers.containsKey(name)) {
-    headers[name] += ', $value';
+    headers[name] = headers[name]! + ', $value';
   } else {
     headers[name] = value;
   }
 }
 
 Future _copy<T>(Stream<T> stream, EventSink<T> sink,
-    {bool cancelOnError: true, bool closeSink: true, void copyTo(T event)}) {
+    {bool cancelOnError: true, bool closeSink: true, void copyTo(T event)?}) {
   var completer = new Completer();
   stream.listen(copyTo ?? sink.add,
-    onError: (e, StackTrace st) {
+    onError: (Object e, StackTrace st) {
       sink.addError(e, st);
       if (cancelOnError) {
         completer.complete();

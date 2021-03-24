@@ -32,10 +32,10 @@ abstract class Router {
   /// and starting at the given index.
   ///
   /// It returns null if not found.
-  int getFilterIndex(HttpConnect connect, String uri, int iFilter);
+  int? getFilterIndex(HttpConnect connect, String uri, int iFilter);
 
   /// Returns the filter at the given index.
-  RequestFilter getFilterAt(int iFilter);
+  RequestFilter? getFilterAt(int iFilter);
 
   /// Returns the error handler ([RequestHandler]) or a URI ([String])
   /// based on the error thrown by a request handler.
@@ -54,7 +54,7 @@ class DefaultRouter implements Router {
   final _errorMapping = new HashMap<int, dynamic>(); //mapping of status code to URI/Function
 
   final _UriCache _uriCache = new _UriCache();
-  int _cacheSize;
+  late int _cacheSize;
 
   static final _NOT_FOUND = new Object();
 
@@ -65,9 +65,9 @@ class DefaultRouter implements Router {
    * You can specify it to false if you don't put RSP files with client
    * resource files.
    */
-  DefaultRouter({Map<String, dynamic> uriMapping,
-      Map<int, dynamic> errorMapping,
-      Map<String, RequestFilter> filterMapping,
+  DefaultRouter({Map<String, dynamic>? uriMapping,
+      Map<int, dynamic>? errorMapping,
+      Map<String, RequestFilter>? filterMapping,
       int cacheSize: 1000, bool protectRSP: true}) {
     _cacheSize = cacheSize;
 
@@ -128,7 +128,7 @@ class DefaultRouter implements Router {
    * In other words, if true, this mapping will be interpreted first.
    */
   @override
-  void filter(String uri, RequestFilter filter, {preceding: false}) {
+  void filter(String uri, RequestFilter? filter, {preceding: false}) {
     if (filter is! Function)
       throw new ServerError("Filter mapping: function (filter) is required for $uri");
     _map(_filterMapping, uri, filter, preceding);
@@ -170,7 +170,7 @@ class DefaultRouter implements Router {
     var handler = cache[uri];
 
     if (handler == null) {
-      _UriMapping mp;
+      _UriMapping? mp;
       for (mp in _uriMapping){
         if (mp.match(connect, uri)) {
           handler = mp.handler;
@@ -181,7 +181,7 @@ class DefaultRouter implements Router {
       //store to cache
       if (shallCache(connect, uri)) {
         cache[uri] = handler == null ? _NOT_FOUND:
-          mp.hasGroup() ? mp: handler; //store _UriMapping if mp.hasGroup()
+          mp!.hasGroup() ? mp: handler; //store _UriMapping if mp.hasGroup()
         if (cache.length > _cacheSize)
           cache.remove(cache.keys.first);
       }
@@ -208,22 +208,22 @@ class DefaultRouter implements Router {
   }
 
   @override
-  int getFilterIndex(HttpConnect connect, String uri, int iFilter) {
+  int? getFilterIndex(HttpConnect connect, String uri, int iFilter) {
     for (; iFilter < _filterMapping.length; ++iFilter)
       if (_filterMapping[iFilter].match(connect, uri))
         return iFilter;
     return null;
   }
   @override
-  RequestFilter getFilterAt(int iFilter) {
-    return _filterMapping[iFilter].handler as RequestFilter;
+  RequestFilter? getFilterAt(int iFilter) {
+    return _filterMapping[iFilter].handler as RequestFilter?;
   }
   @override
   getErrorHandler(error) => _errorMapping[error];
 }
 
 ///Renderer for 404
-final RequestHandler _f404 = (HttpConnect _) {throw new Http404();};
+final RequestHandler _f404 = (HttpConnect _) {throw new Http404();} as Future<dynamic> Function(HttpConnect);
 
 typedef Future _WSHandler(WebSocket socket);
 
@@ -234,12 +234,12 @@ Function _upgradeWS(Future handler(WebSocket socket))
 
 class _UriMapping {
   final String uri;
-  RegExp _ptn;
-  Map<int, String> _groups;
+  late RegExp _ptn;
+  Map<int, String>? _groups;
   ///It could be a function, a string or a list of (string or _Var).
   var handler;
   ///The method to match with. (It is in upper case)
-  String method;
+  String? method;
 
   _UriMapping(this.uri, rawhandler) {
     _parseHandler(rawhandler);
@@ -255,7 +255,7 @@ class _UriMapping {
   }
   void _parseHandler(rawhandler) {
     if (rawhandler is String) {
-      final val = rawhandler as String;
+      final val = rawhandler;
       List segs = [];
       int k = 0, len = val.length;
       for (int i = 0; i < len; ++i) {
@@ -339,7 +339,7 @@ class _UriMapping {
           sb.write('(');
 
           //parse the name of the group, if any
-          String nm;
+          String? nm;
           final nmsb = new StringBuffer();
           int j = i;
           for (;;) {
@@ -365,14 +365,14 @@ class _UriMapping {
           i = j;
 
           if (nm != null)
-            _groups[grpId] = nm;
+            _groups![grpId] = nm;
           ++grpId;
           continue;
       }
       sb.writeCharCode(uri.codeUnitAt(i));
     }
 
-    if (_groups.isEmpty)
+    if (_groups!.isEmpty)
       _groups = null;
     _ptn = new RegExp(_groups != null ? sb.toString(): uri);
   }
@@ -385,9 +385,9 @@ class _UriMapping {
     if (m != null) {
       if (_groups != null) {
         final count = m.groupCount;
-        for (final key in _groups.keys)
+        for (final key in _groups!.keys)
           if (key < count) //unlikely but be safe
-            connect.dataset[_groups[key]] = m.group(key + 1); //group() starts from 1 (not 0)
+            connect.dataset[_groups![key]!] = m.group(key + 1); //group() starts from 1 (not 0)
       }
       return true;
     }
@@ -406,16 +406,16 @@ class _Var {
 class _UriCache {
   ///If _multimethod is false => <String uri, handler>
   ///If _multimethod is true => <String method, <String uri, handler>>
-  Map<String, dynamic> _cache;
-  bool _multimethod;
+  Map<String, dynamic>? _cache;
+  bool? _multimethod;
 
   void reset() {
     _multimethod = null;
     _cache = null;
   }
 
-  Map<String, dynamic>/*!*/ getCache(HttpConnect connect, List<_UriMapping> mappings) {
-    Map<String, dynamic>/*!*/ cache = _multimethod == null ? LinkedHashMap() : _cache;
+  Map<String, dynamic> getCache(HttpConnect connect, List<_UriMapping> mappings) {
+    Map<String, dynamic> cache = _multimethod == null ? LinkedHashMap() : _cache!;
     if (_multimethod == null) { //not initialized yet
       _cache = cache;
 
@@ -427,7 +427,7 @@ class _UriCache {
         }
     }
 
-    return _multimethod ? 
+    return _multimethod! ? 
       cache.putIfAbsent(connect.request.method,
           () => new LinkedHashMap<String, dynamic>()) as Map<String, dynamic>:
       cache;

@@ -10,16 +10,16 @@ class _AssetDetail {
   final Asset asset;
   final DateTime lastModified;
   final int assetSize;
-  final AssetCache/*?*/ cache;
+  final AssetCache? cache;
 
   _AssetDetail(this.asset, this.lastModified, this.assetSize, this.cache);
 
   //Returns the ETAG value, or null if not available.
-  String get etag
+  String? get etag
   => _etag != null ? _etag:
-    (_etag = cache != null ? cache.getETag(asset, lastModified, assetSize):
+    (_etag = cache != null ? cache!.getETag(asset, lastModified, assetSize):
         _getETag(lastModified, assetSize));
-  String _etag;
+  String? _etag;
 }
 
 class _CacheEntry {
@@ -38,19 +38,19 @@ class _AssetCache implements AssetCache {
   _AssetCache(this._loader);
 
   @override
-  String getETag(Asset asset, DateTime lastModified, int assetSize)
+  String? getETag(Asset asset, DateTime lastModified, int assetSize)
   => _loader.getETag(asset, lastModified, assetSize);
   @override
-  Duration getExpires(Asset asset)
+  Duration? getExpires(Asset asset)
   => _loader.getExpires(asset);
 
   @override
   bool shallCache(Asset asset, int assetSize)
   => _loader.shallCache(asset, assetSize);
   @override
-  List<int> getContent(Asset asset, DateTime lastModified) {
+  List<int>? getContent(Asset asset, DateTime lastModified) {
     final String path = asset.path;
-    final _CacheEntry entry = _cache[path];
+    final _CacheEntry? entry = _cache[path];
     if (entry != null) {
       if (entry.lastModified == lastModified)
         return entry.content;
@@ -65,7 +65,7 @@ class _AssetCache implements AssetCache {
     final int assetSize = content.length;
     if (shallCache(asset, assetSize)) {
       final String path = asset.path;
-      final _CacheEntry entry = _cache[path];
+      final _CacheEntry? entry = _cache[path];
       if (entry != null)
         _cacheSize -= entry.assetSize;
       _cache[path] = new _CacheEntry(content, lastModified, assetSize);
@@ -73,13 +73,13 @@ class _AssetCache implements AssetCache {
 
       //reduce the cache's size if necessary
       while (_cacheSize > _loader.cacheSize)
-        _cacheSize -= _cache.remove(_cache.keys.first).assetSize;
+        _cacheSize -= _cache.remove(_cache.keys.first)!.assetSize;
     }
   }
 }
 
-Future _loadFileAt(HttpConnect connect, String uri, String dir,
-    List<String> names, int j, [AssetCache cache]) async {
+Future? _loadFileAt(HttpConnect connect, String uri, String dir,
+    List<String> names, int j, [AssetCache? cache]) async {
   if (j >= names.length)
     throw new Http404(uri: Uri.tryParse(uri));
 
@@ -101,7 +101,7 @@ bool _matchETag(String value, String etag) {
 }
 
 ///Returns false if no need to send the content
-bool _setHeaders(HttpConnect connect, _AssetDetail detail, List<_Range> ranges) {
+bool _setHeaders(HttpConnect connect, _AssetDetail detail, List<_Range>? ranges) {
   final HttpRequest request = connect.request;
   final HttpResponse response = connect.response;
   final HttpHeaders headers = response.headers;
@@ -111,12 +111,12 @@ bool _setHeaders(HttpConnect connect, _AssetDetail detail, List<_Range> ranges) 
     //Set by checkIfHeaders (see also Issue 59)
   if (isPreconditionFailed || response.statusCode < HttpStatus.badRequest) {
       headers.set(HttpHeaders.lastModifiedHeader, detail.lastModified);
-
-    if (detail.cache != null) {
-      final String etag = detail.etag;
+    final cache = detail.cache;
+    if (cache != null) {
+      final String? etag = detail.etag;
       if (etag != null)
         headers.set(HttpHeaders.etagHeader, etag);
-      final Duration dur = detail.cache.getExpires(detail.asset);
+      final Duration? dur = cache.getExpires(detail.asset);
       if (dur != null) {
         headers
           ..set(HttpHeaders.expiresHeader, detail.lastModified.add(dur))
@@ -151,7 +151,7 @@ bool _setHeaders(HttpConnect connect, _AssetDetail detail, List<_Range> ranges) 
 String _getETag(DateTime lastModified, int assetSize)
 => '"$assetSize-${lastModified.millisecondsSinceEpoch.toRadixString(16)}"';
 
-bool _isTextType(ContentType ctype) {
+bool _isTextType(ContentType? ctype) {
   String ptype, subType;
   return ctype == null || (ptype = ctype.primaryType) == "text"
     || ((subType = ctype.subType) != null && subType.endsWith("+xml"))
@@ -168,12 +168,12 @@ const Duration _oneSecond = const Duration(seconds: 1);
 //--- ---//
 class _Range {
   ///The start (inclusive).
-  final int/*!*/ start;
+  final int start;
   ///The end (exclusive).
   final int end;
   final int length;
 
-  factory _Range(int start, int end, int assetSize) {
+  factory _Range(int? start, int? end, int assetSize) {
     if (start == null) {
       start = end == null ? 0: assetSize - end;
       end = assetSize;
@@ -188,7 +188,7 @@ class _Range {
   => start >= 0 && length >= 0 && end <= assetSize;
 }
 
-List<_Range> _parseRange(HttpConnect connect, _AssetDetail detail) {
+List<_Range>? _parseRange(HttpConnect connect, _AssetDetail detail) {
   final ifRange = connect.headerValue(HttpHeaders.ifRangeHeader);
   if (ifRange != null) {
     try {
@@ -197,7 +197,7 @@ List<_Range> _parseRange(HttpConnect connect, _AssetDetail detail) {
     } catch (e) { //ignore it silently
     }
 
-    final String etag = detail.etag;
+    final String? etag = detail.etag;
     if (etag != null && etag != ifRange.trim())
       return null; //dirty
   }
@@ -211,14 +211,14 @@ List<_Range> _parseRange(HttpConnect connect, _AssetDetail detail) {
   List<_Range> ranges = [];
   for (int i = 6;;) {
     final int j = srange.indexOf(',', i);
-    final Match matches = _reRange.firstMatch(
+    final Match? matches = _reRange.firstMatch(
       j >= 0 ? srange.substring(i, j): srange.substring(i));
     if (matches == null)
       return _rangeError(connect);
 
     final List<int> values = List.filled(2, 0);
     for (int i = 0; i < 2; ++i) {
-      final match = matches[i + 1];
+      final match = matches[i + 1]!;
       if (!match.isEmpty)
         try {
           values[i] = int.parse(match);
@@ -243,7 +243,7 @@ List<_Range> _parseRange(HttpConnect connect, _AssetDetail detail) {
     return _rangeError(connect);
   return ranges;
 }
-T _rangeError<T>(HttpConnect connect, [int code = HttpStatus.badRequest]) {
+T? _rangeError<T>(HttpConnect connect, [int code = HttpStatus.badRequest]) {
   connect.response.statusCode = code;
   return null;
 }
@@ -253,11 +253,11 @@ typedef Future _WriteRange(_Range range);
 class _RangeWriter {
   final HttpResponse response;
   final List<_Range> ranges;
-  final String contentType;
+  final String? contentType;
   final int assetSize;
   final _WriteRange output;
 
-  _RangeWriter(this.response, this.ranges, ContentType contentType,
+  _RangeWriter(this.response, this.ranges, ContentType? contentType,
     this.assetSize, this.output): this.contentType = contentType != null ?
       "${HttpHeaders.contentTypeHeader}: ${contentType}": null;
 
@@ -285,11 +285,11 @@ class _RangeWriter {
   }
 }
 
-Future _outContentInRanges(HttpResponse response, List<_Range> ranges,
-    ContentType contentType, List<int> content) {
+Future? _outContentInRanges(HttpResponse response, List<_Range>? ranges,
+    ContentType? contentType, List<int> content) {
   final int assetSize = content.length;
   if (ranges == null || ranges.length == 1) {
-    final _Range range = ranges != null ? ranges[0]: null;
+    final _Range? range = ranges != null ? ranges[0]: null;
     response.add(
       range != null && range.length != assetSize ?
         content.sublist(range.start, range.end): content);
@@ -298,14 +298,14 @@ Future _outContentInRanges(HttpResponse response, List<_Range> ranges,
     return new _RangeWriter(response, ranges, contentType, assetSize,
       (_Range range) {
         response.add(content.sublist(range.start, range.end));
-      }).write();
+      } as Future<dynamic> Function(_Range)).write();
   }
 }
 
-Future _outAssetInRanges(HttpResponse response, List<_Range> ranges,
-    ContentType contentType, Asset asset, int assetSize) {
+Future _outAssetInRanges(HttpResponse response, List<_Range>? ranges,
+    ContentType? contentType, Asset asset, int assetSize) {
   if (ranges == null || ranges.length == 1) {
-    final _Range range = ranges != null ? ranges[0]: null;
+    final _Range? range = ranges != null ? ranges[0]: null;
     return response.addStream(
       range != null && range.length != assetSize ? 
         asset.openRead(range.start, range.end): asset.openRead());

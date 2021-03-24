@@ -28,7 +28,7 @@ class Rsp {
    * * [contentType] - ignored if null or empty.
    */
   static bool init(HttpConnect connect, String contentType,
-    {DateTime lastModified, String etag}) {
+    {DateTime? lastModified, String? etag}) {
     if (!connect.isIncluded) {
       final HttpResponse response = connect.response;
       final HttpHeaders headers = response.headers;
@@ -82,7 +82,7 @@ class Rsp {
    * * [pre]: whether to replace whitespace with `&nbsp;` (default: false).
    * It is meaningful only if encode is `xml`.
    */
-  static String nnx(value, {String encode, int maxLength: 0,
+  static String nnx(dynamic value, {String? encode, int maxLength: 0,
     bool firstLine: false, bool pre: false}) {
     String str = encode == "json" ? json(value):
         value != null ? value.toString(): "";
@@ -125,7 +125,7 @@ class Rsp {
       return uri;
 
     int i = uri.indexOf('?');
-    String query;
+    String? query;
     if (i >= 0) {
       query = uri.substring(i);
       uri = uri.substring(0, i);

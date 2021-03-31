@@ -7,21 +7,17 @@ homepage: http://rikulo.org/projects/stream
 documentation: http://docs.rikulo.org/stream
 repository: https://github.com/rikulo/stream
 issue_tracker: https://github.com/rikulo/stream/issues
-dependencies:
-  rikulo_commons: '>=5.0.0 <6.0.0'
-  logging: ">=1.0.0 <2.0.0"
-  args: '>=2.0.0 <3.0.0'
-  path: '>=1.8.0 <2.0.0'
-  http: '>=0.13.0 <2.0.0'
-  charcode: ">=1.2.0 <2.0.0"
-
-dependency_overrides:
-  rikulo_commons:
-    git: 
-      url: https://github.com/TimWhiting/commons
-
-executables:
-  rspc:
 
 environment:
   sdk: '>=2.12.0 <3.0.0'
+
+dependencies:
+  rikulo_commons: ^5.0.0
+  logging: ^1.0.1
+  args: ^2.0.0
+  path: ^1.8.0
+  http: ^0.13.1
+  charcode: ^1.2.0
+
+executables:
+  rspc:

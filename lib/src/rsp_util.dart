@@ -27,12 +27,12 @@ class Rsp {
    *
    * * [contentType] - ignored if null or empty.
    */
-  static bool init(HttpConnect connect, String contentType,
-    {DateTime lastModified, String etag}) {
+  static bool init(HttpConnect connect, String? contentType,
+    {DateTime? lastModified, String? etag}) {
     if (!connect.isIncluded) {
-      final HttpResponse response = connect.response;
-      final HttpHeaders headers = response.headers;
-      if (contentType != null && !contentType.isEmpty)
+      final response = connect.response;
+      final headers = response.headers;
+      if (contentType != null && contentType.isNotEmpty)
         headers.contentType = parseContentType(contentType);
 
       bool isPreconditionFailed = false;
@@ -63,11 +63,6 @@ class Rsp {
    */
   static String nns([v]) => v != null ? v.toString(): "";
 
-  /** Converts the given value to a non-null [Future].
-   */
-  @deprecated
-  static Future nnf([v]) => v is Future ? v: new Future.value(v);
-
   /** Converts the given value to a non-null string with the given conditions.
    *
    * * [encode] - the encoding method. It can be `none` (output directly),
@@ -82,7 +77,7 @@ class Rsp {
    * * [pre]: whether to replace whitespace with `&nbsp;` (default: false).
    * It is meaningful only if encode is `xml`.
    */
-  static String nnx(value, {String encode, int maxLength: 0,
+  static String nnx(value, {String? encode, int maxLength: 0,
     bool firstLine: false, bool pre: false}) {
     String str = encode == "json" ? json(value):
         value != null ? value.toString(): "";
@@ -120,12 +115,12 @@ class Rsp {
 
   /** Concatenates a path with a map of parameters.
    */
-  static String cat(String uri, Map<String, dynamic> parameters) {
+  static String cat(String uri, Map<String, dynamic>? parameters) {
     if (parameters == null || parameters.isEmpty)
       return uri;
 
     int i = uri.indexOf('?');
-    String query;
+    String? query;
     if (i >= 0) {
       query = uri.substring(i);
       uri = uri.substring(0, i);

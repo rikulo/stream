@@ -2,7 +2,7 @@
 //Source: ../includerView.rsp.html
 part of features;
 
-/** Template, includerView, for rendering the view. */
+/// Template, includerView, for rendering the view.
 Future includerView(HttpConnect connect) async {
   HttpResponse response = connect.response;
   if (!Rsp.init(connect, "text/html; charset=utf-8"))

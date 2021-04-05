@@ -41,7 +41,7 @@ class _HttpChannel implements HttpChannel {
   bool get isClosed => _closed;
 
   @override
-  final ServerSocket socket;
+  final ServerSocket? socket;
   @override
   final address;
   @override
@@ -52,7 +52,7 @@ class _HttpChannel implements HttpChannel {
 
 ///Skeletal implementation
 abstract class _AbstractConnect implements HttpConnect {
-  Map<String, dynamic> _dataset;
+  Map<String, dynamic>? _dataset;
  
   _AbstractConnect(this.request, this.response);
 
@@ -63,9 +63,9 @@ abstract class _AbstractConnect implements HttpConnect {
   @override
   bool autoClose = true;
   @override
-  HttpConnect get forwarder => null;
+  HttpConnect? get forwarder => null;
   @override
-  HttpConnect get includer => null;
+  HttpConnect? get includer => null;
   @override
   bool get isIncluded => false;
   @override
@@ -77,17 +77,17 @@ abstract class _AbstractConnect implements HttpConnect {
     response.headers.set(HttpHeaders.locationHeader, _toCompleteUrl(request, uri));
   }
   @override
-  Future forward(String uri, {HttpRequest request, HttpResponse response})
+  Future forward(String uri, {HttpRequest? request, HttpResponse? response})
   => server.forward(this, uri, request: request, response: response);
   @override
-  Future include(String uri, {HttpRequest request, HttpResponse response})
+  Future include(String uri, {HttpRequest? request, HttpResponse? response})
   => server.include(this, uri, request: request, response: response);
 }
 
 ///The default implementation of HttpConnect
 class _HttpConnect extends _AbstractConnect {
-  Browser _browser;
-  List<String> _locales;
+  Browser? _browser;
+  List<String>? _locales;
 
   _HttpConnect(this.channel, HttpRequest request, HttpResponse response):
       super(request, response);
@@ -98,27 +98,24 @@ class _HttpConnect extends _AbstractConnect {
   final HttpChannel channel;
 
   @override
-  Browser get browser {
-    if (_browser == null)
-      _browser = new _Browser(headerValue(HttpHeaders.userAgentHeader, ""));
-    return _browser;
-  }
+  Browser get browser
+  => _browser ??
+      (_browser = new _Browser(headerValue(HttpHeaders.userAgentHeader) ?? ""));
+
   @override
-  String headerValue(String name, [String defaultValue]) {
-    final values = request.headers[name];
-    return values != null ? values[0]: defaultValue;
-  }
+  String? headerValue(String name) => request.headers[name]?[0];
 
   @override
   String get locale {
-    final List<String> ls = locales;
+    final ls = locales;
     return ls.isEmpty ? "en_US": ls[0];
   }
   @override
   List<String> get locales {
-    if (_locales == null) {
-      _locales = [];
-      final List<String> langs = request.headers[HttpHeaders.acceptLanguageHeader];
+    var locales = _locales;
+    if (locales == null) {
+      locales = _locales = [];
+      final langs = request.headers[HttpHeaders.acceptLanguageHeader];
       if (langs != null) {
         final infos = new HashMap<num, List<String>>();
         for (final lang in langs) {
@@ -126,20 +123,20 @@ class _HttpConnect extends _AbstractConnect {
         }
 
         if (!infos.isEmpty) {
-          final List<num> qs = new List.from(infos.keys)..sort();
+          final qs = new List.from(infos.keys)..sort();
           for (int i = qs.length; --i >= 0;) //higher quality first
-            _locales.addAll(infos[qs[i]]);
+            locales.addAll(infos[qs[i]]!);
         }
       }
     }
-    return _locales;
+    return locales;
   }
 
   @override
-  ErrorDetail errorDetail;
+  ErrorDetail? errorDetail;
   @override
   Map<String, dynamic> get dataset
-  => _dataset != null ? _dataset: MapUtil.auto(() => _dataset = new HashMap<String, dynamic>());
+  => _dataset ?? (_dataset = MapUtil.auto(() => _dataset = new HashMap<String, dynamic>()));
 }
 
 //Parse Accept-Language into locales
@@ -162,7 +159,7 @@ void _parseLocales(String lang, Map<num, List<String>> infos) {
       }
     }
 
-    List<String> locales = infos[quality];
+    var locales = infos[quality];
     if (locales == null)
       infos[quality] = locales = [];
     locales.add(locale);
@@ -186,16 +183,15 @@ class _ProxyConnect extends _AbstractConnect {
   @override
   Browser get browser => _origin.browser;
   @override
-  String headerValue(String name, [String defaultValue])
-  => _origin.headerValue(name, defaultValue);
+  String? headerValue(String name) => _origin.headerValue(name);
   @override
   String get locale => _origin.locale;
   @override
   List<String> get locales => _origin.locales;
   @override
-  ErrorDetail get errorDetail => _origin.errorDetail;
+  ErrorDetail? get errorDetail => _origin.errorDetail;
   @override
-  void set errorDetail(ErrorDetail errorDetail) {
+  void set errorDetail(ErrorDetail? errorDetail) {
     _origin.errorDetail = errorDetail;
   }
   @override
@@ -220,8 +216,8 @@ class _StringBufferedConnect extends _ProxyConnect {
 ///HttpConnect for forwarded request
 class _ForwardedConnect extends _ProxyConnect {
   ///[uri]: if null, it means no need to change
-  _ForwardedConnect(HttpConnect connect, HttpRequest request,
-    HttpResponse response, String uri):
+  _ForwardedConnect(HttpConnect connect, HttpRequest? request,
+    HttpResponse? response, String? uri):
     super(connect,
       _wrapRequest(request != null ? request: connect.request, uri),
       _wrapResponse(response != null ? response: connect.response, connect.isIncluded));
@@ -235,8 +231,8 @@ class _ForwardedConnect extends _ProxyConnect {
 ///HttpConnect for included request
 class _IncludedConnect extends _ProxyConnect {
   ///[uri]: if null, it means no need to change
-  _IncludedConnect(HttpConnect connect, HttpRequest request,
-    HttpResponse response, String uri):
+  _IncludedConnect(HttpConnect connect, HttpRequest? request,
+    HttpResponse? response, String? uri):
     super(connect,
       _wrapRequest(request != null ? request: connect.request, uri),
       _wrapResponse(response != null ? response: connect.response, true));
@@ -261,7 +257,7 @@ class _ReUriRequest extends HttpRequestWrapper {
 class _IncludedResponse extends HttpResponseWrapper {
   _IncludedResponse(HttpResponse response): super(response);
 
-  HttpHeaders _headers;
+  HttpHeaders? _headers;
 
   //Note: we don't override set:statusCode since we have to report the error
   //back to the browser if it happens in the included renderer
@@ -271,11 +267,8 @@ class _IncludedResponse extends HttpResponseWrapper {
   }
 
   @override
-  HttpHeaders get headers {
-    if (_headers == null)
-      _headers = new _ReadOnlyHeaders(origin.headers);
-    return _headers;
-  }
+  HttpHeaders get headers
+  => _headers ?? (_headers = new _ReadOnlyHeaders(origin.headers));
 
   @override
   Future<Socket> detachSocket({bool writeHeaders: true}) {
@@ -301,22 +294,22 @@ class _ReadOnlyHeaders extends HttpHeadersWrapper {
   void removeAll(String name) {
   }
   @override
-  void set date(DateTime date) {
+  void set date(DateTime? date) {
   }
   @override
   void noFolding(String name) {
   }
   @override
-  void set expires(DateTime expires) {
+  void set expires(DateTime? expires) {
   }
   @override
-  void set ifModifiedSince(DateTime ifModifiedSince) {
+  void set ifModifiedSince(DateTime? ifModifiedSince) {
   }
   @override
-  void set host(String host) {
+  void set host(String? host) {
   }
   @override
-  void set port(int port) {
+  void set port(int? port) {
   }
   @override
   void clear() {
@@ -325,7 +318,7 @@ class _ReadOnlyHeaders extends HttpHeadersWrapper {
   void set chunkedTransferEncoding(bool value) {
   }
   @override
-  void set contentType(ContentType contentType) {
+  void set contentType(ContentType? contentType) {
   }
   @override
   void set contentLength(int contentLength) {
@@ -337,7 +330,7 @@ class _ReadOnlyHeaders extends HttpHeadersWrapper {
 
 ///[uri]: if null, it means no need to change
 ///[keepQuery]: whether to keep the original query parameters
-HttpRequest _wrapRequest(HttpRequest request, String path, {bool keepQuery:false}) {
+HttpRequest _wrapRequest(HttpRequest request, String? path, {bool keepQuery:false}) {
   if (path == null)
     return request;
 
@@ -368,7 +361,7 @@ HttpResponse _wrapResponse(HttpResponse response, bool included)
 => !included || response is _IncludedResponse ? response: new _IncludedResponse(response);
 
 String _toAbsUri(HttpRequest request, String uri) {
-  if (uri != null && !uri.startsWith('/')) {
+  if (!uri.startsWith('/')) {
     final pre = request.uri.path;
     final i = pre.lastIndexOf('/');
     if (i >= 0)

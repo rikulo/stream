@@ -1,5 +1,10 @@
 # CHANGES
 
+### 3.0.0
+
+* Migrate to null safety
+* [HttpConnect.headerValue]'s `defaultValue` removed. Use `??` instead.
+
 ### 2.6.0
 
 * `HttpConnect.autoClose` added to control whether to close the response at the end.

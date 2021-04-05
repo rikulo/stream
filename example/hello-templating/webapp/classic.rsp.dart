@@ -2,7 +2,7 @@
 //Source: ../classic.rsp.html
 part of hello_templating;
 
-/** Template, classic, for rendering the view. */
+/// Template, classic, for rendering the view.
 Future classic(HttpConnect connect, {header, sidebar, body, footer}) async {
   HttpResponse response = connect.response;
   if (!Rsp.init(connect, "text/html; charset=utf-8"))

@@ -32,7 +32,7 @@ abstract class Router {
   /// and starting at the given index.
   ///
   /// It returns null if not found.
-  int getFilterIndex(HttpConnect connect, String uri, int iFilter);
+  int? getFilterIndex(HttpConnect connect, String uri, int iFilter);
 
   /// Returns the filter at the given index.
   RequestFilter getFilterAt(int iFilter);
@@ -53,10 +53,10 @@ class DefaultRouter implements Router {
   final _uriMapping = <_UriMapping>[], _filterMapping = <_UriMapping>[];
   final _errorMapping = new HashMap<int, dynamic>(); //mapping of status code to URI/Function
 
-  final _UriCache _uriCache = new _UriCache();
-  int _cacheSize;
+  final _uriCache = new _UriCache();
+  final int _cacheSize;
 
-  static final _NOT_FOUND = new Object();
+  static final _notFound = new Object();
 
   /** The constructor.
    *
@@ -65,15 +65,13 @@ class DefaultRouter implements Router {
    * You can specify it to false if you don't put RSP files with client
    * resource files.
    */
-  DefaultRouter({Map<String, dynamic> uriMapping,
-      Map<int, dynamic> errorMapping,
-      Map<String, RequestFilter> filterMapping,
-      int cacheSize: 1000, bool protectRSP: true}) {
-    _cacheSize = cacheSize;
+  DefaultRouter({Map<String, dynamic>? uriMapping,
+      Map<int, dynamic>? errorMapping,
+      Map<String, RequestFilter>? filterMapping,
+      int cacheSize: 1000, bool protectRSP: true}): _cacheSize = cacheSize {
 
     if (uriMapping != null)
-      for (final uri in uriMapping.keys)
-        map(uri, uriMapping[uri]);
+      uriMapping.forEach(map);
 
     //default mapping
     if (protectRSP)
@@ -81,11 +79,10 @@ class DefaultRouter implements Router {
         //prevent .rsp and .rsp.* from access
 
     if (filterMapping != null)
-      for (final uri in filterMapping.keys)
-        filter(uri, filterMapping[uri]);
+      filterMapping.forEach(filter);
 
     if (errorMapping != null)
-      for (final code in errorMapping.keys) {
+      errorMapping.forEach((code, handler) {
         final handler = errorMapping[code];
         if (handler is String) {
           String uri = handler;
@@ -96,7 +93,7 @@ class DefaultRouter implements Router {
         }
 
         _errorMapping[code] = handler;
-      }
+      });
   }
 
   /** Maps the given URI to the given handler.
@@ -128,9 +125,7 @@ class DefaultRouter implements Router {
    * In other words, if true, this mapping will be interpreted first.
    */
   @override
-  void filter(String uri, RequestFilter filter, {preceding: false}) {
-    if (filter is! Function)
-      throw new ServerError("Filter mapping: function (filter) is required for $uri");
+  void filter(String uri, RequestFilter filter, {bool preceding: false}) {
     _map(_filterMapping, uri, filter, preceding);
   }
   static void _map(List<_UriMapping> mapping, String uri, handler, bool preceding) {
@@ -166,11 +161,11 @@ class DefaultRouter implements Router {
   getHandler(HttpConnect connect, String uri) {
     //check cache first before shallCache => better performance
     //reason: shallCache is likely to return true (after regex)
-    final Map<String, dynamic> cache = _uriCache.getCache(connect, _uriMapping);
+    final cache = _uriCache.getCache(connect, _uriMapping);
     var handler = cache[uri];
 
     if (handler == null) {
-      _UriMapping mp;
+      _UriMapping? mp;
       for (mp in _uriMapping)
         if (mp.match(connect, uri)) {
           handler = mp.handler;
@@ -179,12 +174,12 @@ class DefaultRouter implements Router {
 
       //store to cache
       if (shallCache(connect, uri)) {
-        cache[uri] = handler == null ? _NOT_FOUND:
-          mp.hasGroup() ? mp: handler; //store _UriMapping if mp.hasGroup()
+        cache[uri] = handler == null ? _notFound:
+          mp!.hasGroup() ? mp: handler; //store _UriMapping if mp.hasGroup()
         if (cache.length > _cacheSize)
           cache.remove(cache.keys.first);
       }
-    } else if (identical(handler, _NOT_FOUND)) {
+    } else if (identical(handler, _notFound)) {
       return null;
     } else if (handler is _UriMapping) { //hasGroup
       handler.match(connect, uri); //prepare connect.dataset
@@ -207,16 +202,16 @@ class DefaultRouter implements Router {
   }
 
   @override
-  int getFilterIndex(HttpConnect connect, String uri, int iFilter) {
+  int? getFilterIndex(HttpConnect connect, String uri, int iFilter) {
     for (; iFilter < _filterMapping.length; ++iFilter)
       if (_filterMapping[iFilter].match(connect, uri))
         return iFilter;
-    return null;
   }
+
   @override
-  RequestFilter getFilterAt(int iFilter) {
-    return _filterMapping[iFilter].handler as RequestFilter;
-  }
+  RequestFilter getFilterAt(int iFilter)
+  => _filterMapping[iFilter].handler as RequestFilter;
+
   @override
   getErrorHandler(error) => _errorMapping[error];
 }
@@ -233,29 +228,21 @@ Function _upgradeWS(Future handler(WebSocket socket))
 
 class _UriMapping {
   final String uri;
-  RegExp _ptn;
-  Map<int, String> _groups;
+  final RegExp _ptn;
+  final Map<int, String>? _groups;
   ///It could be a function, a string or a list of (string or _Var).
-  var handler;
+  final handler;
   ///The method to match with. (It is in upper case)
-  String method;
+  final String? method;
 
-  _UriMapping(this.uri, rawhandler) {
-    _parseHandler(rawhandler);
-    _parseUri(uri);
+  _UriMapping._(this.uri, this.handler, this.method, this._groups, this._ptn);
 
-    if (method == "WS") { //handle specially
-      if (rawhandler is! Function)
-        throw new ServerError(
-          "'ws:' must be mapped to a function-typed handler, not $rawhandler");
-      handler = _upgradeWS(rawhandler as _WSHandler);
-      method = null;
-    }
-  }
-  void _parseHandler(rawhandler) {
+  factory _UriMapping(String uri, final rawhandler) {
+    //1. Parse handler
+    var handler = rawhandler;
     if (rawhandler is String) {
-      final val = rawhandler as String;
-      List segs = [];
+      final val = rawhandler;
+      final segs = [];
       int k = 0, len = val.length;
       for (int i = 0; i < len; ++i) {
         switch (val.codeUnitAt(i)) {
@@ -284,13 +271,13 @@ class _UriMapping {
       if (!segs.isEmpty) {
         if (k < len)
           segs.add(val.substring(k));
-        rawhandler = segs;
+        handler = segs;
       }
     }
-    handler = rawhandler;
-  }
-  void _parseUri(String uri) {
+
+    //2. parse URI
     //handle get:xxx, post:xxx, ws:xxz
+    String? method;
     for (int i = 0, len = uri.length; i < len; ++i) {
       final cc = uri.codeUnitAt(i);
       if (cc == $colon) {
@@ -311,7 +298,7 @@ class _UriMapping {
       //ensure it is absolute or starts with regex wildcard
 
     uri = "^$uri\$"; //match the whole URI
-    _groups = new HashMap<int, String>();
+    final groups = new HashMap<int, String>();
 
     //parse grouping: ([a-zA-Z_-]+:regex)
     final sb = new StringBuffer();
@@ -338,7 +325,7 @@ class _UriMapping {
           sb.write('(');
 
           //parse the name of the group, if any
-          String nm;
+          String? nm;
           final nmsb = new StringBuffer();
           int j = i;
           for (;;) {
@@ -364,29 +351,41 @@ class _UriMapping {
           i = j;
 
           if (nm != null)
-            _groups[grpId] = nm;
+            groups[grpId] = nm;
           ++grpId;
           continue;
       }
       sb.writeCharCode(uri.codeUnitAt(i));
     }
 
-    if (_groups.isEmpty)
-      _groups = null;
-    _ptn = new RegExp(_groups != null ? sb.toString(): uri);
+    if (method == "WS") { //handle specially
+      if (rawhandler is! Function)
+        throw new ServerError(
+          "'ws:' must be mapped to a function handler, not $rawhandler");
+      handler = _upgradeWS(rawhandler as _WSHandler);
+      method = null;
+    }
+
+    final hasGroup = groups.isNotEmpty;
+    return _UriMapping._(uri, handler, method, hasGroup ? groups: null,
+        new RegExp(hasGroup ? sb.toString(): uri));
   }
+
   bool hasGroup() => _groups != null;
+
   bool match(HttpConnect connect, String uri) {
     if (method != null && method != connect.request.method)
       return false; //not matched
 
     final m = _ptn.firstMatch(uri);
     if (m != null) {
-      if (_groups != null) {
+      final groups = _groups;
+      if (groups != null) {
         final count = m.groupCount;
-        for (final key in _groups.keys)
+        groups.forEach((key, value) {
           if (key < count) //unlikely but be safe
-            connect.dataset[_groups[key]] = m.group(key + 1); //group() starts from 1 (not 0)
+            connect.dataset[value] = m.group(key + 1); //group() starts from 1 (not 0)
+        });
       }
       return true;
     }
@@ -405,8 +404,8 @@ class _Var {
 class _UriCache {
   ///If _multimethod is false => <String uri, handler>
   ///If _multimethod is true => <String method, <String uri, handler>>
-  Map<String, dynamic> _cache;
-  bool _multimethod;
+  Map<String, dynamic>? _cache;
+  bool? _multimethod;
 
   void reset() {
     _multimethod = null;
@@ -414,20 +413,21 @@ class _UriCache {
   }
 
   Map<String, dynamic> getCache(HttpConnect connect, List<_UriMapping> mappings) {
-    if (_multimethod == null) { //not initialized yet
-      _cache = new LinkedHashMap<String, dynamic>();
+    var cache = _cache;
+    if (cache == null) { //not initialized yet
+      cache = _cache = new LinkedHashMap<String, dynamic>();
 
       _multimethod = false;
-      for (final _UriMapping m in mappings)
+      for (final m in mappings)
         if (m.method != null) {
           _multimethod = true;
           break;
         }
     }
 
-    return _multimethod ? 
-      _cache.putIfAbsent(connect.request.method,
+    return _multimethod == true ? 
+      cache.putIfAbsent(connect.request.method,
           () => new LinkedHashMap<String, dynamic>()) as Map<String, dynamic>:
-      _cache;
+      cache;
   }
 }

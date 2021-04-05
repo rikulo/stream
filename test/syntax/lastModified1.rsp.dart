@@ -11,7 +11,7 @@ import 'package:stream/stream.dart';
   String etag() => '1234ab';
   
 
-/** Template, lastModified1, for rendering the view. */
+/// Template, lastModified1, for rendering the view.
 Future lastModified1(HttpConnect connect, {input}) async {
   HttpResponse response = connect.response;
   if (!Rsp.init(connect, "text/html; charset=utf-8",

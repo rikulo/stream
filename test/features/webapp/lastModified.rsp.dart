@@ -2,7 +2,7 @@
 //Source: ../lastModified.rsp.html
 part of features;
 
-/** Template, lastModified, for rendering the view. */
+/// Template, lastModified, for rendering the view.
 Future lastModified(HttpConnect connect) async {
   HttpResponse response = connect.response;
   if (!Rsp.init(connect, "text/html; charset=utf-8",

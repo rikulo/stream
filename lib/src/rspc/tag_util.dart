@@ -12,7 +12,7 @@ bool isValidVarCharCode(int cc, bool firstChar)
  * If null, false is returned.
  */
 bool isEL(String data) {
-  for (int i = 0, len = data != null ? data.length: 0; i < len; ++i) {
+  for (int i = 0, len = data.length; i < len; ++i) {
     final cc = data.codeUnitAt(i);
     if (cc == $backslash)
       ++i;
@@ -29,7 +29,7 @@ bool isEL(String data) {
  * If true and `data` contains nothing but a single expression, the expression
  * is output directly
  */
-String toEL(String data, {bool direct: true}) {
+String toEL(String? data, {bool direct: true}) {
   if (data == null)
     return direct ? "null": '""';
 
@@ -57,7 +57,8 @@ String toEL(String data, {bool direct: true}) {
     val.indexOf("'") >= 0 ? '"""$val"""': "'$val'": '"$val"';
 }
 int _skipToELEnd(String data, int from) {
-  int sep, nbkt = 0;
+  int? sep;
+  int nbkt = 0;
   for (int len = data.length; from < len; ++from) {
     final cc = data.codeUnitAt(from);
     if (cc == $backslash) {
@@ -83,7 +84,7 @@ int _skipToELEnd(String data, int from) {
  * It assumes the string is in the format of: `arg0="value0" arg1="value1"`
  */
 Map<String, String> parseArgs(String data)
-=> MapUtil.parse(data, backslash:false, defaultValue:"");
+=> MapUtil.parse(data, backslash: false);
 
 /** Output the given text to the generated Dart file.
  * It will generate something like the following to the Dart file:
@@ -92,7 +93,7 @@ Map<String, String> parseArgs(String data)
  *
  * Of course, it will escape the text properly if necessary.
  */
-void outText(TagContext tc, String text, [int line]) {
+void outText(TagContext tc, String text, [int? line]) {
   if (text.isEmpty)
     return; //nothing to do
 
@@ -145,7 +146,7 @@ void outMap(TagContext tc, Map<String, String> map) {
 
 ///Parse the information of the arguments.
 class ArgInfo {
-  ///The first argument, or null if not available
+  ///The first argument, or an empty string if not available
   final String first;
   ///Whether the first argument is an ID.
   final bool isID;
@@ -163,51 +164,54 @@ class ArgInfo {
    * If both are null, you can use [parse] instead. It is simpler.
    */
   factory ArgInfo(TagContext tc, String data,
-      {bool idFirst:true, bool stringFirst:true}) {
-    String first;
-    bool isID = false;
-    if (idFirst || stringFirst) {
-      if (data != null && !(data = data.trim()).isEmpty) {
-        final c0 = data.codeUnitAt(0), len = data.length;
-        if (stringFirst && (c0 == $double_quote || c0 == $single_quote)) {
-          for (int i = 1; i < len; ++i) {
-            final cc = data.codeUnitAt(i);
-            if (cc == c0) {
-              first = data.substring(1, i);
-              data = data.substring(i + 1);
-              break; //done
-            }
-            if (cc == $backslash && i + 1 < len)
-              ++i; //skip
-          }
-        } else if (idFirst) {
-          int i = 0;
-          for (; i < len && isValidVarCharCode(data.codeUnitAt(i), i == 0); ++i)
-            ;
-          if (i > 0) {
-            first = data.substring(0, i);
-            data = data.substring(i).trim();
-            isID = true;
-            if (!data.isEmpty && data.codeUnitAt(0) == $equal)
-              tc.error("Unexpected '=' after an ID, $first"); //highlight common error
-          }
-        }
-      }
+      {bool idFirst: true, bool stringFirst: true}) {
+    if (!idFirst && !stringFirst)
+      return ArgInfo._('', false, parseArgs(data));
 
-      if (first == null) {
-        final sb = new StringBuffer("The first argument must be ");
-        if (idFirst) {
-          sb.write("an ID");
-          if (stringFirst)
-            sb.write(" or ");
+    String? first;
+    bool isID = false;
+
+    if ((data = data.trim()).isNotEmpty) {
+      final c0 = data.codeUnitAt(0), len = data.length;
+      if (stringFirst && (c0 == $double_quote || c0 == $single_quote)) {
+        for (int i = 1; i < len; ++i) {
+          final cc = data.codeUnitAt(i);
+          if (cc == c0) {
+            first = data.substring(1, i);
+            data = data.substring(i + 1);
+            break; //done
+          }
+          if (cc == $backslash && i + 1 < len)
+            ++i; //skip
         }
-        if (stringFirst)
-          sb.write("a string");
-        tc.error(sb.toString());
+      } else if (idFirst) {
+        int i = 0;
+        for (; i < len && isValidVarCharCode(data.codeUnitAt(i), i == 0); ++i)
+          ;
+        if (i > 0) {
+          first = data.substring(0, i);
+          data = data.substring(i).trim();
+          isID = true;
+          if (!data.isEmpty && data.codeUnitAt(0) == $equal)
+            tc.error("Unexpected '=' after an ID, $first"); //highlight common error
+        }
       }
     }
-    return new ArgInfo._(first, isID, parseArgs(data));
+
+    if (first != null)
+      return new ArgInfo._(first, isID, parseArgs(data));
+
+    final sb = new StringBuffer("The first argument must be ");
+    if (idFirst) {
+      sb.write("an ID");
+      if (stringFirst)
+        sb.write(" or ");
+    }
+    if (stringFirst)
+      sb.write("a string");
+    tc.error(sb.toString());
   }
+
   ArgInfo._(this.first, this.isID, this.args);
 }
 
@@ -223,7 +227,7 @@ typedef void _Output(TagContext tc, String id, Map<String, String> args);
  *           if (id == null)
  *             throw new ArgumentError("id required");
  *           tc.write("\n${tc.pre}response.write(message(connect, $id");
- *           if (args != null && !args.isEmpty) {
+ *           if (args != null && args.isNotEmpty) {
  *             tc.write(", ");
  *             outMap(tc, args);
  *           }
@@ -253,7 +257,7 @@ class SimpleTag extends Tag {
 
   @override
   void begin(TagContext tc, String data) {
-    final ArgInfo ai = new ArgInfo(tc, data, stringFirst: false);
+    final ai = new ArgInfo(tc, data, stringFirst: false);
     _output(tc, ai.first, ai.args);
   }
 

@@ -6,7 +6,7 @@ part of stream_rspc;
 class _Environ {
   Encoding encoding = utf8;
   bool verbose = false, lineNumber = false, newer = false;
-  List<String> sources;
+  late List<String> sources;
 }
 
 class _Stats {
@@ -90,7 +90,7 @@ bool _parseArgs(List<String> arguments, _Environ env) {
     return false;
   }
 
-  var val = args['encoding'] as String;
+  var val = args['encoding'] as String?;
   if (val != null)
     switch (val.toLowerCase()) {
       case 'ascii':

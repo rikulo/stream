@@ -2,7 +2,7 @@
 //Source: ../forwarderView.rsp.html
 part of features;
 
-/** Template, forwarderView, for rendering the view. */
+/// Template, forwarderView, for rendering the view.
 Future forwarderView(HttpConnect connect, {bool verified:true}) async {
   HttpResponse response = connect.response;
   if (!Rsp.init(connect, "text/html; charset=utf-8"))

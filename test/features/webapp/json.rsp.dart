@@ -2,7 +2,7 @@
 //Source: ../json.rsp.html
 part of features;
 
-/** Template, json, for rendering the view. */
+/// Template, json, for rendering the view.
 Future json(HttpConnect connect) async {
   HttpResponse response = connect.response;
   if (!Rsp.init(connect, "text/html; charset=utf-8"))

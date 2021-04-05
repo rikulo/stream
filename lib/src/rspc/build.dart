@@ -8,9 +8,10 @@ part of stream_rspc;
  *
  * * [imports] - additional imported packages, such as `["package:foo/foo.dart"]`.
  */
-void compile(String source, IOSink out, {String sourceName, String destinationName,
+void compile(String source, IOSink out, {
+    String? sourceName, String? destinationName,
     Encoding encoding: utf8, bool verbose: false, bool lineNumber: false,
-    List<String> imports}) {
+    List<String>? imports}) {
   new Compiler(source, out, sourceName: sourceName, destinationName: destinationName,
       encoding: encoding, verbose: verbose, lineNumber: lineNumber, imports: imports)
   .compile();
@@ -27,10 +28,10 @@ void compile(String source, IOSink out, {String sourceName, String destinationNa
  * * [onCompile] - Optional. If specified, it is called when compiling a file,
  * or when skipping the compilation because of not-modified
  */
-Future<bool> compileFile(String sourceName, {String destinationName,
+Future<bool> compileFile(String sourceName, {String? destinationName,
     bool verbose: false, bool newer: false,
-    bool lineNumber: false, Encoding encoding: utf8, List<String> imports,
-    void onCompile(String source, {bool skipped})}) async {
+    bool lineNumber: false, Encoding encoding: utf8, List<String>? imports,
+    void onCompile(String source, {bool skipped})?}) async {
   final source = new File(sourceName);
   if (!await source.exists()) {
     print("File not found: ${sourceName}");
@@ -126,8 +127,8 @@ Future<File> _locate(String flnm) async {
  * folder with the same path structure.
  * * [imports] - additional imported packages, such as `["package:foo/foo.dart"]`.
  */
-Future build(List<String> arguments, {String filenameMapper(String source),
-    Encoding encoding: utf8, List<String> imports}) async {
+Future build(List<String> arguments, {String filenameMapper(String source)?,
+    Encoding encoding: utf8, List<String>? imports}) async {
   final ArgParser argParser = new ArgParser()
     ..addMultiOption("changed")
     ..addMultiOption("removed")

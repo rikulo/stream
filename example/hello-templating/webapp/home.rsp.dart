@@ -2,7 +2,7 @@
 //Source: ../home.rsp.html
 part of hello_templating;
 
-/** Template, home, for rendering the view. */
+/// Template, home, for rendering the view.
 Future home(HttpConnect connect) async {
   HttpResponse response = connect.response;
   if (!Rsp.init(connect, "text/html; charset=utf-8"))

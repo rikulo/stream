@@ -2,7 +2,7 @@
 //Source: ../fragView.rsp.html
 part of features;
 
-/** Template, fragView, for rendering the view. */
+/// Template, fragView, for rendering the view.
 Future fragView(HttpConnect connect, {Map infos: const {}, header, footer}) async {
   HttpResponse response = connect.response;
   if (!Rsp.init(connect, "text/html; charset=utf-8"))

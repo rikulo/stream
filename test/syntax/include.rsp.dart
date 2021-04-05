@@ -6,7 +6,7 @@ import 'dart:async';
 import 'dart:io';
 import 'package:stream/stream.dart';
 
-/** Template, include, for rendering the view. */
+/// Template, include, for rendering the view.
 Future include(HttpConnect connect, {foo, more, less}) async {
   HttpResponse response = connect.response;
   if (!Rsp.init(connect, "text/html; charset=utf-8"))

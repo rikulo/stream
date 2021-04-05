@@ -2,7 +2,7 @@
 //Source: ../searchResult.rsp.html
 part of features;
 
-/** Template, searchResult, for rendering the view. */
+/// Template, searchResult, for rendering the view.
 Future searchResult(HttpConnect connect, {criteria}) async {
   HttpResponse response = connect.response;
   if (!Rsp.init(connect, "text/html; charset=utf-8"))

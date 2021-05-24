@@ -127,6 +127,7 @@ class _StreamServer implements StreamServer {
 
     return resourceLoader.load(connect, path);
   }
+
   Future _handleErr(HttpConnect connect, error, StackTrace stackTrace) async {
     if (connect.errorDetail != null) { //called twice; ignore 2nd one
       _logError(connect, error, stackTrace);
@@ -139,10 +140,14 @@ class _StreamServer implements StreamServer {
     var handler = _router.getErrorHandler(error);
     if (handler == null) {
       if (error is! HttpStatusException) {
-        _logError(connect, error, stackTrace);
-        shouted = true;
-        error = new Http500.fromConnect(connect,
-            cause: error != null ? error.toString(): "");
+        if (error is PayloadException) {
+          error = Http413.fromConnect(connect);
+        } else {
+          _logError(connect, error, stackTrace);
+          shouted = true;
+          error = new Http500.fromConnect(connect,
+              cause: error != null ? error.toString(): "");
+        }
       }
 
       final code = error.statusCode as int;

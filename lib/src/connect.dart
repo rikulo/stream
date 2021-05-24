@@ -407,11 +407,29 @@ class Http409 extends HttpStatusException {
   Http409.fromConnect(HttpConnect connect, {String message})
   : super.fromConnect(connect, 409, message: message);
 }
+/// HTTP 410 exception.
+class Http410 extends HttpStatusException {
+  Http410({Uri uri, String message}): super(410, uri: uri, message: message);
+  Http410.fromConnect(HttpConnect connect, {String message})
+  : super.fromConnect(connect, 410, message: message);
+}
 /// HTTP 412 exception.
 class Http412 extends HttpStatusException {
   Http412({Uri uri, String message}): super(412, uri: uri, message: message);
   Http412.fromConnect(HttpConnect connect, {String message})
   : super.fromConnect(connect, 412, message: message);
+}
+/// HTTP 413 exception.
+class Http413 extends HttpStatusException {
+  Http413({Uri uri, String message}): super(413, uri: uri, message: message);
+  Http413.fromConnect(HttpConnect connect, {String message})
+  : super.fromConnect(connect, 413, message: message);
+}
+/// HTTP 418 exception.
+class Http418 extends HttpStatusException {
+  Http418({Uri uri, String message}): super(418, uri: uri, message: message);
+  Http418.fromConnect(HttpConnect connect, {String message})
+  : super.fromConnect(connect, 418, message: message);
 }
 /// HTTP 429 exception.
 class Http429 extends HttpStatusException {

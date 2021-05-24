@@ -1,10 +1,8 @@
 # Stream
 
-[Stream](http://rikulo.org/projects/stream) is a Dart web server supporting request routing, filtering, template engine, WebSocket, MVC design pattern and file-based static resources.
+[Stream](https://github.com/rikulo/stream) is a Dart web server supporting request routing, filtering, template engine, WebSocket, MVC design pattern and file-based static resources.
 
-* [Home](http://rikulo.org/projects/stream)
-* [Documentation](http://docs.rikulo.org/stream/latest)
-* [API Reference](http://www.dartdocs.org/documentation/stream/2.6.0)
+* [API Reference](http://www.dartdocs.org/documentation/stream/2.6.1)
 * [Discussion](http://stackoverflow.com/questions/tagged/rikulo)
 * [Git Repository](https://github.com/rikulo/stream)
 * [Issues](https://github.com/rikulo/stream/issues)
@@ -23,14 +21,14 @@ Add this to your `pubspec.yaml` (or create it):
 
 ## Usage
 
-* [Introduction](http://docs.rikulo.org/stream/latest/Getting_Started/Introduction.html)
-* [Getting Started with Hello World](http://docs.rikulo.org/stream/latest/Getting_Started/Hello_World.html)
+* Introduction
+* Getting Started with Hello World
 
 ### Compile RSP (Rikulo Stream Page) to dart files
 
 There are two ways to compile RSP files into dart files: automatic building with Dart Editor or manual compiling.
 
-> RSP is a template technology allowing developers to create dynamically generated web pages based on HTML, XML or other document types (such as [this](https://github.com/rikulo/stream/blob/master/example/hello-mvc/webapp/listView.rsp.html) and [this](https://github.com/rikulo/stream/blob/master/test/features/webapp/includerView.rsp.html)). Please refer to [here](http://docs.rikulo.org/stream/latest/RSP/Fundamentals/RSP_Overview.html) for more information.
+> RSP is a template technology allowing developers to create dynamically generated web pages based on HTML, XML or other document types (such as [this](https://github.com/rikulo/stream/blob/master/example/hello-mvc/webapp/listView.rsp.html) and [this](https://github.com/rikulo/stream/blob/master/test/features/webapp/includerView.rsp.html)).
 
 ### Build with Dart Editor
 

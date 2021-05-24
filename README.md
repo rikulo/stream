@@ -2,8 +2,8 @@
 
 [Stream](https://github.com/rikulo/stream) is a Dart web server supporting request routing, filtering, template engine, WebSocket, MVC design pattern and file-based static resources.
 
-* [API Reference](http://www.dartdocs.org/documentation/stream/2.6.1)
-* [Discussion](http://stackoverflow.com/questions/tagged/rikulo)
+* [API Reference](https://www.dartdocs.org/documentation/stream/2.6.1)
+* [Discussion](https://stackoverflow.com/questions/tagged/rikulo)
 * [Git Repository](https://github.com/rikulo/stream)
 * [Issues](https://github.com/rikulo/stream/issues)
 
@@ -43,7 +43,7 @@ With this build.dart script, whenever your RSP is modified, it will be re-compil
 
 ### Compile Manually
 
-To compile a RSP file manually, run `rspc` (RSP compiler) to compile it into the dart file with [command line interface](http://en.wikipedia.org/wiki/Command-line_interface) as follows:
+To compile a RSP file manually, run `rspc` (RSP compiler) to compile it into the dart file with [command line interface](https://en.wikipedia.org/wiki/Command-line_interface) as follows:
 
     dart -c lib/rspc.dart -n dir1 dir2 file1 fire2...
 

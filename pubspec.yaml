@@ -4,6 +4,7 @@ description: >
   Lightweight Dart web server supporting request routing, filtering,
   template engine, MVC design pattern, and file-based static resources.
 homepage: https://github.com/rikulo/stream
+documentation: https://pub.dev/documentation/stream/latest/
 repository: https://github.com/rikulo/stream
 issue_tracker: https://github.com/rikulo/stream/issues
 dependencies:

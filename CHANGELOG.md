@@ -1,9 +1,18 @@
 # CHANGES
 
+### 3.0.1
+
+* Merge 2.6.1
+
 ### 3.0.0
 
 * Migrate to null safety
 * [HttpConnect.headerValue]'s `defaultValue` removed. Use `??` instead.
+
+### 2.6.1
+
+* `PayloadException` will be caught and return HTTP Status 413 instead.
+* `Http410`, `Http413` and `Http418` added
 
 ### 2.6.0
 

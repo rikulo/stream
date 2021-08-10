@@ -14,6 +14,7 @@ import "package:charcode/ascii.dart";
 
 import "package:rikulo_commons/util.dart";
 import "package:rikulo_commons/io.dart";
+import "package:rikulo_commons/convert.dart";
 import "package:rikulo_commons/browser.dart";
 import "package:rikulo_commons/logging.dart";
 

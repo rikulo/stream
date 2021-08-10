@@ -107,7 +107,7 @@ class Rsp {
         str = Uri.encodeQueryComponent(str);
         break;
       default: //xml/html
-        str = XmlUtil.encode(str, pre: pre);
+        str = XmlUtil.encodeNS(str, pre: pre);
         break;
     }
     return str;

@@ -1,5 +1,9 @@
 # CHANGES
 
+### 3.0.2
+
+* Add the setter of `Server.pathPreprocessor` back
+
 ### 3.0.1
 
 * Merge 2.6.1

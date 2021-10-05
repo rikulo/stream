@@ -169,7 +169,7 @@ abstract class StreamServer {
    * After all, browsers with cached content might request a file with
    * an older version.
    */
-  PathPreprocessor? get pathPreprocessor;
+  PathPreprocessor? pathPreprocessor;
 
   /** Indicates whether the server is running.
    */

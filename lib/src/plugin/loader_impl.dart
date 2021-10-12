@@ -30,7 +30,7 @@ class _CacheEntry {
 
 class _AssetCache implements AssetCache {
   final AssetLoader _loader;
-  final Map<String, _CacheEntry> _cache = new LinkedHashMap<String, _CacheEntry>();
+  final Map<String, _CacheEntry> _cache = LinkedHashMap<String, _CacheEntry>();
   int _cacheSize = 0;
 
   _AssetCache(this._loader);
@@ -66,7 +66,7 @@ class _AssetCache implements AssetCache {
       final entry = _cache[path];
       if (entry != null)
         _cacheSize -= entry.assetSize;
-      _cache[path] = new _CacheEntry(content, lastModified, assetSize);
+      _cache[path] = _CacheEntry(content, lastModified, assetSize);
       _cacheSize += assetSize;
 
       //reduce the cache's size if necessary
@@ -79,11 +79,11 @@ class _AssetCache implements AssetCache {
 Future _loadFileAt(HttpConnect connect, String uri, String dir,
     List<String> names, int j, [AssetCache? cache]) async {
   if (j >= names.length)
-    throw new Http404(uri: Uri.tryParse(uri));
+    throw Http404(uri: Uri.tryParse(uri));
 
-  final file = new File(Path.join(dir, names[j]));
+  final file = File(Path.join(dir, names[j]));
   return (await file.exists()) ?
-      loadAsset(connect, new FileAsset(file), cache):
+      loadAsset(connect, FileAsset(file), cache):
       _loadFileAt(connect, uri, dir, names, j + 1, cache);
 }
 
@@ -131,7 +131,7 @@ bool _setHeaders(HttpConnect connect, _AssetDetail detail, List<_Range>? ranges)
   } else {
     response.statusCode = HttpStatus.partialContent;
     if (ranges.length == 1) {
-      final _Range range = ranges[0];
+      final range = ranges[0];
       response.contentLength = range.length;
       headers.set(HttpHeaders.contentRangeHeader,
         "bytes ${range.start}-${range.end - 1}/${detail.assetSize}");
@@ -178,7 +178,7 @@ class _Range {
     } else {
       end = end == null ? assetSize: end + 1; //from inclusive to exclusive
     }
-    return new _Range._(start, end, end - start);
+    return _Range._(start, end, end - start);
   }
   _Range._(this.start, this.end, this.length);
 
@@ -225,7 +225,9 @@ List<_Range>? _parseRange(HttpConnect connect, _AssetDetail detail) {
         }
     }
 
-    final range = new _Range(values[0], values[1], detail.assetSize);
+    final vlen = values.length;
+    final range = _Range(vlen > 0 ? values[0]: null,
+        vlen > 1 ? values[1]: null, detail.assetSize);
     if (!range.validate(detail.assetSize)) {
       connect.response.headers.set(
           HttpHeaders.contentRangeHeader, "bytes */${detail.assetSize}");
@@ -245,7 +247,7 @@ T? _rangeError<T>(HttpConnect connect, [int code = HttpStatus.badRequest]) {
   connect.response.statusCode = code;
   return null;
 }
-final RegExp _reRange = new RegExp(r"(\d*)\-(\d*)");
+final _reRange = RegExp(r"(\d*)\-(\d*)");
 
 typedef FutureOr _WriteRange(_Range range);
 class _RangeWriter {
@@ -274,7 +276,7 @@ class _RangeWriter {
       if (contentType != null)
         response.writeln(contentType);
 
-      final _Range range = ranges[j];
+      final range = ranges[j];
       response
         ..writeln("${HttpHeaders.contentRangeHeader}: bytes ${range.start}-${range.end - 1}/$assetSize")
         ..writeln();
@@ -285,7 +287,7 @@ class _RangeWriter {
 
 FutureOr _outContentInRanges(HttpResponse response, List<_Range>? ranges,
     ContentType? contentType, List<int> content) {
-  final int assetSize = content.length;
+  final assetSize = content.length;
   if (ranges == null || ranges.length == 1) {
     final range = ranges != null ? ranges[0]: null;
     response.add(
@@ -293,7 +295,7 @@ FutureOr _outContentInRanges(HttpResponse response, List<_Range>? ranges,
         content.sublist(range.start, range.end): content);
     return null;
   } else {
-    return new _RangeWriter(response, ranges, contentType, assetSize,
+    return _RangeWriter(response, ranges, contentType, assetSize,
       (range) {
         response.add(content.sublist(range.start, range.end));
       }).write();
@@ -309,15 +311,15 @@ Future _outAssetInRanges(HttpResponse response, List<_Range>? ranges,
         asset.openRead(range.start, range.end): asset.openRead());
   } else {
     //TODO: a better algorithm for reading multiparts of the asset
-    return new _RangeWriter(response, ranges, contentType, assetSize,
+    return _RangeWriter(response, ranges, contentType, assetSize,
         (range) => response.addStream(asset.openRead(range.start, range.end)))
       .write();
   }
 }
 
 //the boundary used for multipart output
-const String _mimeBoundary = "STREAM_MIME_BOUNDARY";
-const String _mimeBoundaryBegin = "--$_mimeBoundary";
-const String _mimeBoundaryEnd = "--$_mimeBoundary--";
-final ContentType _multipartBytesType =
+const _mimeBoundary = "STREAM_MIME_BOUNDARY";
+const _mimeBoundaryBegin = "--$_mimeBoundary";
+const _mimeBoundaryEnd = "--$_mimeBoundary--";
+final _multipartBytesType =
   ContentType.parse("multipart/byteranges; boundary=$_mimeBoundary");

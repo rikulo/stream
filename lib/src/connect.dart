@@ -445,6 +445,13 @@ class Http500 extends HttpStatusException {
   Http500.fromConnect(HttpConnect connect, {String cause})
   : super.fromConnect(connect, 500, message: cause != null ? "500: $cause": null);
 }
+/// HTTP 501 exception.
+class Http501 extends HttpStatusException {
+  Http501({Uri uri, String cause})
+  : super(501, uri: uri, message: cause != null ? "501: $cause": null);
+  Http501.fromConnect(HttpConnect connect, {String cause})
+  : super.fromConnect(connect, 501, message: cause != null ? "501: $cause": null);
+}
 /// HTTP 503 exception.
 class Http503 extends HttpStatusException {
   Http503({Uri uri, String cause})

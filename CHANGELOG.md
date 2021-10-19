@@ -1,5 +1,9 @@
 # CHANGES
 
+### 3.0.2+3
+
+* `Http501` added.
+
 ### 3.0.2
 
 * Add the setter of `Server.pathPreprocessor` back

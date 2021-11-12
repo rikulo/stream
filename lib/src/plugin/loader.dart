@@ -239,12 +239,9 @@ Future loadAsset(HttpConnect connect, Asset asset, [AssetCache? cache]) async {
   final bool isIncluded = connect.isIncluded;
   ContentType? contentType;
   if (!isIncluded) {
-    final ext = Path.extension(asset.path);
-    if (!ext.isEmpty) {
-      contentType = getContentType(ext.substring(1));
-      if (contentType != null)
-        response.headers.contentType = contentType;
-    }
+    contentType = getContentType(asset.path, isExtension: false);
+    if (contentType != null)
+      response.headers.contentType = contentType;
   }
 
   DateTime lastModified;

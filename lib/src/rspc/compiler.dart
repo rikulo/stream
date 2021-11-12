@@ -159,13 +159,9 @@ class Compiler {
     if (_desc == null)
       _desc = "Template, $_name, for rendering the view.";
 
-    if (_contentType == null && srcnm != null) {
-      final i = srcnm.lastIndexOf('.');
-      if (i >= 0) {
-        final ctype = getContentType(srcnm.substring(i + 1));
-        if (ctype != null)
-          _contentType = ctype.toString();
-      }
+    if (_contentType == null) {
+      final ctype = getContentType(srcnm, isExtension: false);
+      if (ctype != null) _contentType = ctype.toString();
     }
 
     final imports = new LinkedHashSet<String>.from(

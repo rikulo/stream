@@ -1,7 +1,8 @@
 # CHANGES
 
-### 3.0.2+4
+### 3.0.3
 
+* `StreamServer.onError` can be reset with `null`.
 * `Http501` added.
 
 ### 3.0.2

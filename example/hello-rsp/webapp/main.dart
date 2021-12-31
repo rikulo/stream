@@ -2,7 +2,6 @@
 library hello_rsp;
 
 import "dart:async";
-import "dart:io";
 import "package:stream/stream.dart";
 
 part "helloView.rsp.dart"; //generated from helloView.rsp.html
@@ -13,5 +12,5 @@ var _mapping = {
 };
 
 void main() {
-  new StreamServer(uriMapping: _mapping).start();
+  StreamServer(uriMapping: _mapping).start();
 }

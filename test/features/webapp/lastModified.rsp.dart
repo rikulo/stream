@@ -4,7 +4,8 @@ part of features;
 
 /// Template, lastModified, for rendering the view.
 Future lastModified(HttpConnect connect) async {
-  HttpResponse response = connect.response;
+  //ignore: unused_local_variable
+  var response = connect.response;
   if (!Rsp.init(connect, "text/html; charset=utf-8",
   etag: "abc123"))
     return null;

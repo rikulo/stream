@@ -1,5 +1,9 @@
 # CHANGES
 
+### 3.1.0
+
+* rspc won't generate: import 'dart:io';
+
 ### 3.0.3
 
 * `StreamServer.onError` can be reset with `null`.

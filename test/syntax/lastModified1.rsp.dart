@@ -3,7 +3,6 @@
 library lastModified1_rsp;
 
 import 'dart:async';
-import 'dart:io';
 import 'package:stream/stream.dart';
 
 
@@ -13,7 +12,8 @@ import 'package:stream/stream.dart';
 
 /// Template, lastModified1, for rendering the view.
 Future lastModified1(HttpConnect connect, {input}) async {
-  HttpResponse response = connect.response;
+  //ignore: unused_local_variable
+  var response = connect.response;
   if (!Rsp.init(connect, "text/html; charset=utf-8",
   lastModified: lastModified(),
   etag: etag()))

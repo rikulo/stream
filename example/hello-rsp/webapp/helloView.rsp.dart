@@ -4,7 +4,8 @@ part of hello_rsp;
 
 /// Template, helloView, for rendering the view.
 Future helloView(HttpConnect connect) async {
-  HttpResponse response = connect.response;
+  //ignore: unused_local_variable
+  var response = connect.response;
   if (!Rsp.init(connect, "text/html; charset=utf-8"))
     return null;
 

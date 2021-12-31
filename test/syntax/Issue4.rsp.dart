@@ -3,12 +3,12 @@
 library Issue4_rsp;
 
 import 'dart:async';
-import 'dart:io';
 import 'package:stream/stream.dart';
 
 /// Template, Issue4, for rendering the view.
 Future Issue4(HttpConnect connect) async {
-  HttpResponse response = connect.response;
+  //ignore: unused_local_variable
+  var response = connect.response;
   if (!Rsp.init(connect, "text/html; charset=utf-8"))
     return null;
 var foo = "test";

@@ -4,7 +4,8 @@ part of hello_templating;
 
 /// Template, classic, for rendering the view.
 Future classic(HttpConnect connect, {header, sidebar, body, footer}) async {
-  HttpResponse response = connect.response;
+  //ignore: unused_local_variable
+  var response = connect.response;
   if (!Rsp.init(connect, "text/html; charset=utf-8"))
     return null;
 

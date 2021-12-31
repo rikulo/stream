@@ -165,7 +165,7 @@ class Compiler {
     }
 
     final imports = new LinkedHashSet<String>.from(
-      const ["dart:async", "dart:io", "package:stream/stream.dart"]);
+      const ["dart:async", "package:stream/stream.dart"]);
     final defImports = _defImports;
     if (defImports != null) imports.addAll(defImports);
 
@@ -224,7 +224,8 @@ class Compiler {
     if (_args != null)
       _write(", {$_args}");
     _write(") async {${_getLineNumberComment(line)}\n"
-      "  HttpResponse response = connect.response;\n");
+      "  //ignore: unused_local_variable\n"
+      "  var response = connect.response;\n");
 
     if (!_headers.isEmpty) {
       for (final _QuedTag qt in _headers) {

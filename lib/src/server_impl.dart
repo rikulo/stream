@@ -247,7 +247,7 @@ class _StreamServer implements StreamServer {
   ResourceLoader resourceLoader;
 
   @override
-  void onError(void onError(HttpConnect? connect, error, StackTrace? stackTrace)) {
+  void onError(void onError(HttpConnect? connect, error, StackTrace? stackTrace)?) {
     _onError = onError;
   }
   @override

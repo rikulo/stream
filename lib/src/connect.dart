@@ -157,7 +157,7 @@ abstract class HttpConnect {
   /** Send a temporary redirect to the specified redirect URL.
    *
    * * [url] - the location to redirect to. It can be an URI or URL, such as
-   * `/login?whatever` and `http://rikulo.org/project/stream`.
+   * `/login?whatever` and `https://quire.io/features`.
    *
    * > Notice: you shall invoke this method instead of `HttpResponse.redirect()`,
    * since `HttpResponse.redirect()` will close the connection (which
@@ -221,7 +221,7 @@ abstract class HttpConnect {
 
   /** The browser information.
    *
-   * * See also [Browser](http://api.rikulo.org/commons/latest/rikulo_browser/Browser.html).
+   * * See also [Browser].
    */
   Browser get browser;
 

@@ -9,7 +9,7 @@ import 'dart:collection' show LinkedHashMap;
 var someExternal = 123;
 
 /// Template, syntax, for rendering the view.
-Future syntax(HttpConnect connect, {required foo, bool c:false}) async {
+Future syntax(HttpConnect connect, {required foo, bool c = false}) async {
   //ignore: unused_local_variable
   var response = connect.response;
 

@@ -13,7 +13,7 @@ abstract class Router {
   /// * [handler] - if handler is null, it means removal.
   /// * [preceding] - whether to make the mapping preceding any previous mappings.
   /// In other words, if true, this mapping will be interpreted first.
-  void map(String uri, handler, {bool preceding: false});
+  void map(String uri, handler, {bool preceding = false});
 
   /// Maps the given URI to the given filter.
   ///
@@ -22,7 +22,7 @@ abstract class Router {
   /// * [filter] - if filter is null, it means removal.
   /// * [preceding] - whether to make the mapping preceding any previous mappings.
   /// In other words, if true, this mapping will be interpreted first.
-  void filter(String uri, RequestFilter filter, {bool preceding: false});
+  void filter(String uri, RequestFilter filter, {bool preceding = false});
 
   /// Retrieves the first matched request handler ([RequestHandler]) or
   /// forwarded URI ([String]) for the given URI.
@@ -68,7 +68,7 @@ class DefaultRouter implements Router {
   DefaultRouter({Map<String, dynamic>? uriMapping,
       Map<int, dynamic>? errorMapping,
       Map<String, RequestFilter>? filterMapping,
-      int cacheSize: 1000, bool protectRSP: true}): _cacheSize = cacheSize {
+      int cacheSize = 1000, bool protectRSP = true}): _cacheSize = cacheSize {
 
     if (uriMapping != null)
       uriMapping.forEach(map);
@@ -109,7 +109,7 @@ class DefaultRouter implements Router {
    * In other words, if true, this mapping will be interpreted first.
    */
   @override
-  void map(String uri, handler, {preceding: false}) {
+  void map(String uri, handler, {preceding = false}) {
     if (handler != null && handler is! Function && handler is! String)
       throw new ServerError("URI mapping: function (renderer) or string (URI) is required for $uri");
 
@@ -125,7 +125,7 @@ class DefaultRouter implements Router {
    * In other words, if true, this mapping will be interpreted first.
    */
   @override
-  void filter(String uri, RequestFilter filter, {bool preceding: false}) {
+  void filter(String uri, RequestFilter filter, {bool preceding = false}) {
     _map(_filterMapping, uri, filter, preceding);
   }
   static void _map(List<_UriMapping> mapping, String uri, handler, bool preceding) {

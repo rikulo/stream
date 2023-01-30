@@ -3,7 +3,7 @@
 part of features;
 
 /// Template, forwarderView, for rendering the view.
-Future forwarderView(HttpConnect connect, {bool verified:true}) async {
+Future forwarderView(HttpConnect connect, {bool verified = true}) async {
   //ignore: unused_local_variable
   var response = connect.response;
   if (!Rsp.init(connect, "text/html; charset=utf-8"))

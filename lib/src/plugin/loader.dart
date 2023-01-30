@@ -28,7 +28,7 @@ abstract class ResourceLoader {
   /// - [useCache] - whether to use the cache.
   /// If true (default), it will check the cache first, and update the
   /// cache if ncessary.
-  Future load(HttpConnect connect, String uri, {bool useCache: true});
+  Future load(HttpConnect connect, String uri, {bool useCache = true});
 }
 
 /** An asset (aka., resource), such as a file or a BLOB object in database.
@@ -187,7 +187,7 @@ abstract class AssetLoader implements ResourceLoader {
   Asset getAsset(String path);
 
   @override
-  Future load(HttpConnect connect, String uri, {bool useCache: true})
+  Future load(HttpConnect connect, String uri, {bool useCache = true})
   => loadAsset(connect, getAsset(uri), useCache ? cache: null);
 }
 
@@ -210,7 +210,7 @@ class FileLoader extends AssetLoader {
   => new FileAsset(new File(path));
 
   @override
-  Future load(HttpConnect connect, String uri, {bool useCache: true}) async {
+  Future load(HttpConnect connect, String uri, {bool useCache = true}) async {
     String path = uri.substring(1); //uri must start with '/', but path can't
     path = Path.join(rootDir, path);
 

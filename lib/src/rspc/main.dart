@@ -13,7 +13,7 @@ class _Stats {
   int nCompiled = 0;
   int nSkipped = 0;
 
-  void onCompile(String source, {bool skipped: false}) {
+  void onCompile(String source, {bool skipped = false}) {
     if (skipped) {
       print("$source not modified");
       ++nSkipped;

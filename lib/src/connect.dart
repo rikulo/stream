@@ -122,7 +122,7 @@ abstract class HttpConnect {
    * * [inclusion] - whether it is used for inclusion. If true,
    * any modification to `connect.response.headers` is ignored.
    */
-  factory HttpConnect.chain(HttpConnect connect, {bool inclusion: true,
+  factory HttpConnect.chain(HttpConnect connect, {bool inclusion = true,
       String? uri, HttpRequest? request, HttpResponse? response}) {
     return inclusion ?
       new _IncludedConnect(connect, request, response, uri):
@@ -163,7 +163,7 @@ abstract class HttpConnect {
    * since `HttpResponse.redirect()` will close the connection (which
    * will be called automatically under Rikulo Stream).
    */
-  void redirect(String url, {int status: HttpStatus.movedTemporarily});
+  void redirect(String url, {int status = HttpStatus.movedTemporarily});
 
   /** Forward this connection to the given [uri].
    *
@@ -282,7 +282,7 @@ class HttpConnectWrapper implements HttpConnect {
   bool get isForwarded => origin.isForwarded;
 
   @override
-  void redirect(String uri, {int status: HttpStatus.movedTemporarily}) {
+  void redirect(String uri, {int status = HttpStatus.movedTemporarily}) {
     origin.redirect(_toCompleteUrl(request, uri), status: status);
   }
   @override

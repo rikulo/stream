@@ -138,7 +138,7 @@ void _addHeader(Map<String, String> headers, String name, String value) {
 }
 
 Future _copy<T>(Stream<T> stream, EventSink<T> sink,
-    {bool cancelOnError: true, bool closeSink: true, void copyTo(T event)?}) {
+    {bool cancelOnError = true, bool closeSink = true, void copyTo(T event)?}) {
   var completer = new Completer();
   stream.listen(copyTo ?? sink.add,
     onError: (Object e, StackTrace st) {

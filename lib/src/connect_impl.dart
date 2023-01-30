@@ -52,8 +52,6 @@ class _HttpChannel implements HttpChannel {
 
 ///Skeletal implementation
 abstract class _AbstractConnect implements HttpConnect {
-  Map<String, dynamic>? _dataset;
- 
   _AbstractConnect(this.request, this.response);
 
   @override
@@ -72,7 +70,7 @@ abstract class _AbstractConnect implements HttpConnect {
   bool get isForwarded => false;
 
   @override
-  void redirect(String uri, {int status: HttpStatus.movedTemporarily}) {
+  void redirect(String uri, {int status = HttpStatus.movedTemporarily}) {
     response.statusCode = status;
     response.headers.set(HttpHeaders.locationHeader, _toCompleteUrl(request, uri));
   }
@@ -136,7 +134,8 @@ class _HttpConnect extends _AbstractConnect {
   ErrorDetail? errorDetail;
   @override
   Map<String, dynamic> get dataset
-  => _dataset ?? (_dataset = MapUtil.auto(() => _dataset = new HashMap<String, dynamic>()));
+  => _dataset ??= MapUtil.auto(() => _dataset = HashMap<String, dynamic>());
+  Map<String, dynamic>? _dataset;
 }
 
 //Parse Accept-Language into locales
@@ -271,7 +270,7 @@ class _IncludedResponse extends HttpResponseWrapper {
   => _headers ?? (_headers = new _ReadOnlyHeaders(origin.headers));
 
   @override
-  Future<Socket> detachSocket({bool writeHeaders: true}) {
+  Future<Socket> detachSocket({bool writeHeaders = true}) {
     throw new HttpException("Not allowed in an included connection");
   }
 }
@@ -330,7 +329,7 @@ class _ReadOnlyHeaders extends HttpHeadersWrapper {
 
 ///[uri]: if null, it means no need to change
 ///[keepQuery]: whether to keep the original query parameters
-HttpRequest _wrapRequest(HttpRequest request, String? path, {bool keepQuery:false}) {
+HttpRequest _wrapRequest(HttpRequest request, String? path, {bool keepQuery =false}) {
   if (path == null)
     return request;
 

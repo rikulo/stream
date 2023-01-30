@@ -29,7 +29,7 @@ bool isEL(String data) {
  * If true and `data` contains nothing but a single expression, the expression
  * is output directly
  */
-String toEL(String? data, {bool direct: true}) {
+String toEL(String? data, {bool direct = true}) {
   if (data == null)
     return direct ? "null": '""';
 
@@ -164,7 +164,7 @@ class ArgInfo {
    * If both are null, you can use [parse] instead. It is simpler.
    */
   factory ArgInfo(TagContext tc, String data,
-      {bool idFirst: true, bool stringFirst: true}) {
+      {bool idFirst = true, bool stringFirst = true}) {
     if (!idFirst && !stringFirst)
       return ArgInfo._('', false, parseArgs(data));
 

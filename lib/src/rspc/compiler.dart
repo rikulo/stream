@@ -25,8 +25,8 @@ class Compiler {
   int _nextVar = 0; //used to implement TagContext.nextVar()
 
   Compiler(String source, this.destination, {
-      this.sourceName, this.destinationName, this.encoding: utf8,
-      this.verbose: false, this.lineNumber: false, List<String>? imports}):
+      this.sourceName, this.destinationName, this.encoding = utf8,
+      this.verbose = false, this.lineNumber = false, List<String>? imports}):
       this.source = source = source.replaceAll("\r\n", "\n"),
       _len = source.length,
       this._defImports = imports {
@@ -518,7 +518,7 @@ class Compiler {
     _error("Expect ']'", line);
   }
   ///Note: [tag] is required if `tag.hasClosing` is 
-  String _tagData({Tag? tag, bool skipFollowingSpaces: true}) {
+  String _tagData({Tag? tag, bool skipFollowingSpaces = true}) {
     int k = _skipTagArgs(_pos);
     final data = source.substring(_pos, k).trim();
     _pos = k + 1;

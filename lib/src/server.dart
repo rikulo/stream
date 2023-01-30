@@ -96,7 +96,7 @@ abstract class StreamServer {
    */
   factory StreamServer({Map<String, dynamic>? uriMapping,
       Map<int, dynamic>? errorMapping, Map<String, RequestFilter>? filterMapping,
-      String? homeDir, bool disableLog: false})
+      String? homeDir, bool disableLog = false})
   => new _StreamServer(
       new DefaultRouter(uriMapping: uriMapping,
         errorMapping: errorMapping, filterMapping: filterMapping),
@@ -106,7 +106,7 @@ abstract class StreamServer {
    * It is used if you'd like to use your own router, rather than the default one.
    */
   factory StreamServer.router(Router router, {String? homeDir,
-      bool disableLog: false})
+      bool disableLog = false})
   => new _StreamServer(router, homeDir, disableLog);
 
   /** The version.
@@ -201,8 +201,8 @@ abstract class StreamServer {
    * * [zoned] - whether to start the server within a zone
    * (i.e., `runZonedGuarded()`). Default: true.
    */
-  Future<HttpChannel> start({address, int port: 8080, int backlog: 0,
-    bool v6Only: false, bool shared: false, bool zoned: true});
+  Future<HttpChannel> start({address, int port = 8080, int backlog = 0,
+    bool v6Only = false, bool shared = false, bool zoned = true});
   /** Starts the server listening for HTTPS request.
    *
    * Notice that you can invoke [start], [startSecure] and [startOn] multiple
@@ -227,9 +227,9 @@ abstract class StreamServer {
    * Default: true.
    */
   Future<HttpChannel> startSecure(SecurityContext context,
-      {address, int port: 8443,
-      bool v6Only: false, bool requestClientCertificate: false,
-      int backlog: 0, bool shared: false, bool zoned: true});
+      {address, int port = 8443,
+      bool v6Only = false, bool requestClientCertificate = false,
+      int backlog = 0, bool shared = false, bool zoned = true});
   /** Starts the server to an existing socket.
    *
    * Notice that you can invoke [start], [startSecure] and [startOn] multiple
@@ -249,7 +249,7 @@ abstract class StreamServer {
    * * [zoned] - whether to start the server within a zone (i.e., `runZoned()`)
    * Default: true.
    */
-  HttpChannel startOn(ServerSocket socket, {bool zoned: true});
+  HttpChannel startOn(ServerSocket socket, {bool zoned = true});
   /** Stops the server. It will close all [channels].
    *
    * To close an individual channel, please use [HttpChannel.close] instead.
@@ -381,7 +381,7 @@ abstract class StreamServer {
    * * [preceding] - whether to make the mapping preceding any previous mappings.
    * In other words, if true, this mapping will be interpreted first.
    */
-  void map(String uri, handler, {bool preceding: false});
+  void map(String uri, handler, {bool preceding = false});
   /** Maps the given URI to the given filter.
    *
    * * [uri]: a regular expression used to match the request URI.
@@ -389,7 +389,7 @@ abstract class StreamServer {
    * * [preceding] - whether to make the mapping preceding any previous mappings.
    * In other words, if true, this mapping will be interpreted first.
    */
-  void filter(String uri, RequestFilter filter, {bool preceding: false});
+  void filter(String uri, RequestFilter filter, {bool preceding = false});
 
   /** The logger for logging information.
    */

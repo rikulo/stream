@@ -264,8 +264,8 @@ class _StreamServer implements StreamServer {
   @override
   bool get isRunning => !_channels.isEmpty;
   @override
-  Future<HttpChannel> start({address, int port: 8080, int backlog: 0,
-      bool v6Only: false, bool shared: false, bool zoned: true}) async {
+  Future<HttpChannel> start({address, int port = 8080, int backlog = 0,
+      bool v6Only = false, bool shared = false, bool zoned = true}) async {
     if (address == null)
       address = InternetAddress.anyIPv4;
 
@@ -279,9 +279,9 @@ class _StreamServer implements StreamServer {
   }
   @override
   Future<HttpChannel> startSecure(SecurityContext context,
-      {address, int port: 8443,
-      bool v6Only: false, bool requestClientCertificate: false,
-      int backlog: 0, bool shared: false, bool zoned: true}) async {
+      {address, int port = 8443,
+      bool v6Only = false, bool requestClientCertificate = false,
+      int backlog = 0, bool shared = false, bool zoned = true}) async {
     if (address == null)
       address = InternetAddress.anyIPv4;
 
@@ -302,7 +302,7 @@ class _StreamServer implements StreamServer {
       "Home: ${homeDir}");
   }
   @override
-  HttpChannel startOn(ServerSocket socket, {bool zoned: true}) {
+  HttpChannel startOn(ServerSocket socket, {bool zoned = true}) {
     final channel = new _HttpChannel.fromSocket(
         this, new HttpServer.listenOn(socket), socket);
     _startChannel(channel, zoned);
@@ -384,11 +384,11 @@ class _StreamServer implements StreamServer {
   }
 
   @override
-  void map(String uri, handler, {bool preceding: false}) {
+  void map(String uri, handler, {bool preceding = false}) {
     _router.map(uri, handler, preceding: preceding);
   }
   @override
-  void filter(String uri, RequestFilter filter, {bool preceding: false}) {
+  void filter(String uri, RequestFilter filter, {bool preceding = false}) {
     _router.filter(uri, filter, preceding: preceding);
   }
 

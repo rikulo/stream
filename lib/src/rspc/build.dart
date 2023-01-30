@@ -10,7 +10,7 @@ part of stream_rspc;
  */
 void compile(String source, IOSink out, {
     String? sourceName, String? destinationName,
-    Encoding encoding: utf8, bool verbose: false, bool lineNumber: false,
+    Encoding encoding = utf8, bool verbose = false, bool lineNumber = false,
     List<String>? imports}) {
   new Compiler(source, out, sourceName: sourceName, destinationName: destinationName,
       encoding: encoding, verbose: verbose, lineNumber: lineNumber, imports: imports)
@@ -29,8 +29,8 @@ void compile(String source, IOSink out, {
  * or when skipping the compilation because of not-modified
  */
 Future<bool> compileFile(String sourceName, {String? destinationName,
-    bool verbose: false, bool newer: false,
-    bool lineNumber: false, Encoding encoding: utf8, List<String>? imports,
+    bool verbose = false, bool newer = false,
+    bool lineNumber = false, Encoding encoding = utf8, List<String>? imports,
     void onCompile(String source, {bool skipped})?}) async {
   final source = new File(sourceName);
   if (!await source.exists()) {
@@ -128,7 +128,7 @@ Future<File> _locate(String flnm) async {
  * * [imports] - additional imported packages, such as `["package:foo/foo.dart"]`.
  */
 Future build(List<String> arguments, {String filenameMapper(String source)?,
-    Encoding encoding: utf8, List<String>? imports}) async {
+    Encoding encoding = utf8, List<String>? imports}) async {
   final ArgParser argParser = new ArgParser()
     ..addMultiOption("changed")
     ..addMultiOption("removed")

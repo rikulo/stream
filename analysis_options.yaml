@@ -1,6 +1,4 @@
 analyzer:
-  strong-mode:
-    implicit-casts: false
   errors:
     todo: ignore
     missing_return: ignore

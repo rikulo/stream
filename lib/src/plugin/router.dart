@@ -51,12 +51,12 @@ abstract class Router {
  */
 class DefaultRouter implements Router {
   final _uriMapping = <_UriMapping>[], _filterMapping = <_UriMapping>[];
-  final _errorMapping = new HashMap<int, dynamic>(); //mapping of status code to URI/Function
+  final _errorMapping = HashMap<int, dynamic>(); //mapping of status code to URI/Function
 
-  final _uriCache = new _UriCache();
+  final _uriCache = _UriCache();
   final int _cacheSize;
 
-  static final _notFound = new Object();
+  static final _notFound = Object();
 
   /** The constructor.
    *
@@ -75,7 +75,7 @@ class DefaultRouter implements Router {
 
     //default mapping
     if (protectRSP)
-      _uriMapping.add(new _UriMapping("/.*[.]rsp(|[.][^/]*)", _f404));
+      _uriMapping.add(_UriMapping("/.*[.]rsp(|[.][^/]*)", _f404));
         //prevent .rsp and .rsp.* from access
 
     if (filterMapping != null)
@@ -87,9 +87,9 @@ class DefaultRouter implements Router {
         if (handler is String) {
           String uri = handler;
           if (!uri.startsWith('/'))
-            throw new ServerError("URI must start with '/'; not '$uri'");
+            throw ServerError("URI must start with '/'; not '$uri'");
         } else if (handler is! Function) {
-          throw new ServerError("Error mapping: function (renderer) or string (URI) is required for $code");
+          throw ServerError("Error mapping: function (renderer) or string (URI) is required for $code");
         }
 
         _errorMapping[code] = handler;
@@ -111,7 +111,7 @@ class DefaultRouter implements Router {
   @override
   void map(String uri, handler, {preceding = false}) {
     if (handler != null && handler is! Function && handler is! String)
-      throw new ServerError("URI mapping: function (renderer) or string (URI) is required for $uri");
+      throw ServerError("URI mapping: function (renderer) or string (URI) is required for $uri");
 
     _map(_uriMapping, uri, handler, preceding);
     _uriCache.reset();
@@ -144,7 +144,7 @@ class DefaultRouter implements Router {
           }
       }
     } else { //add
-      final m = new _UriMapping(uri, handler);
+      final m = _UriMapping(uri, handler);
       if (preceding)
         mapping.insert(0, m);
       else
@@ -187,7 +187,7 @@ class DefaultRouter implements Router {
     }
 
     if (handler is List) {
-      final sb = new StringBuffer();
+      final sb = StringBuffer();
       for (var seg in handler) {
         if (seg is _Var) {
           seg = connect.dataset[seg.name];
@@ -217,7 +217,7 @@ class DefaultRouter implements Router {
 }
 
 ///Renderer for 404
-final RequestHandler _f404 = (HttpConnect _) {throw new Http404();};
+final RequestHandler _f404 = (HttpConnect _) {throw Http404();};
 
 typedef Future _WSHandler(WebSocket socket);
 
@@ -256,9 +256,9 @@ class _UriMapping {
                 segs.add(val.substring(k, i));
               for (k = ++i;; ++k) {
                 if (k >= len)
-                  throw new ServerError("Expect ')': $val");
+                  throw ServerError("Expect ')': $val");
                 if (val.codeUnitAt(k) == $rparen) {
-                  segs.add(new _Var(val.substring(i, k)));
+                  segs.add(_Var(val.substring(i, k)));
                   i = k++;
                   break;
                 }
@@ -294,14 +294,14 @@ class _UriMapping {
     int cc;
     if (uri.isEmpty || ((cc = uri.codeUnitAt(0)) != $slash
         && cc != $dot && cc != $lbracket && cc != $lparen))
-      throw new ServerError("URI pattern must start with '/', '.', '[' or '('; not '$uri'");
+      throw ServerError("URI pattern must start with '/', '.', '[' or '('; not '$uri'");
       //ensure it is absolute or starts with regex wildcard
 
     uri = "^$uri\$"; //match the whole URI
-    final groups = new HashMap<int, String>();
+    final groups = HashMap<int, String>();
 
     //parse grouping: ([a-zA-Z_-]+:regex)
-    final sb = new StringBuffer();
+    final sb = StringBuffer();
     bool bracket = false;
     l_top:
     for (int i = 0, grpId = 0, len = uri.length; i < len; ++i) {
@@ -326,7 +326,7 @@ class _UriMapping {
 
           //parse the name of the group, if any
           String? nm;
-          final nmsb = new StringBuffer();
+          final nmsb = StringBuffer();
           int j = i;
           for (;;) {
             if (++j >= len) {
@@ -360,7 +360,7 @@ class _UriMapping {
 
     if (method == "WS") { //handle specially
       if (rawhandler is! Function)
-        throw new ServerError(
+        throw ServerError(
           "'ws:' must be mapped to a function handler, not $rawhandler");
       handler = _upgradeWS(rawhandler as _WSHandler);
       method = null;
@@ -368,7 +368,7 @@ class _UriMapping {
 
     final hasGroup = groups.isNotEmpty;
     return _UriMapping._(uri, handler, method, hasGroup ? groups: null,
-        new RegExp(hasGroup ? sb.toString(): uri));
+        RegExp(hasGroup ? sb.toString(): uri));
   }
 
   bool hasGroup() => _groups != null;
@@ -415,7 +415,7 @@ class _UriCache {
   Map<String, dynamic> getCache(HttpConnect connect, List<_UriMapping> mappings) {
     var cache = _cache;
     if (cache == null) { //not initialized yet
-      cache = _cache = new LinkedHashMap<String, dynamic>();
+      cache = _cache = LinkedHashMap<String, dynamic>();
 
       _multimethod = false;
       for (final m in mappings)
@@ -427,7 +427,7 @@ class _UriCache {
 
     return _multimethod == true ? 
       cache.putIfAbsent(connect.request.method,
-          () => new LinkedHashMap<String, dynamic>()) as Map<String, dynamic>:
+          () => LinkedHashMap<String, dynamic>()) as Map<String, dynamic>:
       cache;
   }
 }

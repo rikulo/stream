@@ -31,7 +31,7 @@ class Compiler {
       _len = source.length,
       this._defImports = imports {
         //to Unix format since _write assumes it
-    _tagCtxs.add(_current = new _TagContext.root(this, destination));
+    _tagCtxs.add(_current = _TagContext.root(this, destination));
   }
 
   ///Compiles the given source into Dart code. Notice: it can be called only once.
@@ -77,7 +77,7 @@ class Compiler {
           if (token is Tag && token.name == "header") {
             assert(!token.hasClosing);
             final int line = _line;
-            _headers.add(new _QuedTag(token, _tagData(tag: token), line));
+            _headers.add(_QuedTag(token, _tagData(tag: token), line));
             continue;
           }
 
@@ -116,14 +116,14 @@ class Compiler {
           curtag.end(_current);
           pop();
         } else {
-          _error("Unknown token, $token", _line);
+          _error("Unknown token: $token", _line);
         }
       }
     }
 
     if (started) {
       if (_tagCtxs.length > 1) {
-        final sb = new StringBuffer();
+        final sb = StringBuffer();
         for (int i = _tagCtxs.length; --i >= 1;) {
           if (!sb.isEmpty) sb.write(', ');
           sb..write(_tagCtxs[i].tag)..write(' at line ')..write(_tagCtxs[i].line);
@@ -164,7 +164,7 @@ class Compiler {
       if (ctype != null) _contentType = ctype.toString();
     }
 
-    final imports = new LinkedHashSet<String>.from(
+    final imports = LinkedHashSet<String>.from(
       const ["dart:async", "package:stream/stream.dart"]);
     final defImports = _defImports;
     if (defImports != null) imports.addAll(defImports);
@@ -184,7 +184,7 @@ class Compiler {
           i = lib.lastIndexOf('.'); //remove only one extension
         if (i >= 0) lib = lib.substring(0, i);
 
-        final sb = new StringBuffer(), len = lib.length;
+        final sb = StringBuffer(), len = lib.length;
         for (i = 0; i < len; ++i) {
           final cc = lib.codeUnitAt(i);
           if (isValidVarCharCode(cc, i == 0)) sb.writeCharCode(cc);
@@ -242,7 +242,7 @@ class Compiler {
     if (_lastModified != null) {
       _write(',\n  lastModified: ');
       if (_lastModified == "compile")
-        _write("new DateTime.fromMillisecondsSinceEpoch(${new DateTime.now().millisecondsSinceEpoch})");
+        _write("DateTime.fromMillisecondsSinceEpoch(${DateTime.now().millisecondsSinceEpoch})");
       else if (_lastModified == "start")
         _write("connect.channel.startedSince");
       else
@@ -310,7 +310,7 @@ class Compiler {
   void include(String method, [Map<String, String>? args, int? line]) {
     if (verbose) _info("Include $method", line);
 
-    _write("\n${_current.pre}await $method(new HttpConnect.chain(connect)");
+    _write("\n${_current.pre}await $method(HttpConnect.chain(connect)");
     _outArgs(args);
     _writeln(");${_getLineNumberComment(line)}");
   }
@@ -360,7 +360,7 @@ class Compiler {
     if (!_lookAhead.isEmpty)
       return _lookAhead.removeLast();
 
-    final sb = new StringBuffer();
+    final sb = StringBuffer();
     final token = _specialToken(sb);
     if (token is _Closing) //if Tag, it is handled by _tagData()
       _skipFollowingSpaces();
@@ -382,7 +382,7 @@ class Compiler {
           final c2 = source.codeUnitAt(j);
           if (c2 == $equal) { //[=exprssion]
             _pos = j + 1;
-            return new _Expr();
+            return _Expr();
           } else if (c2 == $colon || c2 == $slash) { //[:beginning-tag] or [/closing-tag]
             int k = j + 1;
             if (k < _len && StringUtil.isCharCode(source.codeUnitAt(k), lower:true)) {
@@ -397,7 +397,7 @@ class Compiler {
                   if (!tag.hasClosing)
                     _error("[/$tagnm] not allowed. It doesn't need the closing tag.", _line);
                   _pos = m + 1;
-                  return new _Closing(tagnm);
+                  return _Closing(tagnm);
                 }
               }
             }
@@ -524,7 +524,7 @@ class Compiler {
     _pos = k + 1;
     if (source.codeUnitAt(k) == $slash) {
       if (tag != null && tag.hasClosing)
-        _lookAhead.add(new _Closing(tag.name));
+        _lookAhead.add(_Closing(tag.name));
       if (_pos >= _len || source.codeUnitAt(_pos) != $rbracket)
         _error("Expect ']'");
       ++_pos;
@@ -573,13 +573,13 @@ class Compiler {
       libpath = Path.join(Path.dirname(mypath), libpath);
     mypath = Path.relative(mypath, from: Path.dirname(libpath));
 
-    var libfile = new File(libpath);
+    var libfile = File(libpath);
     if (!libfile.existsSync()) {
       String libnm = Path.basename(libpath);
       libnm = libnm.substring(0, libnm.indexOf('.'));
         //filename must end with .dart (but it might have other extension ahead)
 
-      final buf = new StringBuffer()
+      final buf = StringBuffer()
         ..write("library ")..write(libnm)..writeln(";\n");
       for (final impt in imports)
         buf.writeln("import ${_toImport(impt)};");
@@ -591,7 +591,7 @@ class Compiler {
     //parse libfile (TODO: use a better algorithm to parse rather than readAsStringSync/writeAsStringSync)
     String? libnm;
     bool comment0 = false, comment1 = false;
-    final libimports = new Set<String>(), libparts = new Set<String>();
+    final libimports = Set<String>(), libparts = Set<String>();
     final data = libfile.readAsStringSync();
     int len = data.length, partPos = len;
     int? importPos;
@@ -659,7 +659,7 @@ class Compiler {
     if (!importToAdd.isEmpty || mynm != null) {
       final srcnmDisplay = _shorten(
         sourceName ?? mypath.toString(), destinationName);
-      final buf = new StringBuffer();
+      final buf = StringBuffer();
 
       if (importToAdd.isEmpty) {
         buf.write(data.substring(0, partPos));
@@ -711,7 +711,7 @@ class Compiler {
     if (line == null)
       line = _current.line;
     _writeln("\n>>> Failed at #$line: $message"); //for easy detecting error
-    throw new SyntaxError(sourceName, line, message);
+    throw SyntaxError(sourceName, line, message);
   }
   ///Display an warning.
   void _warning(String message, [int? line]) {
@@ -724,7 +724,7 @@ class Compiler {
 
   void push(Tag tag, [int? line]) {
     _tagCtxs.add(_current =
-      new _TagContext.child(_current, tag, line != null ? line: _line));
+      _TagContext.child(_current, tag, line != null ? line: _line));
   }
   void pop() {
     _tagCtxs.removeLast();
@@ -833,4 +833,4 @@ String _shorten(String path, String? reference) {
 String _unipath(String path)
 => Path.separator == '\\' ? path.replaceAll('\\', '/'): path;
 
-final Random _random = new Random();
+final _random = Random();

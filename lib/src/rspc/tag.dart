@@ -156,7 +156,7 @@ class PageTag extends Tag {
           etag = val;
           break;
         default:
-          tc.warning("Unknow attribute, $nm");
+          tc.warning("Unknown attribute: $nm");
           break;
       }
     });

@@ -12,7 +12,7 @@ void compile(String source, IOSink out, {
     String? sourceName, String? destinationName,
     Encoding encoding = utf8, bool verbose = false, bool lineNumber = false,
     List<String>? imports}) {
-  new Compiler(source, out, sourceName: sourceName, destinationName: destinationName,
+  Compiler(source, out, sourceName: sourceName, destinationName: destinationName,
       encoding: encoding, verbose: verbose, lineNumber: lineNumber, imports: imports)
   .compile();
 }
@@ -32,7 +32,7 @@ Future<bool> compileFile(String sourceName, {String? destinationName,
     bool verbose = false, bool newer = false,
     bool lineNumber = false, Encoding encoding = utf8, List<String>? imports,
     void onCompile(String source, {bool skipped})?}) async {
-  final source = new File(sourceName);
+  final source = File(sourceName);
   if (!await source.exists()) {
     print("File not found: ${sourceName}");
     return false;
@@ -45,7 +45,7 @@ Future<bool> compileFile(String sourceName, {String? destinationName,
     destinationName = i >= 0 && j < i ? "${sourceName.substring(0, i + 1)}dart" : "${sourceName}.dart";
     dest = await _locate(destinationName);
   } else {
-    dest = new File(destinationName);
+    dest = File(destinationName);
   }
 
   if (newer) {
@@ -96,12 +96,12 @@ Future<File> _locate(String flnm) async {
     if (path.isEmpty || path == Path.separator)
       break;
 
-    final dir = new Directory(path);
+    final dir = Directory(path);
     if (await dir.exists()) {
       if (Path.basename(path) == "webapp"
-      || await new File(Path.join(dir.path, "pubspec.yaml")).exists())
+      || await File(Path.join(dir.path, "pubspec.yaml")).exists())
         break; //under webapp, or no webapp at all (since project found)
-      if (await new Directory(Path.join(dir.path, "webapp")).exists()) {
+      if (await Directory(Path.join(dir.path, "webapp")).exists()) {
         segs.add("webapp"); //not under webapp
         break;
       }
@@ -110,11 +110,11 @@ Future<File> _locate(String flnm) async {
 
   for (int i = segs.length; --i > 0;)
     path = Path.join(path, segs[i]);
-  final dir = new Directory(path);
+  final dir = Directory(path);
   if (!await dir.exists())
     dir.create(recursive: true);
   path = Path.relative(path);
-  return new File(Path.join(path, segs[0]));
+  return File(Path.join(path, segs[0]));
 }
 
 /** Compile changed RSP files. This method shall be called within build.dart,
@@ -129,7 +129,7 @@ Future<File> _locate(String flnm) async {
  */
 Future build(List<String> arguments, {String filenameMapper(String source)?,
     Encoding encoding = utf8, List<String>? imports}) async {
-  final ArgParser argParser = new ArgParser()
+  final ArgParser argParser = ArgParser()
     ..addMultiOption("changed")
     ..addMultiOption("removed")
     ..addFlag("clean", negatable: false)
@@ -159,7 +159,7 @@ Future build(List<String> arguments, {String filenameMapper(String source)?,
     for (String name in removed) {
       final i = _rspSource(name);
       if (i >= 0) {
-        final File gen = new File("${name.substring(0, i)}dart");
+        final File gen = File("${name.substring(0, i)}dart");
         if (await gen.exists())
           gen.delete();
       }

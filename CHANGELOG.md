@@ -3,6 +3,7 @@
 ### 3.1.0
 
 * rspc won't generate: import 'dart:io';
+* `proxyRequest` ignores headers with invalid characters.
 
 ### 3.0.3
 

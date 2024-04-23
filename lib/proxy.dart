@@ -5,11 +5,15 @@ library stream_proxy;
 
 import "dart:async";
 import "dart:io";
+import "dart:convert";
 
 import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as p;
+import "package:logging/logging.dart" show Logger;
 
 import "stream.dart";
+
+final _logger = Logger('proxy');
 
 /// Proxies the request of [url] to [connect].
 ///
@@ -35,23 +39,24 @@ Future proxyRequest(HttpConnect connect, url, {String? proxyName,
   } else if (url is Uri) {
     uri = url;
   } else {
-    throw new ArgumentError.value(url, 'url', 'url must be a String or Uri.');
+    throw ArgumentError.value(url, 'url', 'url must be a String or Uri.');
   }
 
-  final client = new http.Client(),
+  final client = http.Client(),
     serverRequest = connect.request,
     serverResponse = connect.response;
   http.StreamedResponse clientResponse;
 
   for (List<int>? requestBody;;) {
     try {
-      final clientRequest =
-          new http.StreamedRequest(serverRequest.method, uri);
+      final clientRequest = http.StreamedRequest(serverRequest.method, uri);
       clientRequest.followRedirects = false;
-      serverRequest.headers.forEach((String name, List<String> values) {
+      serverRequest.headers.forEach((name, values) {
         for (final value in values)
           if (Rsp.isHeaderValueValid(value))
             _addHeader(clientRequest.headers, name, value);
+          else
+            _logger.warning('Ignored: invalid request header value: $name=${json.encode(value)}');
       });
       clientRequest.headers['Host'] = uri.authority;
 
@@ -87,7 +92,22 @@ Future proxyRequest(HttpConnect connect, url, {String? proxyName,
 
   serverResponse.statusCode = clientResponse.statusCode;
   clientResponse.headers.forEach((name, value) {
-    serverResponse.headers.add(name, value);
+    if (!Rsp.isHeaderValueValid(value)) {
+      var fixed = false;
+      if (name.toLowerCase() == 'content-disposition') {
+        value = value.replaceAllMapped(
+            RegExp(r'(name=")([^"]+)(")'),
+            (m) => '${m[1]}${Uri.encodeComponent(m[2]!)}${m[3]}');
+        fixed = Rsp.isHeaderValueValid(value);
+      }
+
+      if (!fixed) {
+        _logger.warning('Ignored: invalid response header value: $name=${json.encode(value)}');
+        return; //skip
+      }
+    }
+
+    serverResponse.headers.add(name, value, preserveHeaderCase: true);
   });
 
   // Add a Via header. See
@@ -139,7 +159,7 @@ void _addHeader(Map<String, String> headers, String name, String value) {
 
 Future _copy<T>(Stream<T> stream, EventSink<T> sink,
     {bool cancelOnError = true, bool closeSink = true, void copyTo(T event)?}) {
-  var completer = new Completer();
+  var completer = Completer();
   stream.listen(copyTo ?? sink.add,
     onError: (Object e, StackTrace st) {
       sink.addError(e, st);

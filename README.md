@@ -4,7 +4,7 @@
 
 * [Home](https://github.com/rikulo/stream)
 * [API Reference](https://pub.dev/documentation/stream/latest/)
-* [Discussion](http://stackoverflow.com/questions/tagged/rikulo)
+* [Discussion](https://stackoverflow.com/questions/tagged/rikulo)
 * [Git Repository](https://github.com/rikulo/stream)
 * [Issues](https://github.com/rikulo/stream/issues)
 

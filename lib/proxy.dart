@@ -28,8 +28,11 @@ final _logger = Logger('proxy');
 /// * [shallRetry] a callback to decide whether to retry when
 /// [proxyRequest] receives an exception.
 /// Ignored if omitted.
+/// * [log] If specified, it'll be called if there is an ignorable error,
+/// e.g., header's value containing invalid characters
 Future proxyRequest(HttpConnect connect, url, {String? proxyName,
-      FutureOr<bool> shallRetry(ex, StackTrace st)?}) async {
+      FutureOr<bool> shallRetry(ex, StackTrace st)?,
+      void log(String errmsg)?}) async {
   //COPRYRIGHT NOTICE:
   //The code is ported from [shelf_proxy](https://github.com/dart-lang/shelf_proxy)
 
@@ -56,7 +59,7 @@ Future proxyRequest(HttpConnect connect, url, {String? proxyName,
           if (Rsp.isHeaderValueValid(value))
             _addHeader(clientRequest.headers, name, value);
           else
-            _logger.warning('Ignored: invalid request header value: $name=${json.encode(value)}');
+            (log ?? _logger.warning)('Ignored: invalid request header value: $name=${json.encode(value)}');
       });
       clientRequest.headers['Host'] = uri.authority;
 
@@ -102,7 +105,7 @@ Future proxyRequest(HttpConnect connect, url, {String? proxyName,
       }
 
       if (!fixed) {
-        _logger.warning('Ignored: invalid response header value: $name=${json.encode(value)}');
+        (log ?? _logger.warning)('Ignored: invalid response header value: $name=${json.encode(value)}');
         return; //skip
       }
     }

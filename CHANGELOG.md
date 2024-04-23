@@ -1,5 +1,9 @@
 # CHANGES
 
+### 3.1.1
+
+* `proxyRequest` allows caller to specify how to log ignorable errors.
+
 ### 3.1.0
 
 * rspc won't generate: import 'dart:io';

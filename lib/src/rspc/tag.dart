@@ -102,11 +102,11 @@ abstract class Tag {
  * have only letters (a-z and A-Z).
  */
 late Map<String, Tag> tags = (() {
-    final tags = new HashMap<String, Tag>();
-    for (Tag tag in [new PageTag(), new DartTag(), new HeaderTag(),
-        new IncludeTag(), new ForwardTag(), new VarTag(),
-        new JsonTag(), new JsonJsTag(),
-        new ForTag(), new WhileTag(), new IfTag(), new ElseTag()])
+    final tags = HashMap<String, Tag>();
+    for (Tag tag in [PageTag(), DartTag(), HeaderTag(),
+        IncludeTag(), ForwardTag(), VarTag(),
+        JsonTag(), JsonJsTag(),
+        ForTag(), WhileTag(), IfTag(), ElseTag()])
       tags[tag.name] = tag;
     return tags;
   })();
@@ -221,8 +221,8 @@ class HeaderTag extends Tag {
 class IncludeTag extends Tag {
   @override
   void begin(TagContext tc, String data) {
-    tc.data = new ArgInfo(tc, data);
-    tc.args = new LinkedHashMap<String, String>(); //order is important
+    tc.data = ArgInfo(tc, data);
+    tc.args = LinkedHashMap<String, String>(); //order is important
   }
   @override
   void end(TagContext tc) {
@@ -262,8 +262,8 @@ Map<String, String> _mergeArgs(Map<String, String> dst, Map<String, String>? src
 class ForwardTag extends Tag {
   @override
   void begin(TagContext tc, String data) {
-    tc.data = new ArgInfo(tc, data);
-    tc.args = new LinkedHashMap<String, String>(); //order is important
+    tc.data = ArgInfo(tc, data);
+    tc.args = LinkedHashMap<String, String>(); //order is important
   }
   @override
   void end(TagContext tc) {
@@ -286,7 +286,7 @@ class ForwardTag extends Tag {
 class VarTag extends Tag {
   @override
   void begin(TagContext tc, String data) {
-    final argInfo = new ArgInfo(tc, data, stringFirst: false);
+    final argInfo = ArgInfo(tc, data, stringFirst: false);
     final parentArgs = tc.parent?.args;
     var var1 = parentArgs != null ?
           (parentArgs[argInfo.first] = tc.nextVar()): argInfo.first,
@@ -294,8 +294,8 @@ class VarTag extends Tag {
     tc..push(var1)..push(var2);
 
     if (tc.parent?.args == null) var1 = "_${var1}_";
-    tc.writeln("\n${tc.pre}final $var1 = new StringBuffer(), $var2 = connect;${tc.getLineNumberComment()}\n"
-      "${tc.pre}connect = new HttpConnect.stringBuffer(connect, $var1); response = connect.response;");
+    tc.writeln("\n${tc.pre}final $var1 = StringBuffer(), $var2 = connect;${tc.getLineNumberComment()}\n"
+      "${tc.pre}connect = HttpConnect.stringBuffer(connect, $var1); response = connect.response;");
   }
   @override
   void end(TagContext tc) {

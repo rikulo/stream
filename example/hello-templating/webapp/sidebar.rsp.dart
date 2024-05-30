@@ -13,7 +13,7 @@ Future sidebar(HttpConnect connect) async {
   <li>This is a sidebar.</li>
   <li>""");
 
-  response.write(Rsp.nnx(new DateTime.now()));
+  response.write(Rsp.nnx(DateTime.now()));
 
 
   response.write("""</li>

@@ -18,7 +18,7 @@ Future home(HttpConnect connect) async {
   <body>
 """);
 
-  final _0 = new StringBuffer(), _1 = connect;
+  final _0 = StringBuffer(), _1 = connect;
   connect = new HttpConnect.stringBuffer(connect, _0); response = connect.response;
 
   await connect.include("/header.html");

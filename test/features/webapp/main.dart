@@ -17,7 +17,7 @@ part 'lastModified.rsp.dart'; //auto-inject from ../lastModified.rsp.html
 const recoverableError = -900;
 
 void main() {
-  new StreamServer(
+  StreamServer(
     uriMapping: _uriMapping, errorMapping: _errMapping, filterMapping: _filterMapping)
     .start(zoned: true);
 }
@@ -41,11 +41,11 @@ var _uriMapping = <String, dynamic> {
         "(option ${connect.dataset['option']})");
   },
   "/500": (HttpConnect connect) {
-    throw new Exception("something wrong");
+    throw Exception("something wrong");
   },
   "/async-err": (HttpConnect connect) {
-    new Future(() {
-      throw new Exception("in async operation");
+    Future(() {
+      throw Exception("in async operation");
     });
 
     connect.response
@@ -65,7 +65,7 @@ var _uriMapping = <String, dynamic> {
       ..headers.contentType = ContentType.parse("text/html")
       ..write("<html><body><p>This is used to test if client aborts the connection</p>"
         "<p>Close the browser tab as soon as possible (in 10 secs)</p>");
-    return new Future.delayed(const Duration(seconds: 10), () {
+    return Future.delayed(const Duration(seconds: 10), () {
       connect.response.write("<p>You shall close the browser tab before seeing this</p></body></html>");
     });
   },
@@ -131,7 +131,7 @@ class Criteria {
   bool hasAttachment = false;
 }
 Future search(HttpConnect connect) {
-  final criteria = ObjectUtil.inject(new Criteria(),
+  final criteria = ObjectUtil.inject(Criteria(),
       connect.request.uri.queryParameters, silent: true);
   return searchResult(connect, criteria: criteria); //generated from searchResult.rsp.html
 }

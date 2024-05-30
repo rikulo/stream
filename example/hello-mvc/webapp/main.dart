@@ -26,7 +26,7 @@ Future helloMVC(HttpConnect connect) {
   final curdir = Directory.current;
   List<FileInfo> list = [];
   return curdir.list().listen((fse) {
-    list.add(new FileInfo(fse.path, fse is Directory));
+    list.add(FileInfo(fse.path, fse is Directory));
   }).asFuture().then((_) {
     //2. forward to the view
     return listView(connect, path: curdir.path, infos: list);
@@ -34,5 +34,5 @@ Future helloMVC(HttpConnect connect) {
 }
 
 void main() {
-  new StreamServer(uriMapping: _mapping).start();
+  StreamServer(uriMapping: _mapping).start();
 }

@@ -82,9 +82,9 @@ typedef Future RequestFilter(HttpConnect connect, Future chain(HttpConnect conn)
  * an instance of [Future] for indicating if the handling is completed. For example,
  *
  *     Future loadFile(HttpConnect connect) {
- *       final completer = new Completer();
+ *       final completer = Completer();
  *       final res = connect.response;
- *       new File("some_file").openRead().listen(res.writeBytes);},
+ *       File("some_file").openRead().listen(res.writeBytes);},
  *         onDone: () => completer.complete(),
  *         onError: (err, stackTrace) => completer.completeError(err, stackTrace));
  *       return completer.future;
@@ -108,12 +108,12 @@ abstract class HttpConnect {
    * (bytes).
    */
   factory HttpConnect.buffer(HttpConnect origin, List<int> buffer)
-  => new _BufferedConnect(origin, buffer);
+  => _BufferedConnect(origin, buffer);
   /** Instantiates a connection by redirecting the output to the given
    * string buffer.
    */
   factory HttpConnect.stringBuffer(HttpConnect origin, StringBuffer buffer)
-  => new _StringBufferedConnect(origin, buffer);
+  => _StringBufferedConnect(origin, buffer);
   /** Instantiates a connection that will be used to include or forward to
    * another request handler.
    *
@@ -125,8 +125,8 @@ abstract class HttpConnect {
   factory HttpConnect.chain(HttpConnect connect, {bool inclusion = true,
       String? uri, HttpRequest? request, HttpResponse? response}) {
     return inclusion ?
-      new _IncludedConnect(connect, request, response, uri):
-      new _ForwardedConnect(connect, request, response, uri);
+      _IncludedConnect(connect, request, response, uri):
+      _ForwardedConnect(connect, request, response, uri);
   }
 
   ///The Stream server
@@ -342,7 +342,7 @@ class HttpStatusException extends HttpException {
   @override
   String toString() {
     final statusText = statusCode.toString(),
-      b = new StringBuffer()..write(statusText)..write(': ');
+      b = StringBuffer()..write(statusText)..write(': ');
     if (statusText != message) {
       b.write(message);
       if (uri != null) b.write(', ');

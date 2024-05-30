@@ -12,11 +12,11 @@ typedef String PathPreprocessor(String path);
  *
  * ##Start a server serving static resources only
  *
- *     new StreamServer().start();
+ *     StreamServer().start();
  *
  * ##Start a full-featured server
  *
- *     new StreamServer(uriMapping: { //URI mapping
+ *     StreamServer(uriMapping: { //URI mapping
  *         "/your-uri-in-regex": yourHandler
  *       }, errorMapping: { //Error mapping
  *         "404": "/webapp/404.html",
@@ -46,7 +46,7 @@ abstract class StreamServer {
    * and then implement a WebSocket handler. A WebSocket handler has a
    * single argument and the argument type must be [WebSocket]. For example,
    *
-   *     new StreamServer(uriMapping: {
+   *     StreamServer(uriMapping: {
    *       "ws:/foo": (WebSocket socket) {
    *         socket.listen((event) {
    *           //event is the message sent by the client
@@ -97,8 +97,8 @@ abstract class StreamServer {
   factory StreamServer({Map<String, dynamic>? uriMapping,
       Map<int, dynamic>? errorMapping, Map<String, RequestFilter>? filterMapping,
       String? homeDir, bool disableLog = false})
-  => new _StreamServer(
-      new DefaultRouter(uriMapping: uriMapping,
+  => _StreamServer(
+      DefaultRouter(uriMapping: uriMapping,
         errorMapping: errorMapping, filterMapping: filterMapping),
       homeDir, disableLog);
 
@@ -107,7 +107,7 @@ abstract class StreamServer {
    */
   factory StreamServer.router(Router router, {String? homeDir,
       bool disableLog = false})
-  => new _StreamServer(router, homeDir, disableLog);
+  => _StreamServer(router, homeDir, disableLog);
 
   /** The version.
    */
@@ -179,7 +179,7 @@ abstract class StreamServer {
    * Notice that you can invoke [start], [startSecure] and [startOn] multiple
    * times to handle multiple channels:
    *
-   *     new StreamServer()
+   *     StreamServer()
    *       ..start(port: 80)
    *       ..startSecure(context, address: "11.22.33.44", port: 443);
    *
@@ -208,7 +208,7 @@ abstract class StreamServer {
    * Notice that you can invoke [start], [startSecure] and [startOn] multiple
    * times to handle multiple channels:
    *
-   *     new StreamServer()
+   *     StreamServer()
    *       ..start(port: 80)
    *       ..startSecure(context, address: "11.22.33.44", port: 443);
    *
@@ -235,7 +235,7 @@ abstract class StreamServer {
    * Notice that you can invoke [start], [startSecure] and [startOn] multiple
    * times to handle multiple channels:
    *
-   *     new StreamServer()
+   *     StreamServer()
    *       ..start(port: 80)
    *       ..startSecure(address: "11.22.33.44", port: 443)
    *       ..startOn(fooSocket);

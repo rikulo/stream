@@ -5,5 +5,5 @@
 import "package:stream/stream.dart";
 
 void main() {
-  new StreamServer(homeDir: "static").start();
+  StreamServer(homeDir: "static").start();
 }

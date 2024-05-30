@@ -17,7 +17,7 @@ part of stream_plugin;
  */
 abstract class ResourceLoader {
   factory ResourceLoader(String rootDir)
-  => new FileLoader(rootDir);
+  => FileLoader(rootDir);
 
   /** The root directory.
    */
@@ -129,7 +129,7 @@ abstract class AssetCache {
  */
 abstract class AssetLoader implements ResourceLoader {
   AssetLoader() {
-    cache = new _AssetCache(this);
+    cache = _AssetCache(this);
   }
 
   /** The total cache size (unit: bytes). Default: 3 * 1024 * 1024.
@@ -197,7 +197,7 @@ abstract class AssetLoader implements ResourceLoader {
  * That is, `/foo/foo.png` will become `$rootDir/foo/foo.png`.
  * To load an absolute path, please use [loadAsset] directly. For example,
  * 
- *     loadAsset(connect, new FileAsset(new File.fromUri(uri)));
+ *     loadAsset(connect, FileAsset(File.fromUri(uri)));
  */
 class FileLoader extends AssetLoader {
   FileLoader(String this.rootDir);
@@ -206,23 +206,22 @@ class FileLoader extends AssetLoader {
   final String rootDir;
 
   @override
-  Asset getAsset(String path)
-  => new FileAsset(new File(path));
+  Asset getAsset(String path) => FileAsset(File(path));
 
   @override
   Future load(HttpConnect connect, String uri, {bool useCache = true}) async {
     String path = uri.substring(1); //uri must start with '/', but path can't
     path = Path.join(rootDir, path);
 
-    final file = new File(path);
+    final file = File(path);
     if (await file.exists())
-      return loadAsset(connect, new FileAsset(file), useCache ? cache: null);
+      return loadAsset(connect, FileAsset(file), useCache ? cache: null);
 
-    if (await new Directory(path).exists())
+    if (await Directory(path).exists())
       return _loadFileAt(connect, uri, path, connect.server.indexNames, 0,
           useCache ? cache: null);
 
-    throw new Http404(uri: Uri.tryParse(uri));
+    throw Http404(uri: Uri.tryParse(uri));
   }
 }
 
@@ -230,7 +229,7 @@ class FileLoader extends AssetLoader {
  * 
  * To load a file, you can do:
  * 
- *     loadAsset(connect, new FileAsset(file));
+ *     loadAsset(connect, FileAsset(file));
  * 
  * It throws [Http404] if [Asset.lastModified] throws an exception.
  */
@@ -248,7 +247,7 @@ Future loadAsset(HttpConnect connect, Asset asset, [AssetCache? cache]) async {
   try {
     lastModified = await asset.lastModified();
   } catch (_) {
-    throw new Http404.fromConnect(connect);
+    throw Http404.fromConnect(connect);
   }
 
   List<int>? content;
@@ -263,7 +262,7 @@ Future loadAsset(HttpConnect connect, Asset asset, [AssetCache? cache]) async {
 
   List<_Range>? ranges;
   if (!isIncluded) {
-    final detail = new _AssetDetail(asset, lastModified, assetSize, cache);
+    final detail = _AssetDetail(asset, lastModified, assetSize, cache);
     if (!checkIfHeaders(connect, lastModified, detail.etag))
       return null;
 

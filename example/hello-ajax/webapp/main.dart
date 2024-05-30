@@ -18,5 +18,5 @@ void serverInfo(HttpConnect connect) {
 }
 
 void main() {
-  new StreamServer(uriMapping: _mapping).start();
+  StreamServer(uriMapping: _mapping).start();
 }

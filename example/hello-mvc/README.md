@@ -44,7 +44,7 @@ The role of the control, `helloMVC`, is to prepare the model for rendering. As s
       final curdir = Directory.current;
       List<FileInfo> list = [];
       return curdir.list().listen((fse) {
-        list.add(new FileInfo(fse.path, fse is Directory));
+        list.add(FileInfo(fse.path, fse is Directory));
       }).asFuture().then((_) {
         //2. forward to the view
         return listView(connect, path: curdir.path, infos: list);

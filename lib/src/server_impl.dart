@@ -31,15 +31,15 @@ class _StreamServer implements StreamServer {
     homeDir = homeDir == null ? _getRootPath():
       Path.isAbsolute(homeDir) ? homeDir: Path.join(_getRootPath(), homeDir);
 
-    if (!new Directory(homeDir).existsSync())
-      throw new ServerError("$homeDir doesn't exist.");
+    if (!Directory(homeDir).existsSync())
+      throw ServerError("$homeDir doesn't exist.");
 
-    final logger = new Logger("stream");
+    final logger = Logger("stream");
     if (!disableLog) {
       Logger.root.level = Level.INFO;
       logger.onRecord.listen(simpleLoggerHandler);
     }
-    return _StreamServer._(router, homeDir, new ResourceLoader(homeDir), logger);
+    return _StreamServer._(router, homeDir, ResourceLoader(homeDir), logger);
   }
   _StreamServer._(this._router, this.homeDir, this.resourceLoader, this.logger);
 
@@ -69,14 +69,14 @@ class _StreamServer implements StreamServer {
   @override
   Future forward(HttpConnect connect, String uri, {
     HttpRequest? request, HttpResponse? response})
-  => _handle(new HttpConnect.chain(connect, inclusion: false,
-      uri: uri, request: request, response: response)) ?? new Future.value(); //no filter invocation
+  => _handle(HttpConnect.chain(connect, inclusion: false,
+      uri: uri, request: request, response: response)) ?? Future.value(); //no filter invocation
     //spec: for easy use, forward/include won't never return null
   @override
   Future include(HttpConnect connect, String uri, {
     HttpRequest? request, HttpResponse? response})
-  => _handle(new HttpConnect.chain(connect, inclusion: true,
-      uri: uri, request: request, response: response)) ?? new Future.value(); //no filter invocation
+  => _handle(HttpConnect.chain(connect, inclusion: true,
+      uri: uri, request: request, response: response)) ?? Future.value(); //no filter invocation
     //spec: for easy use, forward/include won't never return null
 
   /// [iFilter] - the index of filter to start. It must be non-negative.
@@ -93,7 +93,7 @@ class _StreamServer implements StreamServer {
       if (iFilter != null) { //found
         final i = iFilter;
         return _router.getFilterAt(iFilter)(connect,
-          (conn) => _handle(conn, i + 1) ?? new Future.value());
+          (conn) => _handle(conn, i + 1) ?? Future.value());
       }
     }
 
@@ -114,13 +114,13 @@ class _StreamServer implements StreamServer {
     //protect from access
     if (!connect.isForwarded && !connect.isIncluded &&
     (uri.startsWith("/webapp/") || uri == "/webapp"))
-      throw new Http403(uri: Uri.tryParse(uri));
+      throw Http403(uri: Uri.tryParse(uri));
 
     String path;
     try {
       path = Uri.decodeComponent(uri);
     } catch (_) {
-      throw new Http404.fromConnect(connect);
+      throw Http404.fromConnect(connect);
     }
 
     return resourceLoader.load(connect, path);
@@ -133,7 +133,7 @@ class _StreamServer implements StreamServer {
     }
 
     bool shouted = false;
-    connect.errorDetail = new ErrorDetail(error, stackTrace);
+    connect.errorDetail = ErrorDetail(error, stackTrace);
 
     var handler = _router.getErrorHandler(error);
     if (handler == null) {
@@ -143,7 +143,7 @@ class _StreamServer implements StreamServer {
         } else {
           _logError(connect, error, stackTrace);
           shouted = true;
-          error = new Http500.fromConnect(connect,
+          error = Http500.fromConnect(connect,
               cause: error != null ? error.toString(): "");
         }
       }
@@ -188,9 +188,9 @@ class _StreamServer implements StreamServer {
   }
 
   void _shout(HttpConnect? connect, err, [StackTrace? st]) {
-    final buf = new StringBuffer();
+    final buf = StringBuffer();
     try {
-      buf..write(new DateTime.now())..write(':');
+      buf..write(DateTime.now())..write(':');
 
       if (connect != null) {
         buf..write("[")..write(connect.request.uri.path)..write("] ");
@@ -236,7 +236,7 @@ class _StreamServer implements StreamServer {
     if (prefix.isEmpty || (prefix.startsWith("/") && !prefix.endsWith("/")))
       _uriVerPrefix = prefix;
     else
-      throw new ArgumentError("must be empty or start with /: $prefix");
+      throw ArgumentError("must be empty or start with /: $prefix");
   }
   String _uriVerPrefix = "";
 
@@ -272,7 +272,7 @@ class _StreamServer implements StreamServer {
     final iserver = await HttpServer.bind(address, port, backlog: backlog,
         v6Only: v6Only, shared: shared);
 
-    final channel = new _HttpChannel(this, iserver, address, iserver.port, false);
+    final channel = _HttpChannel(this, iserver, address, iserver.port, false);
     _startChannel(channel, zoned);
     _logHttpStarted(channel);
     return channel;
@@ -289,7 +289,7 @@ class _StreamServer implements StreamServer {
         requestClientCertificate: requestClientCertificate,
         backlog: backlog, v6Only: v6Only, shared: shared);
 
-    final channel = new _HttpChannel(this, iserver, address, iserver.port, true);
+    final channel = _HttpChannel(this, iserver, address, iserver.port, true);
     _startChannel(channel, zoned);
     _logHttpStarted(channel);
     return channel;
@@ -303,8 +303,8 @@ class _StreamServer implements StreamServer {
   }
   @override
   HttpChannel startOn(ServerSocket socket, {bool zoned = true}) {
-    final channel = new _HttpChannel.fromSocket(
-        this, new HttpServer.listenOn(socket), socket);
+    final channel = _HttpChannel.fromSocket(
+        this, HttpServer.listenOn(socket), socket);
     _startChannel(channel, zoned);
     logger.info("Rikulo Stream Server $_version starting on $socket\n"
       "Home: ${homeDir}");
@@ -324,10 +324,10 @@ class _StreamServer implements StreamServer {
     ..listen((HttpRequest req) async {
       (req = _preprocess(req)).response.headers
         ..set(HttpHeaders.serverHeader, _serverHeader)
-        ..date = new DateTime.now();
+        ..date = DateTime.now();
 
       //protect from aborted connection
-      final connect = new _HttpConnect(channel, req, req.response),
+      final connect = _HttpConnect(channel, req, req.response),
         shallCount = _shallCount?.call(connect) != false;
       if (shallCount) ++_connectionCount;
 
@@ -376,7 +376,7 @@ class _StreamServer implements StreamServer {
   @override
   Future stop() {
     if (!isRunning)
-      throw new StateError("Not running");
+      throw StateError("Not running");
     final ops = <Future>[];
     for (int i = channels.length; --i >= 0;)
       ops.add(channels[i].close());

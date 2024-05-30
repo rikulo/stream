@@ -19,7 +19,7 @@ Future helloView(HttpConnect connect) async {
     <h1>Stream: Hello RSP</h1>
     <p>Now is """);
 
-  response.write(Rsp.nnx(new DateTime.now()));
+  response.write(Rsp.nnx(DateTime.now()));
 
 
   response.write(""".</p>

@@ -1,7 +1,7 @@
 import 'package:stream/stream.dart';
 
 main(){
-  new StreamServer(
+  StreamServer(
       uriMapping: {
         'get:/': (HttpConnect connect) {
           connect.response.write("GET method");

@@ -128,8 +128,8 @@ Future syntax(HttpConnect connect, {required foo, bool c = false}) async {
 
 """);
 
-  final _whatever_ = new StringBuffer(), _0 = connect;
-  connect = new HttpConnect.stringBuffer(connect, _whatever_); response = connect.response;
+  final _whatever_ = StringBuffer(), _0 = connect;
+  connect = HttpConnect.stringBuffer(connect, _whatever_); response = connect.response;
 
   response.write("""    define a variable
 """);
@@ -155,15 +155,15 @@ Future syntax(HttpConnect connect, {required foo, bool c = false}) async {
 
   await connect.include("/abc");
 
-  final _1 = new StringBuffer(), _2 = connect;
-  connect = new HttpConnect.stringBuffer(connect, _1); response = connect.response;
+  final _1 = StringBuffer(), _2 = connect;
+  connect = HttpConnect.stringBuffer(connect, _1); response = connect.response;
 
   response.write("""      The content for foo
 """);
 
   connect = _2; response = connect.response;
 
-  await syntax(new HttpConnect.chain(connect), c: true, foo: _1.toString());
+  await syntax(HttpConnect.chain(connect), c: true, foo: _1.toString());
 
   response.write("""
 
@@ -203,7 +203,7 @@ Future syntax(HttpConnect connect, {required foo, bool c = false}) async {
   response.write("""
 
 """);
-new LinkedHashMap();
+LinkedHashMap();
 
   response.write("""
 

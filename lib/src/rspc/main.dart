@@ -34,11 +34,11 @@ class _Stats {
 /** The entry point of RSP compiler.
  */
 Future main(List<String> arguments) async {
-  final env = new _Environ();
+  final env = _Environ();
   if (!_parseArgs(arguments, env))
     return;
 
-  final stats = new _Stats();
+  final stats = _Stats();
 
   Future compile(String name)
   => compileFile(name, encoding: env.encoding, verbose: env.verbose,
@@ -46,7 +46,7 @@ Future main(List<String> arguments) async {
           onCompile: stats.onCompile);
 
   for (final String name in env.sources) {
-    final dir = new Directory(name);
+    final dir = Directory(name);
     if (await dir.exists()) {
       await for (final fse in dir.list(recursive: true)) {
         final path = fse.path;
@@ -68,7 +68,7 @@ Future main(List<String> arguments) async {
 }
 
 bool _parseArgs(List<String> arguments, _Environ env) {
-  final argParser = new ArgParser()
+  final argParser = ArgParser()
     ..addOption("encoding", abbr: 'e',
       help: "Specify character encoding used by source file, such as utf-8, ascii and latin-1. Default: utf-8.")
     ..addFlag("newer", abbr: 'n', negatable: true, help: "Compile only if source file is newer. Default: false.")

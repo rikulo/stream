@@ -15,9 +15,9 @@ class _HttpChannel implements HttpChannel {
   bool _closed = false;
 
   _HttpChannel(this.server, this.httpServer, this.address, this.port,
-      this.isSecure): startedSince = new DateTime.now(), socket = null;
+      this.isSecure): startedSince = DateTime.now(), socket = null;
   _HttpChannel.fromSocket(this.server, this.httpServer, ServerSocket socket):
-    startedSince = new DateTime.now(), this.socket = socket,
+    startedSince = DateTime.now(), this.socket = socket,
     isSecure = socket is SecureServerSocket,
     address = null, port = socket.port;
 

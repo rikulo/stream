@@ -5,7 +5,7 @@
 List<Map> _times = [];
 
 void _mark(String what) {
-  _times.add({"what": what, "time": new DateTime.now()});
+  _times.add({"what": what, "time": DateTime.now()});
 }
 void _check(RegExp regex, String value, bool matched) {
   if (matched != regex.hasMatch(value))
@@ -17,7 +17,7 @@ void main() {
 
   final loop = 100000;
   final List<RegExp> patterns = [];
-  final buf = new StringBuffer()..write("^(");
+  final buf = StringBuffer()..write("^(");
   for (final p in ["/forward", "/include", "/search",
     "/(g[a-z]*p)/(ma[a-z]*)", "/old-link(.*)",
     "/new-link.*", "/500", "/recoverable-error", "/log5", "/longop",
@@ -26,9 +26,9 @@ void main() {
       buf.write('|');
       buf.write("$p");
 //    buf.write("($p)");
-    patterns.add(new RegExp("^$p\$"));
+    patterns.add(RegExp("^$p\$"));
   }
-  final group = new RegExp((buf..write(")\$")).toString());
+  final group = RegExp((buf..write(")\$")).toString());
 
   _check(group, '/old-link/abc', true);
   _check(group, '/group/matching', true);

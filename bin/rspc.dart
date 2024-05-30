@@ -12,10 +12,10 @@ import "package:stream/rspc.dart" as rspc;
 void main(List<String> arguments) {
   /* initialize your custom RSP tags here
    * example:
-    rspc.tags["m"] = new rspc.SimpleTag("m",
+    rspc.tags["m"] = rspc.SimpleTag("m",
     (rspc.TagContext tc, String id, Map<String, String> args) {
       if (id == null)
-        throw new ArgumentError("required");
+        throw ArgumentError("required");
       tc.write("\n${tc.pre}response.write(m(connect, $id");
       if (args != null && !args.isEmpty) {
         tc.write(", ");

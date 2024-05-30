@@ -131,6 +131,6 @@ class Rsp {
 
   /// Serializes the given object into a JSON string by use of `jsonEncode`.
   static String json(data) => cvt.json.encode(data).replaceAll(_scriptPtn, r"<\/");
-  static final RegExp _scriptPtn = new RegExp(r"</(?=script>)", caseSensitive: false);
+  static final _scriptPtn = RegExp(r"</(?=script>)", caseSensitive: false);
     //it is possible that a string contains </script>
 }

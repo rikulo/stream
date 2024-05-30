@@ -33,7 +33,7 @@ String toEL(String? data, {bool direct = true}) {
   if (data == null)
     return direct ? "null": '""';
 
-  final sb = new StringBuffer();
+  final sb = StringBuffer();
   for (int i = 0, len = data.length; i < len; ++i) {
     final cc = data.codeUnitAt(i);
     if (cc == $lbracket && i + 1 < len && data.codeUnitAt(i + 1) == $equal) { //found
@@ -77,7 +77,7 @@ int _skipToELEnd(String data, int from) {
       sep = null;
     }
   }
-  throw new SyntaxError("", -1, "Expect ']'");
+  throw SyntaxError("", -1, "Expect ']'");
 }
 
 /** Parses the given string into a map of arguments.
@@ -199,9 +199,9 @@ class ArgInfo {
     }
 
     if (first != null)
-      return new ArgInfo._(first, isID, parseArgs(data));
+      return ArgInfo._(first, isID, parseArgs(data));
 
-    final sb = new StringBuffer("The first argument must be ");
+    final sb = StringBuffer("The first argument must be ");
     if (idFirst) {
       sb.write("an ID");
       if (stringFirst)
@@ -222,10 +222,10 @@ typedef void _Output(TagContext tc, String id, Map<String, String> args);
  *     import 'package:stream/rspc.dart';
  *     
  *     void main(List<String> arguments) {
- *       tags["m"] = new SimpleTag("m",
+ *       tags["m"] = SimpleTag("m",
  *         (TagContext tc, String id, Map<String, String> args) {
  *           if (id == null)
- *             throw new ArgumentError("id required");
+ *             throw ArgumentError("id required");
  *           tc.write("\n${tc.pre}response.write(message(connect, $id");
  *           if (args != null && args.isNotEmpty) {
  *             tc.write(", ");
@@ -257,7 +257,7 @@ class SimpleTag extends Tag {
 
   @override
   void begin(TagContext tc, String data) {
-    final ai = new ArgInfo(tc, data, stringFirst: false);
+    final ai = ArgInfo(tc, data, stringFirst: false);
     _output(tc, ai.first, ai.args);
   }
 

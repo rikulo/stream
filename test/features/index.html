@@ -42,7 +42,7 @@
   }
   function testWebSocket() {
     if (ws == null) {
-      ws = new WebSocket("ws://localhost:8080/ws-test/first");
+      ws = WebSocket("ws://localhost:8080/ws-test/first");
       ws.onopen = function() {
         console.log("connection started");
         ws.send("Hi there, this is client");

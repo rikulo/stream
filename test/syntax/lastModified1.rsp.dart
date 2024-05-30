@@ -6,7 +6,7 @@ import 'dart:async';
 import 'package:stream/stream.dart';
 
 
-  DateTime lastModified() => new DateTime.now();
+  DateTime lastModified() => DateTime.now();
   String etag() => '1234ab';
   
 

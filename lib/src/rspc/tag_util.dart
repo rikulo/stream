@@ -241,6 +241,7 @@ typedef void _Output(TagContext tc, String id, Map<String, String> args);
  */
 class SimpleTag extends Tag {
   final _Output _output;
+  final bool stringFirst;
 
   /** Constructors a tag.
    *
@@ -250,14 +251,17 @@ class SimpleTag extends Tag {
    * For example, with `[:tag foo1 foo2="abc"]`, `id` will be `foo1` and
    * `args` will be a single entity map. If the first argument is specified
    * with a value, `id` is null and the first argument is part of `args`.
+   * * [stringFirst] whether the first item can be a string (in additions to
+   * an identifier).
    */
   SimpleTag(String this.name,
-      void output(TagContext tc, String id, Map<String, String> args)):
+      void output(TagContext tc, String id, Map<String, String> args),
+      {this.stringFirst = false}):
       _output = output;
 
   @override
   void begin(TagContext tc, String data) {
-    final ai = ArgInfo(tc, data, stringFirst: false);
+    final ai = ArgInfo(tc, data, stringFirst: stringFirst);
     _output(tc, ai.first, ai.args);
   }
 

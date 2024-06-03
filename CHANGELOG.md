@@ -1,7 +1,12 @@
 # CHANGES
 
+### 3.2.1
+
+* `SimpleTag` supports `stringFirst`.
+
 ### 3.2.0
 
+* [90](https://github.com/rikulo/stream/issues/90): support the prefix with the preferred language by specifying the `languages` argument when instantiating `StreamServer`.
 * `Http414`, `Http415`... added
 
 ### 3.1.1
@@ -29,7 +34,7 @@
 ### 3.0.0
 
 * Migrate to null safety
-* [HttpConnect.headerValue]'s `defaultValue` removed. Use `??` instead.
+* `HttpConnect.headerValue`'s `defaultValue` removed. Use `??` instead.
 
 ### 2.6.1
 
@@ -43,7 +48,7 @@
 ### 2.5.1+5
 
 * Throws 404 if path contains invalid UTF characters
-* Fix #87: File name containing a space
+* Fix [87](https://github.com/rikulo/stream/issues/87): File name containing a space
 
 ### 2.5.1
 

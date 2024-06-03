@@ -22,12 +22,14 @@ class _StreamServer implements StreamServer {
   final List<HttpChannel> _channels = [];
   int _sessTimeout = 20 * 60; //20 minutes
   final Router _router;
+  final RegExp? _langs;
   _ConnectErrorCallback? _onError;
   _OnIdleCallback? _onIdle;
   _ShallCount? _shallCount;
   int _connectionCount = 0;
 
-  factory _StreamServer(Router router, String? homeDir, bool disableLog) {
+  factory _StreamServer(Router router, String? homeDir,
+      Iterable<String>? languages, bool disableLog) {
     homeDir = homeDir == null ? _getRootPath():
       Path.isAbsolute(homeDir) ? homeDir: Path.join(_getRootPath(), homeDir);
 
@@ -39,9 +41,24 @@ class _StreamServer implements StreamServer {
       Logger.root.level = Level.INFO;
       logger.onRecord.listen(simpleLoggerHandler);
     }
-    return _StreamServer._(router, homeDir, ResourceLoader(homeDir), logger);
+
+    RegExp? langs;
+    if (languages != null && languages.isNotEmpty) {
+      final buf = StringBuffer('^/(');
+      var first = true;
+      for (final lang in languages) {
+        if (first) first = false;
+        else buf.write('|');
+        buf.write(lang);
+      }
+      buf.write(r')(/.*)?$');
+      langs = RegExp(buf.toString());
+    }
+    return _StreamServer._(router, homeDir, ResourceLoader(homeDir),
+        langs, logger);
   }
-  _StreamServer._(this._router, this.homeDir, this.resourceLoader, this.logger);
+  _StreamServer._(this._router, this.homeDir, this.resourceLoader,
+      this._langs, this.logger);
 
   static String _getRootPath() {
     String path;
@@ -322,12 +339,7 @@ class _StreamServer implements StreamServer {
     channel.httpServer
     ..sessionTimeout = sessionTimeout
     ..listen((HttpRequest req) async {
-      (req = _preprocess(req)).response.headers
-        ..set(HttpHeaders.serverHeader, _serverHeader)
-        ..date = DateTime.now();
-
-      //protect from aborted connection
-      final connect = _HttpConnect(channel, req, req.response),
+      final connect = _preprocess(channel, req),
         shallCount = _shallCount?.call(connect) != false;
       if (shallCount) ++_connectionCount;
 
@@ -363,15 +375,33 @@ class _StreamServer implements StreamServer {
     _channels.add(channel);
   }
 
-  HttpRequest _preprocess(HttpRequest req) {
+  HttpConnect _preprocess(_HttpChannel channel, HttpRequest req) {
+    final response = req.response;
+    response.headers
+      ..set(HttpHeaders.serverHeader, _serverHeader)
+      ..date = DateTime.now();
+
+    String? lang;
+    String np;
     final path = req.uri.path,
-      np = (pathPreprocessor ?? _defaultPathPreprocess)(path);
-    return path == np ? req: _wrapRequest(req, np, keepQuery: true);
+      langs = _langs,
+      m = langs != null ? langs.firstMatch(path): null;
+    if (m == null) np = path;
+    else {
+      lang = m[1];
+      np = m[2] ?? '/';
+    }
+
+    np = (pathPreprocessor ?? _defaultPathPreprocess)(np);
+    if (path != np) req = _wrapRequest(req, np, keepQuery: true);
+
+    final connect = _HttpConnect(channel, req, response);
+    if (lang != null) connect.language = lang;
+    return connect;
   }
-  String _defaultPathPreprocess(String path) {
-    return _uriVerPrefix.isNotEmpty && path.startsWith(_uriVerPrefix) ?
-        path.substring(_uriVerPrefix.length): path;
-  }
+  String _defaultPathPreprocess(String path)
+  => _uriVerPrefix.isNotEmpty && path.startsWith(_uriVerPrefix) ?
+      path.substring(_uriVerPrefix.length): path;
 
   @override
   Future stop() {

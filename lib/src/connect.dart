@@ -44,9 +44,8 @@ abstract class HttpChannel {
   ///It is available only if the channel is started by [StreamServer.startOn].
   ServerSocket? get socket;
 
-  /** The address. It can be either a [String] or an [InternetAddress].
-   * It is null if the channel is started by [StreamServer.startOn].
-   */
+  /// The address. It can be either a [String] or an [InternetAddress].
+  /// It is null if the channel is started by [StreamServer.startOn].
   get address;
   ///The port.
   int get port;
@@ -145,14 +144,25 @@ abstract class HttpConnect {
   HttpConnect? get forwarder;
   ///The source connection that includes this connection, or null if not included.
   HttpConnect? get includer;
-  /** Whether this connection is caused by inclusion.
-   * Note: it is true if [includer] is not null or [forwarder] is included.
-   */
+
+  /// Whether this connection is caused by inclusion.
+  /// Note: it is true if [includer] is not null or [forwarder] is included.
   bool get isIncluded;
-  /** Whether this connection is caused by forwarding.
-   * Note: it is true if [forwarder] is not null or [includer] is forwarded.
-   */
+  /// Whether this connection is caused by forwarding.
+  /// Note: it is true if [forwarder] is not null or [includer] is forwarded.
   bool get isForwarded;
+
+  /// The language specified as the first element of the request's URL.
+  /// The language is detected only if it is specified in the langauages
+  /// parameter of [StreamServer]'s constructor.
+  /// 
+  /// For example, if the app supports French and Spanish, it can specify
+  /// `{'fr', 'es'}` in the languages parameters when starting the server.
+  /// Then, any request starting with any of them will be mapped the same as
+  /// the request without any of language. For example, `/fr/about`
+  /// and `/es/about` will be both handled by the same handler of `/about`.
+  /// The handler then can get the language back with this method.
+  String? language;
 
   /** Send a temporary redirect to the specified redirect URL.
    *
@@ -280,6 +290,12 @@ class HttpConnectWrapper implements HttpConnect {
   bool get isIncluded => origin.isIncluded;
   @override
   bool get isForwarded => origin.isForwarded;
+  @override
+  String? get language => origin.language;
+  @override
+  void set language(String? language) {
+    origin.language = language;
+  }
 
   @override
   void redirect(String uri, {int status = HttpStatus.movedTemporarily}) {

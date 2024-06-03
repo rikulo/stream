@@ -50,10 +50,10 @@ abstract class Router {
  * The default implementation of [Router].
  */
 class DefaultRouter implements Router {
-  final _uriMapping = <_UriMapping>[], _filterMapping = <_UriMapping>[];
-  final _errorMapping = HashMap<int, dynamic>(); //mapping of status code to URI/Function
-
-  final _uriCache = _UriCache();
+  final _uriMapping = <_UriMapping>[],
+    _filterMapping = <_UriMapping>[],
+    _errorMapping = HashMap<int, dynamic>(), //mapping of status code to URI/Function
+    _uriCache = _UriCache();
   final int _cacheSize;
 
   static final _notFound = Object();
@@ -68,7 +68,8 @@ class DefaultRouter implements Router {
   DefaultRouter({Map<String, dynamic>? uriMapping,
       Map<int, dynamic>? errorMapping,
       Map<String, RequestFilter>? filterMapping,
-      int cacheSize = 1000, bool protectRSP = true}): _cacheSize = cacheSize {
+      int cacheSize = 1000, bool protectRSP = true}):
+      _cacheSize = cacheSize {
 
     if (uriMapping != null)
       uriMapping.forEach(map);

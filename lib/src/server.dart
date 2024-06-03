@@ -93,21 +93,28 @@ abstract class StreamServer {
    * * [disableLog] - whether to disable logs.
    * If false (default), [Logger.root] will be set to [Level.INFO], and
    * a listener will be added [logger].
+   * * [languages] the supported languages. If specified and the first element
+   * matches one of them, the first element will be ignored when searching
+   * the handler. For example, if it is `{'fr'}` and `/fr/about` is requested,
+   * then router will retrieve the handler for `/about`.
+   * To know what the language is part of the URL, you can get it from
+   * [HttpConnect.language]
    */
   factory StreamServer({Map<String, dynamic>? uriMapping,
-      Map<int, dynamic>? errorMapping, Map<String, RequestFilter>? filterMapping,
-      String? homeDir, bool disableLog = false})
+      Map<int, dynamic>? errorMapping,
+      Map<String, RequestFilter>? filterMapping,
+      String? homeDir, Iterable<String>? languages, bool disableLog = false})
   => _StreamServer(
       DefaultRouter(uriMapping: uriMapping,
         errorMapping: errorMapping, filterMapping: filterMapping),
-      homeDir, disableLog);
+      homeDir, languages, disableLog);
 
   /** Constructs a server with the given router.
    * It is used if you'd like to use your own router, rather than the default one.
    */
-  factory StreamServer.router(Router router, {String? homeDir,
-      bool disableLog = false})
-  => _StreamServer(router, homeDir, disableLog);
+  factory StreamServer.router(Router router, {
+      String? homeDir, Iterable<String>? languages, bool disableLog = false})
+  => _StreamServer(router, homeDir, languages, disableLog);
 
   /** The version.
    */

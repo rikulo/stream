@@ -412,6 +412,12 @@ class Http410 extends HttpStatusException {
   Http410.fromConnect(HttpConnect connect, {String? message})
   : super.fromConnect(connect, 410, message: message);
 }
+/// HTTP 411 exception.
+class Http411 extends HttpStatusException {
+  Http411({Uri? uri, String? message}): super(411, uri: uri, message: message);
+  Http411.fromConnect(HttpConnect connect, {String? message})
+  : super.fromConnect(connect, 411, message: message);
+}
 /// HTTP 412 exception.
 class Http412 extends HttpStatusException {
   Http412({Uri? uri, String? message}): super(412, uri: uri, message: message);
@@ -424,17 +430,65 @@ class Http413 extends HttpStatusException {
   Http413.fromConnect(HttpConnect connect, {String? message})
   : super.fromConnect(connect, 413, message: message);
 }
+/// HTTP 414 exception.
+class Http414 extends HttpStatusException {
+  Http414({Uri? uri, String? message}): super(414, uri: uri, message: message);
+  Http414.fromConnect(HttpConnect connect, {String? message})
+  : super.fromConnect(connect, 414, message: message);
+}
+/// HTTP 415 exception.
+class Http415 extends HttpStatusException {
+  Http415({Uri? uri, String? message}): super(415, uri: uri, message: message);
+  Http415.fromConnect(HttpConnect connect, {String? message})
+  : super.fromConnect(connect, 415, message: message);
+}
+/// HTTP 417 exception.
+class Http417 extends HttpStatusException {
+  Http417({Uri? uri, String? message}): super(417, uri: uri, message: message);
+  Http417.fromConnect(HttpConnect connect, {String? message})
+  : super.fromConnect(connect, 417, message: message);
+}
 /// HTTP 418 exception.
 class Http418 extends HttpStatusException {
   Http418({Uri? uri, String? message}): super(418, uri: uri, message: message);
   Http418.fromConnect(HttpConnect connect, {String? message})
   : super.fromConnect(connect, 418, message: message);
 }
+/// HTTP 421 exception.
+class Http421 extends HttpStatusException {
+  Http421({Uri? uri, String? message}): super(421, uri: uri, message: message);
+  Http421.fromConnect(HttpConnect connect, {String? message})
+  : super.fromConnect(connect, 421, message: message);
+}
+/// HTTP 425 exception.
+class Http425 extends HttpStatusException {
+  Http425({Uri? uri, String? message}): super(425, uri: uri, message: message);
+  Http425.fromConnect(HttpConnect connect, {String? message})
+  : super.fromConnect(connect, 425, message: message);
+}
+/// HTTP 426 exception.
+class Http426 extends HttpStatusException {
+  Http426({Uri? uri, String? message}): super(426, uri: uri, message: message);
+  Http426.fromConnect(HttpConnect connect, {String? message})
+  : super.fromConnect(connect, 426, message: message);
+}
 /// HTTP 429 exception.
 class Http429 extends HttpStatusException {
   Http429({Uri? uri, String? message}): super(429, uri: uri, message: message);
   Http429.fromConnect(HttpConnect connect, {String? message})
   : super.fromConnect(connect, 429, message: message);
+}
+/// HTTP 431 exception.
+class Http431 extends HttpStatusException {
+  Http431({Uri? uri, String? message}): super(431, uri: uri, message: message);
+  Http431.fromConnect(HttpConnect connect, {String? message})
+  : super.fromConnect(connect, 431, message: message);
+}
+/// HTTP 451 exception.
+class Http451 extends HttpStatusException {
+  Http451({Uri? uri, String? message}): super(451, uri: uri, message: message);
+  Http451.fromConnect(HttpConnect connect, {String? message})
+  : super.fromConnect(connect, 451, message: message);
 }
 
 /// HTTP 500 exception.
@@ -457,4 +511,18 @@ class Http503 extends HttpStatusException {
   : super(503, uri: uri, message: cause != null ? "503: $cause": null);
   Http503.fromConnect(HttpConnect connect, {String? cause})
   : super.fromConnect(connect, 503, message: cause != null ? "503: $cause": null);
+}
+/// HTTP 504 exception.
+class Http504 extends HttpStatusException {
+  Http504({Uri? uri, String? cause})
+  : super(504, uri: uri, message: cause != null ? "504: $cause": null);
+  Http504.fromConnect(HttpConnect connect, {String? cause})
+  : super.fromConnect(connect, 504, message: cause != null ? "504: $cause": null);
+}
+/// HTTP 511 exception.
+class Http511 extends HttpStatusException {
+  Http511({Uri? uri, String? cause})
+  : super(511, uri: uri, message: cause != null ? "511: $cause": null);
+  Http511.fromConnect(HttpConnect connect, {String? cause})
+  : super.fromConnect(connect, 511, message: cause != null ? "511: $cause": null);
 }

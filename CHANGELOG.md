@@ -1,5 +1,9 @@
 # CHANGES
 
+### 3.2.0
+
+* `Http414`, `Http415`... added
+
 ### 3.1.1
 
 * `proxyRequest` allows caller to specify how to log ignorable errors.

@@ -8,10 +8,6 @@
 * [Git Repository](https://github.com/rikulo/stream)
 * [Issues](https://github.com/rikulo/stream/issues)
 
-Stream is distributed under an Apache 2.0 License.
-
-[![Build Status](https://drone.io/github.com/rikulo/stream/status.png)](https://drone.io/github.com/rikulo/stream/latest)
-
 ## Installation
 
 Add this to your `pubspec.yaml` (or create it):

@@ -100,7 +100,7 @@ class _HttpConnect extends _AbstractConnect {
   @override
   Browser get browser
   => _browser ??
-      (_browser = new _Browser(headerValue(HttpHeaders.userAgentHeader) ?? ""));
+      (_browser = _Browser(headerValue(HttpHeaders.userAgentHeader) ?? ""));
 
   @override
   String? headerValue(String name) => request.headers[name]?[0];
@@ -117,13 +117,13 @@ class _HttpConnect extends _AbstractConnect {
       locales = _locales = [];
       final langs = request.headers[HttpHeaders.acceptLanguageHeader];
       if (langs != null) {
-        final infos = new HashMap<num, List<String>>();
+        final infos = HashMap<num, List<String>>();
         for (final lang in langs) {
           _parseLocales(lang, infos);
         }
 
         if (!infos.isEmpty) {
-          final qs = new List.from(infos.keys)..sort();
+          final qs = List.from(infos.keys)..sort();
           for (int i = qs.length; --i >= 0;) //higher quality first
             locales.addAll(infos[qs[i]]!);
         }
@@ -206,12 +206,12 @@ class _ProxyConnect extends _AbstractConnect {
 class _BufferedConnect extends _ProxyConnect {
   _BufferedConnect(HttpConnect connect, List<int> buffer):
     super(connect, connect.request,
-        new BufferedResponse(connect.response, buffer));
+        BufferedResponse(connect.response, buffer));
 }
 class _StringBufferedConnect extends _ProxyConnect {
   _StringBufferedConnect(HttpConnect connect, StringBuffer buffer):
     super(connect, connect.request,
-        new StringBufferedResponse(connect.response, buffer));
+        StringBufferedResponse(connect.response, buffer));
 }
 
 ///HttpConnect for forwarded request
@@ -269,11 +269,11 @@ class _IncludedResponse extends HttpResponseWrapper {
 
   @override
   HttpHeaders get headers
-  => _headers ?? (_headers = new _ReadOnlyHeaders(origin.headers));
+  => _headers ?? (_headers = _ReadOnlyHeaders(origin.headers));
 
   @override
   Future<Socket> detachSocket({bool writeHeaders = true}) {
-    throw new HttpException("Not allowed in an included connection");
+    throw HttpException("Not allowed in an included connection");
   }
 }
 ///Immutable HTTP headers. It ignores any writes.
@@ -354,12 +354,12 @@ HttpRequest _wrapRequest(HttpRequest request, String? path, {bool keepQuery =fal
   if (org.path == path && org.query == query)
     return request;
 
-  return new _ReUriRequest(request, new Uri(scheme: org.scheme,
+  return _ReUriRequest(request, Uri(scheme: org.scheme,
     userInfo: org.userInfo, port: org.port, path: path, query: query,
     fragment: org.fragment));
 }
 HttpResponse _wrapResponse(HttpResponse response, bool included)
-=> !included || response is _IncludedResponse ? response: new _IncludedResponse(response);
+=> !included || response is _IncludedResponse ? response: _IncludedResponse(response);
 
 String _toAbsUri(HttpRequest request, String uri) {
   if (!uri.startsWith('/')) {
@@ -375,7 +375,7 @@ String _toAbsUri(HttpRequest request, String uri) {
 String _toCompleteUrl(HttpRequest request, String uri)
 => _completeUriRegex.hasMatch(uri) ? uri:
   request.uri.resolve(_toAbsUri(request, uri)).toString();
-final RegExp _completeUriRegex = new RegExp(r"^[a-zA-Z]+://");
+final _completeUriRegex = RegExp(r"^[a-zA-Z]+://");
 
 class _Browser extends Browser {
   _Browser(this.userAgent);

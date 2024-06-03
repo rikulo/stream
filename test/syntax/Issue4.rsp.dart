@@ -31,7 +31,7 @@ abc/""");
 
   await connect.include("abc/${Rsp.nns(foo)}");
 
-  await render(new HttpConnect.chain(connect), more: "abc/${Rsp.nns(foo)}", less: foo);
+  await render(HttpConnect.chain(connect), more: "abc/${Rsp.nns(foo)}", less: foo);
 
   return null;
 }

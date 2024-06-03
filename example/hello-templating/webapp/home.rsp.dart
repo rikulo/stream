@@ -19,7 +19,7 @@ Future home(HttpConnect connect) async {
 """);
 
   final _0 = StringBuffer(), _1 = connect;
-  connect = new HttpConnect.stringBuffer(connect, _0); response = connect.response;
+  connect = HttpConnect.stringBuffer(connect, _0); response = connect.response;
 
   await connect.include("/header.html");
 
@@ -29,10 +29,10 @@ Future home(HttpConnect connect) async {
 
 """);
 
-  final _2 = new StringBuffer(), _3 = connect;
-  connect = new HttpConnect.stringBuffer(connect, _2); response = connect.response;
+  final _2 = StringBuffer(), _3 = connect;
+  connect = HttpConnect.stringBuffer(connect, _2); response = connect.response;
 
-  await sidebar(new HttpConnect.chain(connect));
+  await sidebar(HttpConnect.chain(connect));
 
   connect = _3; response = connect.response;
 
@@ -40,8 +40,8 @@ Future home(HttpConnect connect) async {
 
 """);
 
-  final _4 = new StringBuffer(), _5 = connect;
-  connect = new HttpConnect.stringBuffer(connect, _4); response = connect.response;
+  final _4 = StringBuffer(), _5 = connect;
+  connect = HttpConnect.stringBuffer(connect, _4); response = connect.response;
 
   await connect.include("/footer.html");
 
@@ -51,8 +51,8 @@ Future home(HttpConnect connect) async {
 
 """);
 
-  final _6 = new StringBuffer(), _7 = connect;
-  connect = new HttpConnect.stringBuffer(connect, _6); response = connect.response;
+  final _6 = StringBuffer(), _7 = connect;
+  connect = HttpConnect.stringBuffer(connect, _6); response = connect.response;
 
   response.write("""  <h1>Hello Templating</h1>
   <p>In this example, we demostrate how to define the shared layout (aka., the template), define page fragments and assemble them into a complete page. It is based on the so-called *Composite View* pattern.</p>
@@ -60,7 +60,7 @@ Future home(HttpConnect connect) async {
 
   connect = _7; response = connect.response;
 
-  await classic(new HttpConnect.chain(connect), header: _0.toString(), sidebar: _2.toString(), footer: _4.toString(), body: _6.toString());
+  await classic(HttpConnect.chain(connect), header: _0.toString(), sidebar: _2.toString(), footer: _4.toString(), body: _6.toString());
 
   response.write("""  </body>
 </html>

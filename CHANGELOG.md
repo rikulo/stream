@@ -1,5 +1,9 @@
 # CHANGES
 
+### 3.2.2
+
+* `SoloTag` added for parsing any syntax for tags.
+
 ### 3.2.1
 
 * `SimpleTag` supports `stringFirst`.

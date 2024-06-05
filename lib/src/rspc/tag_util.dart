@@ -153,16 +153,15 @@ class ArgInfo {
   ///Map of arguments, excluding [first]
   final Map<String, String> args;
 
-  /** Parses the given string.
-   *
-   * * [idFirst]: whether ID can be the first argument
-   * * [stringFirst]: whether string can be the first argument
-   *
-   * Notice: if [idFirst] or [stringFirst] is true, the first argument can not
-   * be a name-value pair.
-   *
-   * If both are null, you can use [parse] instead. It is simpler.
-   */
+  /// Parses the given string.
+  ///
+  /// * [idFirst]: whether ID can be the first argument
+  /// * [stringFirst]: whether string can be the first argument
+  ///
+  /// Notice: if [idFirst] or [stringFirst] is true, the first argument can not
+  /// be a name-value pair.
+  ///
+  /// If both are false, you can use [parse] instead. It is simpler.
   factory ArgInfo(TagContext tc, String data,
       {bool idFirst = true, bool stringFirst = true}) {
     if (!idFirst && !stringFirst)
@@ -240,29 +239,44 @@ typedef void _Output(TagContext tc, String id, Map<String, String> args);
  *
  */
 class SimpleTag extends Tag {
-  final _Output _output;
-  final bool stringFirst;
+  final _Output output;
+  final bool idFirst, stringFirst;
 
-  /** Constructors a tag.
-   *
-   * * [output] - used to generate Dart code into the generated Dart file.
-   * You can use [outText] and [toEL] to generate the Dart code.
-   * The `id` argument is the first argument if it doesn't have a value.
-   * For example, with `[:tag foo1 foo2="abc"]`, `id` will be `foo1` and
-   * `args` will be a single entity map. If the first argument is specified
-   * with a value, `id` is null and the first argument is part of `args`.
-   * * [stringFirst] whether the first item can be a string (in additions to
-   * an identifier).
-   */
-  SimpleTag(String this.name,
-      void output(TagContext tc, String id, Map<String, String> args),
-      {this.stringFirst = false}):
-      _output = output;
+  /// Constructors a tag.
+  ///
+  /// * [output] - used to generate Dart code into the generated Dart file.
+  /// You can use [outText] and [toEL] to generate the Dart code.
+  /// The `id` argument is the first argument if it doesn't have a value.
+  /// For example, with `[:tag foo1 foo2="abc"]`, `id` will be `foo1` and
+  /// `args` will be a single entity map. If the first argument is specified
+  /// with a value, `id` is null and the first argument is part of `args`.
+  /// * [idFirst]: whether ID can be the first argument
+  /// * [stringFirst]: whether string can be the first argument
+  SimpleTag(this.name, this.output,
+      {this.idFirst = true, this.stringFirst = true});
 
   @override
   void begin(TagContext tc, String data) {
-    final ai = ArgInfo(tc, data, stringFirst: stringFirst);
-    _output(tc, ai.first, ai.args);
+    final ai = ArgInfo(tc, data, idFirst: idFirst, stringFirst: stringFirst);
+    output(tc, ai.first, ai.args);
+  }
+
+  @override
+  bool get hasClosing => false;
+  @override
+  final String name;
+}
+
+/// Similar to [SimpleTag], but it doesn't parse the data following
+/// the tag. It is [output]'s job, so it can be any syntax you'd like.
+class SoloTag extends Tag {
+  final void Function(TagContext tc, String data) output;
+
+  SoloTag(this.name, this.output);
+
+  @override
+  void begin(TagContext tc, String data) {
+    output(tc, data.trim());
   }
 
   @override

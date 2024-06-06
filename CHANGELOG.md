@@ -1,5 +1,9 @@
 # CHANGES
 
+### 3.2.3
+
+* Fix: the included RSP page can't access the correct [HttpConnect.language]
+
 ### 3.2.2
 
 * `SoloTag` added for parsing any syntax for tags.

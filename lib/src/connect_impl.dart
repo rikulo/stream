@@ -196,6 +196,12 @@ class _ProxyConnect extends _AbstractConnect {
     _origin.errorDetail = errorDetail;
   }
   @override
+  String? get language => _origin.language;
+  @override
+  void set language(String? language) {
+    _origin.language = language;
+  }
+  @override
   bool get isIncluded => _origin.isIncluded;
   @override
   bool get isForwarded => _origin.isForwarded;

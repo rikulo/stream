@@ -333,7 +333,7 @@ class _UriMapping {
       return _UriMapping._(pattern.pattern, pattern, handler);
 
     //2b. parse pattern: get:xxx, post:xxx, ws:xxz
-    var uri = pattern.toString(); //safer
+    var uri = pattern.toString(); //safer than: pattern as String
     String? method;
     for (int i = 0, len = uri.length; i < len; ++i) {
       final cc = uri.codeUnitAt(i);

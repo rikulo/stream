@@ -283,8 +283,7 @@ class _StreamServer implements StreamServer {
   @override
   Future<HttpChannel> start({address, int port = 8080, int backlog = 0,
       bool v6Only = false, bool shared = false, bool zoned = true}) async {
-    if (address == null)
-      address = InternetAddress.anyIPv4;
+    address ??= InternetAddress.anyIPv4;
 
     final iserver = await HttpServer.bind(address, port, backlog: backlog,
         v6Only: v6Only, shared: shared);
@@ -299,8 +298,7 @@ class _StreamServer implements StreamServer {
       {address, int port = 8443,
       bool v6Only = false, bool requestClientCertificate = false,
       int backlog = 0, bool shared = false, bool zoned = true}) async {
-    if (address == null)
-      address = InternetAddress.anyIPv4;
+    address ??= InternetAddress.anyIPv4;
 
     final iserver = await HttpServer.bindSecure(address, port, context,
         requestClientCertificate: requestClientCertificate,

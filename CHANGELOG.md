@@ -1,5 +1,13 @@
 # CHANGES
 
+### 4.0.0
+
+* `DefaultRouter`'s *URI mapping* supports `RegExp` and `String`.
+* Stream's named group in the syntax of `(name:...)` is no longer supported.
+    - Use regular expression's named capturing group instead.
+        - Example: `'/foo/(?<seg>.*)': '/moo/(seg)]',`
+        - If you'd like to retrieve the named capturing group in Dart, use `DefaultRouter.getNamedGroup(name)` (instead of `connect.dataset[name]`).
+
 ### 3.2.3
 
 * Fix: the included RSP page can't access the correct [HttpConnect.language]

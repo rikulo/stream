@@ -28,17 +28,18 @@ var _uriMapping = <String, dynamic> {
   "/forwardRsp": forwarderView, //generated from forwarderView.rsp.html
   "/include": includerView,  //generated from includerView.rsp.html
   "/search": search,
-  "/(group:g[a-z]*p)/(matching:ma[a-z]*)": (HttpConnect connect) {
+  "/(?<group>g[a-z]*p)/(?<matching>ma[a-z]*)": (HttpConnect connect) {
     connect.response
       ..headers.contentType = ContentType.parse("text/plain")
-      ..write("Group Matching: ${connect.dataset['group']} and ${connect.dataset['matching']}");
+      ..write("Group Matching: ${DefaultRouter.getNamedGroup(connect, 'group')} "
+        "and ${DefaultRouter.getNamedGroup(connect, 'matching')}");
   },
-  "/old-link(extra:.*)": "/new-link(extra)/more",
-  "/new-link(option:.*)?": (HttpConnect connect) {
+  "/old-link(?<extra>.*)": "/new-link(extra)/more",
+  "/new-link(?<option>.*)?": (HttpConnect connect) {
     connect.response
       ..headers.contentType = ContentType.parse("text/plain")
       ..write("old-link forwarded to ${connect.request.uri}"
-        "(option ${connect.dataset['option']})");
+        "(option: ${DefaultRouter.getNamedGroup(connect, 'option')})");
   },
   "/500": (HttpConnect connect) {
     throw Exception("something wrong");

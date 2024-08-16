@@ -10,23 +10,28 @@ abstract class Router {
   /// The interpretation of [uri] and [handler] is really up to the
   /// implementation of [Router].
   ///
+  /// > Please refer to [DefaultRouter.map] for how it handles the regular
+  /// expressions.
+  ///
+  /// * [uri] - a pattern, either [String] or [RegExp].
   /// * [handler] - if handler is null, it means removal.
   /// * [preceding] - whether to make the mapping preceding any previous mappings.
   /// In other words, if true, this mapping will be interpreted first.
-  void map(String uri, handler, {bool preceding = false});
+  void map(Pattern uri, Object? handler, {bool preceding = false});
 
   /// Maps the given URI to the given filter.
   ///
   /// The interpretation of [uri] is really up to the implementation of [Router].
   ///
+  /// * [uri] - a pattern, either [String] or [RegExp].
   /// * [filter] - if filter is null, it means removal.
   /// * [preceding] - whether to make the mapping preceding any previous mappings.
   /// In other words, if true, this mapping will be interpreted first.
-  void filter(String uri, RequestFilter filter, {bool preceding = false});
+  void filter(Pattern uri, RequestFilter filter, {bool preceding = false});
 
   /// Retrieves the first matched request handler ([RequestHandler]) or
   /// forwarded URI ([String]) for the given URI.
-  getHandler(HttpConnect connect, String uri);
+  Object? getHandler(HttpConnect connect, String uri);
 
   /// Returns the index of the next matched request filter for the given URI
   /// and starting at the given index.
@@ -43,7 +48,7 @@ abstract class Router {
   /// You can override this method to detect the type of the error
   /// and then return a handler for it. The handler can retrieve
   /// the error via [connect.errorDetail].
-  getErrorHandler(error);
+  Object? getErrorHandler(Object? error);
 }
 
 /**
@@ -58,14 +63,16 @@ class DefaultRouter implements Router {
 
   static final _notFound = Object();
 
-  /** The constructor.
-   *
-   * * [cacheSize] - the size of the cache for speeding up URI matching.
-   * * [protectRSP] - protects RSP files from accessing at the client.
-   * You can specify it to false if you don't put RSP files with client
-   * resource files.
-   */
-  DefaultRouter({Map<String, dynamic>? uriMapping,
+  /// The constructor.
+  ///
+  /// * [uriMapping] - The key can be a String or RegExp instance.
+  /// If String, an instance of `RegExp('^$pattern\$')` will be generated
+  /// and used. Refer to [map] for details.
+  /// * [cacheSize] - the size of the cache for speeding up URI matching.
+  /// * [protectRSP] - protects RSP files from accessing at the client.
+  /// You can specify it to false if you don't put RSP files with client
+  /// resource files.
+  DefaultRouter({Map<Pattern, dynamic>? uriMapping,
       Map<int, dynamic>? errorMapping,
       Map<String, RequestFilter>? filterMapping,
       int cacheSize = 1000, bool protectRSP = true}):
@@ -86,9 +93,8 @@ class DefaultRouter implements Router {
       errorMapping.forEach((code, handler) {
         final handler = errorMapping[code];
         if (handler is String) {
-          String uri = handler;
-          if (!uri.startsWith('/'))
-            throw ServerError("URI must start with '/'; not '$uri'");
+          if (!handler.startsWith('/'))
+            throw ServerError("URI must start with '/'; not '$handler'");
         } else if (handler is! Function) {
           throw ServerError("Error mapping: function (renderer) or string (URI) is required for $code");
         }
@@ -97,20 +103,42 @@ class DefaultRouter implements Router {
       });
   }
 
-  /** Maps the given URI to the given handler.
-   *
-   * * [uri] - a regular expression used to match the request URI.
-   * If you can name a group by prefix with a name, such as `'/dead-link(info:.*)'`.
-   * * [handler] - the handler for handling the request, or another URI that this request
-   * will be forwarded to. If the value is a URI and the key has named groups, the URI can
-   * refer to the group with `(the_group_name)`.
-   * For example: `'/dead-link(info:.*)': '/new-link(info)'`.
-   * If it is null, it means removal.
-   * * [preceding] - whether to make the mapping preceding any previous mappings.
-   * In other words, if true, this mapping will be interpreted first.
-   */
+  /// Maps the given URI to the given handler.
+  ///
+  /// * [uri] - a pattern, either String or RegExp.
+  /// If String, an instance of `RegExp('^$pattern\$')` will be generated
+  /// and used for matching the requested URI.
+  ///
+  /// You can also specify the HTTP method in the pattern,
+  /// such as GET, POST, and PUT.
+  /// For example, `'get:/foo'` accepts only the GET method.
+  ///
+  /// Note: you can specify WebSocket by prefixing with `ws:`,
+  /// e.g., `ws:/mine`.
+  ///
+  /// You can use the named capturing group, see [handler] for details.
+  ///
+  /// * [handler] - the handler for handling the request,
+  /// or another URI that this request will be forwarded to.
+  ///
+  /// If the handler is a string, you can refer the named capturing
+  /// group with `(the_group_name)`.
+  /// For example: `'/dead-link/(?<info>.*)': '/new-link/(info)'`
+  /// will forward `/dead-link/whatevr` to `/new-link/whatever.
+  /// 
+  /// If you'd like to redirect, you can do:
+  /// 
+  ///     '/dead-link/(?<info>.*)': (connect) {
+  ///       connect.redirect("/new-link/${DefaultRouter.getNamedGroup(connect, 'info')");
+  ///     }
+  /// 
+  /// > Note: [getNamedGroup] is the util you can use in your handler to
+  /// > retrieve the named capturing group.
+  ///
+  /// * [preceding] - whether to make the mapping preceding any previous mappings.
+  /// In other words, if true, this mapping will be interpreted first.
   @override
-  void map(String uri, handler, {preceding = false}) {
+  void map(Pattern uri, Object? handler, {preceding = false}) {
     if (handler != null && handler is! Function && handler is! String)
       throw ServerError("URI mapping: function (renderer) or string (URI) is required for $uri");
 
@@ -126,10 +154,10 @@ class DefaultRouter implements Router {
    * In other words, if true, this mapping will be interpreted first.
    */
   @override
-  void filter(String uri, RequestFilter filter, {bool preceding = false}) {
+  void filter(Pattern uri, RequestFilter filter, {bool preceding = false}) {
     _map(_filterMapping, uri, filter, preceding);
   }
-  static void _map(List<_UriMapping> mapping, String uri, handler, bool preceding) {
+  static void _map(List<_UriMapping> mapping, Pattern uri, Object? handler, bool preceding) {
     if (handler == null) { //removal
       if (preceding) {
         for (int i = 0, len = mapping.length; i < len; ++i)
@@ -159,7 +187,7 @@ class DefaultRouter implements Router {
   bool shallCache(HttpConnect connect, String uri) => true;
 
   @override
-  getHandler(HttpConnect connect, String uri) {
+  Object? getHandler(HttpConnect connect, String uri) {
     //check cache first before shallCache => better performance
     //reason: shallCache is likely to return true (after regex)
     final cache = _uriCache.getCache(connect, _uriMapping);
@@ -176,14 +204,17 @@ class DefaultRouter implements Router {
       //store to cache
       if (shallCache(connect, uri)) {
         cache[uri] = handler == null ? _notFound:
-          mp!.hasGroup() ? mp: handler; //store _UriMapping if mp.hasGroup()
+            mp!.hasNamedGroup ? mp: handler;
+            //store _UriMapping if containing named group, so `mp.match()`
+            //will be called when matched, see 6th line below
         if (cache.length > _cacheSize)
           cache.remove(cache.keys.first);
       }
     } else if (identical(handler, _notFound)) {
       return null;
     } else if (handler is _UriMapping) { //hasGroup
-      handler.match(connect, uri); //prepare connect.dataset
+      handler.match(connect, uri);
+        //prepare for [getNamedGroup], since [_setUriMatch]'ll be called
       handler = handler.handler;
     }
 
@@ -191,9 +222,8 @@ class DefaultRouter implements Router {
       final sb = StringBuffer();
       for (var seg in handler) {
         if (seg is _Var) {
-          seg = connect.dataset[seg.name];
-          if (seg == null)
-            continue; //skip
+          seg = getNamedGroup(connect, seg.name);
+          if (seg == null) continue; //skip
         }
         sb.write(seg);
       }
@@ -214,7 +244,20 @@ class DefaultRouter implements Router {
   => _filterMapping[iFilter].handler as RequestFilter;
 
   @override
-  getErrorHandler(error) => _errorMapping[error];
+  Object? getErrorHandler(Object? error) => _errorMapping[error];
+
+  /// Retrieves the named capturing group of the given [name],
+  /// specified in [map]'s `uri`, or null if not found.
+  static String? getNamedGroup(HttpConnect connect, String name) {
+    try {
+      return (connect.dataset[_attrUriMatch] as RegExpMatch?)?.namedGroup(name);
+    } catch (_) { //ignore it
+    }
+  }
+  static void _setUriMatch(HttpConnect connect, Match m) {
+    connect.dataset[_attrUriMatch] = m;
+  }
+  static const _attrUriMatch = '-stream.u.mth-';
 }
 
 ///Renderer for 404
@@ -229,17 +272,26 @@ Function _upgradeWS(Future handler(WebSocket socket))
 
 class _UriMapping {
   final String uri;
-  final RegExp _ptn;
-  final Map<int, String>? _groups;
+  final RegExp _reUri;
   ///It could be a function, a string or a list of (string or _Var).
+  /// It is a list if it contains the named group.
   final handler;
   ///The method to match with. (It is in upper case)
   final String? method;
+  ///The uri pattern likely contains name group
+  final bool hasNamedGroup;
 
-  _UriMapping._(this.uri, this.handler, this.method, this._groups, this._ptn);
+  _UriMapping._(this.uri, this._reUri, this.handler, [this.method])
+  : hasNamedGroup = _reHasNameGroup.hasMatch(uri);
 
-  factory _UriMapping(String uri, final rawhandler) {
-    //1. Parse handler
+  static final _reHasNameGroup = RegExp(r'\(\?<[^>=!][^>]*>.*\)');
+    //NOTE: it needs not be accurate, since [hasNamedGroup] is used
+    //for skipping the invocation of [match] if possible
+    //AVOID lookbehind: `(?<=)` or `(?<!)`
+
+  factory _UriMapping(Pattern pattern, final rawhandler) {
+    //1. Parse handler: split String into List for named capturing group
+    //For example: `/new-link/(group1)`
     var handler = rawhandler;
     if (rawhandler is String) {
       final val = rawhandler;
@@ -269,15 +321,19 @@ class _UriMapping {
         }
       }
 
-      if (!segs.isEmpty) {
+      if (segs.isNotEmpty) {
         if (k < len)
           segs.add(val.substring(k));
         handler = segs;
       }
     }
 
-    //2. parse URI
-    //handle get:xxx, post:xxx, ws:xxz
+    //2a. no need to handle if [RegExp]
+    if (pattern is RegExp)
+      return _UriMapping._(pattern.pattern, pattern, handler);
+
+    //2b. parse pattern: get:xxx, post:xxx, ws:xxz
+    var uri = pattern.toString(); //safer
     String? method;
     for (int i = 0, len = uri.length; i < len; ++i) {
       final cc = uri.codeUnitAt(i);
@@ -298,66 +354,8 @@ class _UriMapping {
       throw ServerError("URI pattern must start with '/', '.', '[' or '('; not '$uri'");
       //ensure it is absolute or starts with regex wildcard
 
-    uri = "^$uri\$"; //match the whole URI
-    final groups = HashMap<int, String>();
-
-    //parse grouping: ([a-zA-Z_-]+:regex)
-    final sb = StringBuffer();
-    bool bracket = false;
-    l_top:
-    for (int i = 0, grpId = 0, len = uri.length; i < len; ++i) {
-      switch (uri.codeUnitAt(i)) {
-        case $backslash:
-          if (i + 1 < len) {
-            sb.write('\\');
-            ++i; //skip next
-          }
-          break;
-        case $lbracket:
-          bracket = true;
-          break;
-        case $rbracket:
-          bracket = false;
-          break;
-        case $lparen:
-          if (bracket)
-            break;
-
-          sb.write('(');
-
-          //parse the name of the group, if any
-          String? nm;
-          final nmsb = StringBuffer();
-          int j = i;
-          for (;;) {
-            if (++j >= len) {
-              sb.write(nmsb);
-              break l_top;
-            }
-
-            final cc = uri.codeUnitAt(j);
-            if (StringUtil.isCharCode(cc, lower:true, upper:true, digit: true)
-            || cc == $underscore || cc == $dot) {
-              nmsb.writeCharCode(cc);
-            } else {
-              if (cc == $colon && !nmsb.isEmpty) {
-                nm = nmsb.toString();
-              } else {
-                sb.write(nmsb);
-                --j;
-              }
-              break;
-            }
-          } //for(;;)
-          i = j;
-
-          if (nm != null)
-            groups[grpId] = nm;
-          ++grpId;
-          continue;
-      }
-      sb.writeCharCode(uri.codeUnitAt(i));
-    }
+    if (_reObsoleteNamedGroup.hasMatch(uri))
+      throw ServerError("Use named capturing groups instead: $uri");
 
     if (method == "WS") { //handle specially
       if (rawhandler is! Function)
@@ -367,27 +365,18 @@ class _UriMapping {
       method = null;
     }
 
-    final hasGroup = groups.isNotEmpty;
-    return _UriMapping._(uri, handler, method, hasGroup ? groups: null,
-        RegExp(hasGroup ? sb.toString(): uri));
+    return _UriMapping._(uri, RegExp("^$uri\$"), handler, method);
+      //NOTE: we match the whole URI
   }
-
-  bool hasGroup() => _groups != null;
+  static final _reObsoleteNamedGroup = RegExp(r'(?<!\\)\(\w+:.*\)');
 
   bool match(HttpConnect connect, String uri) {
     if (method != null && method != connect.request.method)
       return false; //not matched
 
-    final m = _ptn.firstMatch(uri);
+    final m = _reUri.firstMatch(uri);
     if (m != null) {
-      final groups = _groups;
-      if (groups != null) {
-        final count = m.groupCount;
-        groups.forEach((key, value) {
-          if (key < count) //unlikely but be safe
-            connect.dataset[value] = m.group(key + 1); //group() starts from 1 (not 0)
-        });
-      }
+      DefaultRouter._setUriMatch(connect, m);
       return true;
     }
     return false;

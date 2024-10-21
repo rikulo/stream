@@ -210,8 +210,8 @@ class FileLoader extends AssetLoader {
 
   @override
   Future load(HttpConnect connect, String uri, {bool useCache = true}) async {
-    assert(uri.startsWith('/'));
-    assert(uri == Path.normalize(uri)); //caller's job to avoid HTTP directory traversal
+    assert(uri.startsWith('/'), uri);
+    assert(uri == Path.normalize(uri), uri); //caller's job to avoid HTTP directory traversal
 
     var path = uri.substring(1); //uri must start with '/', but path can't
     path = Path.join(rootDir, path);

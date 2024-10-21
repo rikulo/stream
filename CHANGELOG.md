@@ -1,5 +1,9 @@
 # CHANGES
 
+### 4.0.1
+
+* Fix: HTTP Directory Traversal Vulnerability
+
 ### 4.0.0
 
 * `DefaultRouter`'s *URI mapping* supports `RegExp` and `String`.

@@ -30,6 +30,8 @@
     <li><a href="/lastModified">Test last modified</a></li>
     <li><a href="/quire">Redirect, by router, to another website (Quire)</a></li>
     <li><a href="/stack box/space here.txt">Load a file with special name</a></li>
+    <li><a href="http://localhost:8080////////////////etc/passwd">Directory Traversal => 404</a></li>
+    <li><a href="http://localhost:8080/%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F/etc/passwd">Directory Traversal => 404</a></li>
     </ul>
 
   <script type="text/javascript">

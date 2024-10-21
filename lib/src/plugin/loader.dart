@@ -210,8 +210,18 @@ class FileLoader extends AssetLoader {
 
   @override
   Future load(HttpConnect connect, String uri, {bool useCache = true}) async {
-    String path = uri.substring(1); //uri must start with '/', but path can't
+    assert(uri.startsWith('/'));
+    assert(uri == Path.normalize(uri)); //caller's job to avoid HTTP directory traversal
+
+    var path = uri.substring(1); //uri must start with '/', but path can't
     path = Path.join(rootDir, path);
+
+    if (rootDir != path && !Path.isWithin(rootDir, path)) {
+      //Note: this won't happen if caller's does invoke [Path.normalize]
+      connect.server.logger.severe('$path not in $rootDir', null,
+          StackTrace.current); //for debugging
+      throw Http404(uri: Uri.tryParse(uri));
+    }
 
     final file = File(path);
     if (await file.exists())
@@ -234,8 +244,8 @@ class FileLoader extends AssetLoader {
  * It throws [Http404] if [Asset.lastModified] throws an exception.
  */
 Future loadAsset(HttpConnect connect, Asset asset, [AssetCache? cache]) async {
-  final HttpResponse response = connect.response;
-  final bool isIncluded = connect.isIncluded;
+  final response = connect.response,
+    isIncluded = connect.isIncluded;
   ContentType? contentType;
   if (!isIncluded) {
     contentType = getContentType(asset.path, isExtension: false);
@@ -291,11 +301,11 @@ Future loadAsset(HttpConnect connect, Asset asset, [AssetCache? cache]) async {
  * * [etag] - the ETag. Ignored if null.
  */
 bool checkIfHeaders(HttpConnect connect, DateTime? lastModified, String? etag) {
-  final HttpResponse response = connect.response;
+  final response = connect.response;
   if (response.statusCode >= 300)
     return true; //Ignore If, since caused by forward-by-error (see also Issue 59)
 
-  final HttpRequest request = connect.request;
+  final request = connect.request;
 
   //Check If-Match
   final ifMatch = connect.headerValue(HttpHeaders.ifMatchHeader);
@@ -311,7 +321,7 @@ bool checkIfHeaders(HttpConnect connect, DateTime? lastModified, String? etag) {
   if (ifNoneMatch != null) {
     if (ifNoneMatch == "*"
     || (etag != null && _matchETag(ifNoneMatch, etag))) { //match
-      final String method = request.method;
+      final method = request.method;
       if (method == "GET" || method == "HEAD") {
         response.statusCode = HttpStatus.notModified;
         if (etag != null)
@@ -339,7 +349,7 @@ bool checkIfHeaders(HttpConnect connect, DateTime? lastModified, String? etag) {
     final value = connect.headerValue(HttpHeaders.ifUnmodifiedSinceHeader);
     if (value != null) {
       try {
-        final DateTime ifUnmodifiedSince = HttpDate.parse(value);
+        final ifUnmodifiedSince = HttpDate.parse(value);
         if (lastModified.isAfter(ifUnmodifiedSince.add(_oneSecond))) {
           response.statusCode = HttpStatus.preconditionFailed;
           return false;

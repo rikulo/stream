@@ -135,14 +135,14 @@ class _StreamServer implements StreamServer {
 
     String path;
     try {
-      path = Uri.decodeComponent(uri).replaceAll(_reSlashes, '/');
+      path = Path.normalize(Uri.decodeComponent(uri));
+        //Normalize to avoid HTTP directory traversal
     } catch (_) {
       throw Http404.fromConnect(connect);
     }
 
     return resourceLoader.load(connect, path);
   }
-  final _reSlashes = RegExp('//+');
 
   Future _handleErr(HttpConnect connect, error, StackTrace stackTrace) async {
     if (connect.errorDetail != null) { //called twice; ignore 2nd one

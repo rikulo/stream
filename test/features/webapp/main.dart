@@ -30,14 +30,14 @@ var _uriMapping = <String, dynamic> {
   "/search": search,
   "/(?<group>g[a-z]*p)/(?<matching>ma[a-z]*)": (HttpConnect connect) {
     connect.response
-      ..headers.contentType = ContentType.parse("text/plain")
+      ..headers.contentType = ContentType.text
       ..write("Group Matching: ${DefaultRouter.getNamedGroup(connect, 'group')} "
         "and ${DefaultRouter.getNamedGroup(connect, 'matching')}");
   },
   "/old-link(?<extra>.*)": "/new-link(extra)/more",
   "/new-link(?<option>.*)?": (HttpConnect connect) {
     connect.response
-      ..headers.contentType = ContentType.parse("text/plain")
+      ..headers.contentType = ContentType.text
       ..write("old-link forwarded to ${connect.request.uri}"
         "(option: ${DefaultRouter.getNamedGroup(connect, 'option')})");
   },
@@ -50,7 +50,7 @@ var _uriMapping = <String, dynamic> {
     });
 
     connect.response
-      ..headers.contentType = ContentType.parse("text/html")
+      ..headers.contentType = ContentType.html
       ..write("<html><body><p>Check the server console if the server stays alive and log the error.</p></body></html>");
   },
   "/recoverable-error": (HttpConnect connect) {
@@ -58,12 +58,12 @@ var _uriMapping = <String, dynamic> {
   },
   "/log5": (HttpConnect connect) {
     connect.response
-      ..headers.contentType = ContentType.parse("text/plain")
+      ..headers.contentType = ContentType.text
       ..write("You see two logs shown on the console");
   },
   "/longop": (HttpConnect connect) {
     connect.response
-      ..headers.contentType = ContentType.parse("text/html")
+      ..headers.contentType = ContentType.html
       ..write("<html><body><p>This is used to test if client aborts the connection</p>"
         "<p>Close the browser tab as soon as possible (in 10 secs)</p>");
     return Future.delayed(const Duration(seconds: 10), () {
@@ -89,7 +89,7 @@ var _errMapping = <int, dynamic> {
   404: "/404.html",
   500: (HttpConnect connect) {
     connect.response
-      ..headers.contentType = ContentType.parse("text/html")
+      ..headers.contentType = ContentType.html
       ..write("""
 <html>
 <head><title>500: ${connect.errorDetail?.error?.runtimeType}</title></head>
@@ -103,7 +103,7 @@ var _errMapping = <int, dynamic> {
   recoverableError: (HttpConnect connect) {
     connect.errorDetail = null; //clear error
     connect.response
-      ..headers.contentType = ContentType.parse("text/plain")
+      ..headers.contentType = ContentType.text
       ..write("Recovered from an error");
   }
 };

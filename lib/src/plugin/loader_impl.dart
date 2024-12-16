@@ -321,5 +321,5 @@ Future _outAssetInRanges(HttpResponse response, List<_Range>? ranges,
 const _mimeBoundary = "STREAM_MIME_BOUNDARY";
 const _mimeBoundaryBegin = "--$_mimeBoundary";
 const _mimeBoundaryEnd = "--$_mimeBoundary--";
-final _multipartBytesType =
-  ContentType.parse("multipart/byteranges; boundary=$_mimeBoundary");
+final _multipartBytesType = ContentType("multipart", "byteranges",
+      parameters: const {'boundary': _mimeBoundary});

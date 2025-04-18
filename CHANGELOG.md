@@ -1,5 +1,9 @@
 # CHANGES
 
+### 4.0.3
+
+* The `getStartupMessage` parameter added to `StreamServer.start` for customizing the startup message.
+
 ### 4.0.2
 
 * Fix: HTTP Directory Traversal Vulnerability

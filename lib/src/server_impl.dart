@@ -283,7 +283,9 @@ class _StreamServer implements StreamServer {
   bool get isRunning => !_channels.isEmpty;
   @override
   Future<HttpChannel> start({address, int port = 8080, int backlog = 0,
-      bool v6Only = false, bool shared = false, bool zoned = true}) async {
+      bool v6Only = false, bool shared = false, bool zoned = true,
+      String? getStartupMessage(StreamServer server, HttpChannel channel,
+          String defaultMessage)?}) async {
     address ??= InternetAddress.anyIPv4;
 
     final iserver = await HttpServer.bind(address, port, backlog: backlog,
@@ -291,14 +293,16 @@ class _StreamServer implements StreamServer {
 
     final channel = _HttpChannel(this, iserver, address, iserver.port, false);
     _startChannel(channel, zoned);
-    _logHttpStarted(channel);
+    _logHttpStarted(channel, getStartupMessage);
     return channel;
   }
   @override
   Future<HttpChannel> startSecure(SecurityContext context,
       {address, int port = 8443,
       bool v6Only = false, bool requestClientCertificate = false,
-      int backlog = 0, bool shared = false, bool zoned = true}) async {
+      int backlog = 0, bool shared = false, bool zoned = true,
+      String? getStartupMessage(StreamServer server, HttpChannel channel,
+          String defaultMessage)?}) async {
     address ??= InternetAddress.anyIPv4;
 
     final iserver = await HttpServer.bindSecure(address, port, context,
@@ -307,15 +311,22 @@ class _StreamServer implements StreamServer {
 
     final channel = _HttpChannel(this, iserver, address, iserver.port, true);
     _startChannel(channel, zoned);
-    _logHttpStarted(channel);
+    _logHttpStarted(channel, getStartupMessage);
     return channel;
   }
-  void _logHttpStarted(HttpChannel channel) {
+  void _logHttpStarted(HttpChannel channel,
+      String? getStartupMessage(StreamServer server, HttpChannel channel,
+        String defaultMessage)?) {
     final address = channel.address, port = channel.port;
-    logger.info(
-      "Rikulo Stream Server $_version starting${channel.isSecure ? ' HTTPS': ''} on "
-      "${address is InternetAddress ? address.address: address}:$port\n"
-      "Home: ${homeDir}");
+    String? message =
+        "Rikulo Stream Server $_version starting${channel.isSecure ? ' HTTPS': ''} on "
+        "${address is InternetAddress ? address.address: address}:$port\n"
+        "Home: ${homeDir}";
+    if (getStartupMessage != null) {
+      message = getStartupMessage(this, channel, message);
+      if (message == null) return; //log nothing
+    }
+    logger.info(message);
   }
   @override
   HttpChannel startOn(ServerSocket socket, {bool zoned = true}) {

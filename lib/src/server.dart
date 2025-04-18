@@ -207,9 +207,14 @@ abstract class StreamServer {
    * by the system.
    * * [zoned] - whether to start the server within a zone
    * (i.e., `runZonedGuarded()`). Default: true.
+   * * [getStartupMessage] - used to retrieve the startup message.
+   * If not specified, the default message is used.
    */
-  Future<HttpChannel> start({address, int port = 8080, int backlog = 0,
-    bool v6Only = false, bool shared = false, bool zoned = true});
+  Future<HttpChannel> start({
+      address, int port = 8080, int backlog = 0,
+      bool v6Only = false, bool shared = false, bool zoned = true,
+      String? getStartupMessage(StreamServer server, HttpChannel channel,
+          String defaultMessage)?});
   /** Starts the server listening for HTTPS request.
    *
    * Notice that you can invoke [start], [startSecure] and [startOn] multiple
@@ -232,11 +237,15 @@ abstract class StreamServer {
    * The actual port used can be retrieved using [HttpChannel.port].
    * * [zoned] - whether to start the server within a zone (i.e., `runZoned()`)
    * Default: true.
+   * * [getStartupMessage] - used to retrieve the startup message.
+   * If not specified, the default message is used.
    */
-  Future<HttpChannel> startSecure(SecurityContext context,
-      {address, int port = 8443,
+  Future<HttpChannel> startSecure(SecurityContext context, {
+      address, int port = 8443,
       bool v6Only = false, bool requestClientCertificate = false,
-      int backlog = 0, bool shared = false, bool zoned = true});
+      int backlog = 0, bool shared = false, bool zoned = true,
+      String? getStartupMessage(StreamServer server, HttpChannel channel,
+          String defaultMessage)?});
   /** Starts the server to an existing socket.
    *
    * Notice that you can invoke [start], [startSecure] and [startOn] multiple

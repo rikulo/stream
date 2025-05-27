@@ -1,5 +1,9 @@
 # CHANGES
 
+### 4.1.0
+
+- `copyToSink` added for copying from [Stream] to [EventSink].
+
 ### 4.0.3
 
 * The `getStartupMessage` parameter added to `StreamServer.start` for customizing the startup message.

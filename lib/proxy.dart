@@ -78,7 +78,7 @@ Future proxyRequest(HttpConnect connect, url, {String? proxyName,
           };
         }
 
-        await _copy(serverRequest, clientRequest.sink, copyTo: copyTo);
+        await copyToSink(serverRequest, clientRequest.sink, copyTo: copyTo);
       } else { //retries
         clientRequest.sink.add(requestBody);
       }
@@ -149,7 +149,7 @@ Future proxyRequest(HttpConnect connect, url, {String? proxyName,
     }
   }
 
-  await _copy(clientResponse.stream, serverResponse);
+  await copyToSink(clientResponse.stream, serverResponse);
 }
 
 void _addHeader(Map<String, String> headers, String name, String value) {
@@ -160,8 +160,12 @@ void _addHeader(Map<String, String> headers, String name, String value) {
   }
 }
 
-Future _copy<T>(Stream<T> stream, EventSink<T> sink,
-    {bool cancelOnError = true, bool closeSink = true, void copyTo(T event)?}) {
+/// Copies [stream] into [sink].
+///
+/// - [copyTo] if specified, it is called instead of [sink.add].
+Future copyToSink<T>(Stream<T> stream, EventSink<T> sink,
+    {bool cancelOnError = true, bool closeSink = true,
+     void copyTo(T event)?}) {
   var completer = Completer();
   stream.listen(copyTo ?? sink.add,
     onError: (Object e, StackTrace st) {

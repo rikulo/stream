@@ -69,10 +69,10 @@ Future proxyRequest(HttpConnect connect, url, {String? proxyName,
           '${serverRequest.protocolVersion} ${proxyName??"Stream"}');
 
       if (requestBody == null) { //first time
-        _Listener<List<int>>? copyTo;
+        _CopyTo<List<int>>? copyTo;
         if (shallRetry != null) {
           final body = requestBody = <int>[];
-          copyTo = (List<int> event) {
+          copyTo = (List<int> event, void close()) {
             body.addAll(event);
             clientRequest.sink.add(event);
           };
@@ -163,24 +163,36 @@ void _addHeader(Map<String, String> headers, String name, String value) {
 /// Copies [stream] into [sink].
 ///
 /// - [copyTo] if specified, it is called instead of [sink.add].
+/// The implementation can call `close()` if it'd like to stop
+/// the reading.
 Future copyToSink<T>(Stream<T> stream, EventSink<T> sink,
     {bool cancelOnError = true, bool closeSink = true,
-     void copyTo(T event)?}) {
-  var completer = Completer();
-  stream.listen(copyTo ?? sink.add,
-    onError: (Object e, StackTrace st) {
-      sink.addError(e, st);
-      if (cancelOnError) {
-        completer.complete();
-        if (closeSink) sink.close();
-      }
-    },
-    onDone: () {
+     void copyTo(T event, void close())?}) {
+  final completer = Completer();
+
+  var done = false;
+  void setDone() {
+    if (!done) {
+      done = true;
       if (closeSink) sink.close();
       completer.complete();
-    }, cancelOnError: cancelOnError);
+    }
+  }
+
+  stream.listen(
+    copyTo == null ? sink.add: (data) => copyTo(data, setDone),
+    onError: (Object e, StackTrace st) {
+      if (!done) {
+        sink.addError(e, st);
+        if (cancelOnError) {
+          completer.complete();
+          if (closeSink) sink.close();
+        }
+      }
+    },
+    onDone: setDone,
+    cancelOnError: cancelOnError);
 
   return completer.future;
 }
-
-typedef void _Listener<T>(T event);
+typedef void _CopyTo<T>(T event, void close());

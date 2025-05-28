@@ -1,5 +1,9 @@
 # CHANGES
 
+### 4.2.0
+
+- `copyToSink` allows caller to abort the copying by adding the `close` argument.
+
 ### 4.1.0
 
 - `copyToSink` added for copying from [Stream] to [EventSink].

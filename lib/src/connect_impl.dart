@@ -52,48 +52,15 @@ class _HttpChannel implements HttpChannel {
 
 ///Skeletal implementation
 abstract class _AbstractConnect implements HttpConnect {
+  Browser? _browser;
+  List<String>? _locales;
+
   _AbstractConnect(this.request, this.response);
 
   @override
   final HttpRequest request;
   @override
   final HttpResponse response;
-  @override
-  bool autoClose = true;
-  @override
-  HttpConnect? get forwarder => null;
-  @override
-  HttpConnect? get includer => null;
-  @override
-  bool get isIncluded => false;
-  @override
-  bool get isForwarded => false;
-
-  @override
-  void redirect(String uri, {int status = HttpStatus.movedTemporarily}) {
-    response.statusCode = status;
-    response.headers.set(HttpHeaders.locationHeader, _toCompleteUrl(request, uri));
-  }
-  @override
-  Future forward(String uri, {HttpRequest? request, HttpResponse? response})
-  => server.forward(this, uri, request: request, response: response);
-  @override
-  Future include(String uri, {HttpRequest? request, HttpResponse? response})
-  => server.include(this, uri, request: request, response: response);
-}
-
-///The default implementation of HttpConnect
-class _HttpConnect extends _AbstractConnect {
-  Browser? _browser;
-  List<String>? _locales;
-
-  _HttpConnect(this.channel, HttpRequest request, HttpResponse response):
-      super(request, response);
-
-  @override
-  StreamServer get server => channel.server;
-  @override
-  final HttpChannel channel;
 
   @override
   Browser get browser
@@ -109,9 +76,6 @@ class _HttpConnect extends _AbstractConnect {
     } catch (_) {
     }
   }
-
-  @override
-  String? language;
 
   @override
   String get locale {
@@ -141,7 +105,45 @@ class _HttpConnect extends _AbstractConnect {
   }
 
   @override
+  void redirect(String uri, {int status = HttpStatus.movedTemporarily}) {
+    response.statusCode = status;
+    response.headers.set(HttpHeaders.locationHeader, _toCompleteUrl(request, uri));
+  }
+  @override
+  Future forward(String uri, {HttpRequest? request, HttpResponse? response})
+  => server.forward(this, uri, request: request, response: response);
+  @override
+  Future include(String uri, {HttpRequest? request, HttpResponse? response})
+  => server.include(this, uri, request: request, response: response);
+}
+
+///The default implementation of HttpConnect
+class _HttpConnect extends _AbstractConnect {
+  _HttpConnect(this.channel, HttpRequest request, HttpResponse response):
+      super(request, response);
+
+  @override
+  StreamServer get server => channel.server;
+  @override
+  final HttpChannel channel;
+
+  @override
+  String? language;
+  @override
+  bool autoClose = true;
+
+  @override
+  HttpConnect? get forwarder => null;
+  @override
+  HttpConnect? get includer => null;
+  @override
+  bool get isIncluded => false;
+  @override
+  bool get isForwarded => false;
+
+  @override
   ErrorDetail? errorDetail;
+
   @override
   Map<String, dynamic> get dataset
   => _dataset ??= MapUtil.auto(() => _dataset = HashMap<String, dynamic>());
@@ -179,44 +181,53 @@ void _parseLocales(String lang, Map<num, List<String>> infos) {
   }
 }
 
+///Used to implement forwarder and includer.
+/// 
+/// Unlike [HttpConnectWrapper], it retrieves headers from the given [request],
+/// rather than from [origin]. Examples, [headerValue] and [locale].
 class _ProxyConnect extends _AbstractConnect {
-  final HttpConnect _origin;
+  final HttpConnect origin;
 
   _ProxyConnect(HttpConnect origin, HttpRequest request, HttpResponse response):
-      _origin = origin, super(request, response);
+      origin = origin, super(request, response);
 
   @override
-  StreamServer get server => _origin.server;
+  StreamServer get server => origin.server;
   @override
-  HttpChannel get channel => _origin.channel;
+  HttpChannel get channel => origin.channel;
+
   @override
-  Browser get browser => _origin.browser;
-  @override
-  String? headerValue(String name) => _origin.headerValue(name);
-  @override
-  DateTime? get ifModifiedSince => _origin.ifModifiedSince;
-  @override
-  String get locale => _origin.locale;
-  @override
-  List<String> get locales => _origin.locales;
-  @override
-  ErrorDetail? get errorDetail => _origin.errorDetail;
-  @override
-  void set errorDetail(ErrorDetail? errorDetail) {
-    _origin.errorDetail = errorDetail;
-  }
-  @override
-  String? get language => _origin.language;
+  String? get language => origin.language;
   @override
   void set language(String? language) {
-    _origin.language = language;
+    origin.language = language;
   }
+
   @override
-  bool get isIncluded => _origin.isIncluded;
+  bool get autoClose => origin.autoClose;
   @override
-  bool get isForwarded => _origin.isForwarded;
+  void set autoClose(bool auto) {
+    origin.autoClose = auto;
+  }
+
   @override
-  Map<String, dynamic> get dataset => _origin.dataset;
+  HttpConnect? get forwarder => origin.forwarder;
+  @override
+  HttpConnect? get includer => origin.includer;
+  @override
+  bool get isIncluded => origin.isIncluded;
+  @override
+  bool get isForwarded => origin.isForwarded;
+
+  @override
+  ErrorDetail? get errorDetail => origin.errorDetail;
+  @override
+  void set errorDetail(ErrorDetail? errorDetail) {
+    origin.errorDetail = errorDetail;
+  }
+
+  @override
+  Map<String, dynamic> get dataset => origin.dataset;
 }
 
 class _BufferedConnect extends _ProxyConnect {
@@ -240,7 +251,7 @@ class _ForwardedConnect extends _ProxyConnect {
       _wrapResponse(response != null ? response: connect.response, connect.isIncluded));
 
   @override
-  HttpConnect get forwarder => _origin;
+  HttpConnect get forwarder => origin;
   @override
   bool get isForwarded => true;
 }
@@ -255,7 +266,7 @@ class _IncludedConnect extends _ProxyConnect {
       _wrapResponse(response != null ? response: connect.response, true));
 
   @override
-  HttpConnect get includer => _origin;
+  HttpConnect get includer => origin;
   @override
   bool get isIncluded => true;
 }

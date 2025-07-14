@@ -336,7 +336,7 @@ bool checkIfHeaders(HttpConnect connect, DateTime? lastModified, String? etag) {
   if (lastModified != null) {
     //Check If-Modified-Since
     //Ignored it if If-None-Match specified (since ETag differs)
-    final ifModifiedSince = request.headers.ifModifiedSince;
+    final ifModifiedSince = connect.ifModifiedSince;
     if (ifModifiedSince != null && ifNoneMatch == null
     && lastModified.isBefore(ifModifiedSince.add(_oneSecond))) {
       response.statusCode = HttpStatus.notModified;

@@ -102,7 +102,7 @@ typedef Future RequestHandler(HttpConnect connect);
 
 /** A HTTP request connection.
  */
-abstract class HttpConnect {
+abstract interface class HttpConnect {
   /** Instantiates a connection by redirecting the output to the given buffer
    * (bytes).
    */
@@ -241,6 +241,11 @@ abstract class HttpConnect {
    */
   String? headerValue(String name);
 
+  /// The date and time specified by the [ifModifiedSinceHeader] header, if any.
+  /// Unlike [HttpHeaders.ifModifiedSince], it won't throw exception but
+  /// returning null if the content is wrong.
+  DateTime? get ifModifiedSince;
+
   /** The preferred Locale that the client will accept content in,
    * based on the Accept-Language header.
    */
@@ -314,6 +319,8 @@ class HttpConnectWrapper implements HttpConnect {
   Browser get browser => origin.browser;
   @override
   String? headerValue(String name) => origin.headerValue(name);
+  @override
+  DateTime? get ifModifiedSince => origin.ifModifiedSince;
 
   @override
   String get locale => origin.locale;

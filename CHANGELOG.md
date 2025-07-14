@@ -1,5 +1,9 @@
 # CHANGES
 
+### 4.2.1
+
+- [#91](https://github.com/rikulo/stream/issues/91): [HttpConnect.ifModifiedSince] added to avoid exception
+
 ### 4.2.0
 
 - `copyToSink` allows caller to abort the copying by adding the `close` argument.
@@ -38,7 +42,7 @@
 
 ### 3.2.0
 
-* [90](https://github.com/rikulo/stream/issues/90): support the prefix with the preferred language by specifying the `languages` argument when instantiating `StreamServer`.
+* [#90](https://github.com/rikulo/stream/issues/90): support the prefix with the preferred language by specifying the `languages` argument when instantiating `StreamServer`.
 * `Http414`, `Http415`... added
 
 ### 3.1.1
@@ -80,7 +84,7 @@
 ### 2.5.1+5
 
 * Throws 404 if path contains invalid UTF characters
-* Fix [87](https://github.com/rikulo/stream/issues/87): File name containing a space
+* Fix [#87](https://github.com/rikulo/stream/issues/87): File name containing a space
 
 ### 2.5.1
 
@@ -88,7 +92,7 @@
 
 ### 2.5.0
 
-* [86](https://github.com/rikulo/stream/issues/86): the error mapping can map only error codes (integers). It implies
+* [#86](https://github.com/rikulo/stream/issues/86): the error mapping can map only error codes (integers). It implies
     1. You can't specify the class name in the error mapping.
     2. The type of the `errorMapping` arugment becomes `Map<int, dynamic>`
     3. You'd like to handle a particular exception specially. You shall throw a special integer, say, -900, and then map it to your handler.
@@ -96,7 +100,7 @@
 
 ### 2.3.0
 
-* Fix [85](https://github.com/rikulo/stream/issues/85) The method `_ReadOnlyHeaders.add` has fewer named arguments than those of overridden method 'HttpHeadersWrapper.add [Dart 2.8]
+* Fix [#85](https://github.com/rikulo/stream/issues/85) The method `_ReadOnlyHeaders.add` has fewer named arguments than those of overridden method 'HttpHeadersWrapper.add [Dart 2.8]
 
 ### 2.2.2+1
 

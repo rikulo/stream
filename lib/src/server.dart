@@ -27,7 +27,7 @@ typedef String PathPreprocessor(String path);
  *       }).start();
  *  )
  */
-abstract class StreamServer {
+abstract interface class StreamServer {
   /** Constructor.
    *
    * ##Request Handlers

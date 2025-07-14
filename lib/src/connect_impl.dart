@@ -102,6 +102,13 @@ class _HttpConnect extends _AbstractConnect {
 
   @override
   String? headerValue(String name) => request.headers[name]?[0];
+  @override
+  DateTime? get ifModifiedSince {
+    try {
+      return request.headers.ifModifiedSince;
+    } catch (_) {
+    }
+  }
 
   @override
   String? language;
@@ -186,6 +193,8 @@ class _ProxyConnect extends _AbstractConnect {
   Browser get browser => _origin.browser;
   @override
   String? headerValue(String name) => _origin.headerValue(name);
+  @override
+  DateTime? get ifModifiedSince => _origin.ifModifiedSince;
   @override
   String get locale => _origin.locale;
   @override

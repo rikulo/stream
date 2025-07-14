@@ -64,11 +64,10 @@ abstract class _AbstractConnect implements HttpConnect {
 
   @override
   Browser get browser
-  => _browser ??
-      (_browser = _Browser(headerValue(HttpHeaders.userAgentHeader) ?? ""));
+  => _browser ??= _Browser(headerValue(HttpHeaders.userAgentHeader) ?? "");
 
   @override
-  String? headerValue(String name) => request.headers[name]?[0];
+  String? headerValue(String name) => request.headers[name]?.first;
   @override
   DateTime? get ifModifiedSince {
     try {
@@ -80,7 +79,7 @@ abstract class _AbstractConnect implements HttpConnect {
   @override
   String get locale {
     final ls = locales;
-    return ls.isEmpty ? "en_US": ls[0];
+    return ls.isEmpty ? "en_US": ls.first;
   }
   @override
   List<String> get locales {
@@ -296,7 +295,7 @@ class _IncludedResponse extends HttpResponseWrapper {
 
   @override
   HttpHeaders get headers
-  => _headers ?? (_headers = _ReadOnlyHeaders(origin.headers));
+  => _headers ??= _ReadOnlyHeaders(origin.headers);
 
   @override
   Future<Socket> detachSocket({bool writeHeaders = true}) {

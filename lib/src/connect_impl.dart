@@ -93,7 +93,7 @@ abstract class _AbstractConnect implements HttpConnect {
           _parseLocales(lang, infos);
         }
 
-        if (!infos.isEmpty) {
+        if (infos.isNotEmpty) {
           final qs = List.from(infos.keys)..sort();
           for (int i = qs.length; --i >= 0;) //higher quality first
             locales.addAll(infos[qs[i]]!);
@@ -385,7 +385,8 @@ HttpRequest _wrapRequest(HttpRequest request, String? path, {bool keepQuery =fal
     fragment: org.fragment));
 }
 HttpResponse _wrapResponse(HttpResponse response, bool included)
-=> !included || response is _IncludedResponse ? response: _IncludedResponse(response);
+=> !included || response is _IncludedResponse ?
+      response: _IncludedResponse(response);
 
 String _toAbsUri(HttpRequest request, String uri) {
   if (!uri.startsWith('/')) {

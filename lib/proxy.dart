@@ -31,7 +31,7 @@ final _logger = Logger('proxy');
 /// * [log] If specified, it'll be called if there is an ignorable error,
 /// e.g., header's value containing invalid characters
 Future proxyRequest(HttpConnect connect, url, {String? proxyName,
-      FutureOr<bool> shallRetry(ex, StackTrace st)?,
+      FutureOr<bool> shallRetry(Object ex, StackTrace st)?,
       void log(String errmsg)?}) async {
   //COPRYRIGHT NOTICE:
   //The code is ported from [shelf_proxy](https://github.com/dart-lang/shelf_proxy)

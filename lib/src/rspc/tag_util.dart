@@ -41,7 +41,7 @@ String toEL(String? data, {bool direct = true}) {
           val = data.substring(i + 2, j).trim();
       if (direct && i == 0 && j + 1 == len) //single EL
         return val;
-      if (!val.isEmpty)
+      if (val.isNotEmpty)
         sb..write("\${Rsp.nns(")..write(val)..write(")}");
 
       i = j;
@@ -191,7 +191,7 @@ class ArgInfo {
           first = data.substring(0, i);
           data = data.substring(i).trim();
           isID = true;
-          if (!data.isEmpty && data.codeUnitAt(0) == $equal)
+          if (data.isNotEmpty && data.codeUnitAt(0) == $equal)
             tc.error("Unexpected '=' after an ID, $first"); //highlight common error
         }
       }

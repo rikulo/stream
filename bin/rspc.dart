@@ -17,7 +17,7 @@ void main(List<String> arguments) {
       if (id == null)
         throw ArgumentError("required");
       tc.write("\n${tc.pre}response.write(m(connect, $id");
-      if (args != null && !args.isEmpty) {
+      if (args != null && args.isNotEmpty) {
         tc.write(", ");
         rspc.outMap(tc, args);
       }

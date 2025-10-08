@@ -173,8 +173,7 @@ class PageTag extends Tag {
 class DartTag extends Tag {
   @override
   void begin(TagContext tc, String data) {
-    if (!data.isEmpty)
-      tc.writeln(data);
+    if (data.isNotEmpty) tc.writeln(data);
   }
   @override
   bool get hasClosing => true;
@@ -187,7 +186,7 @@ class HeaderTag extends Tag {
   @override
   void begin(TagContext tc, String data) {
     final attrs = parseArgs(data);
-    if (!attrs.isEmpty) {
+    if (attrs.isNotEmpty) {
       tc.write("\n${tc.pre}response.headers");
       bool first = true;
       for (final nm in attrs.keys) {

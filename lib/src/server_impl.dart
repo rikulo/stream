@@ -7,7 +7,7 @@ const String _version = version.version;
 const String _serverHeader = "Stream/$_version";
 
 ///The error handler for HTTP connection.
-typedef void _ConnectErrorCallback(HttpConnect? connect, error, StackTrace? stackTrace);
+typedef void _ConnectErrorCallback(HttpConnect? connect, Object error, StackTrace? stackTrace);
 ///The callback of onIdle
 typedef void _OnIdleCallback();
 ///The callback of countConnection
@@ -144,7 +144,7 @@ class _StreamServer implements StreamServer {
     return resourceLoader.load(connect, path);
   }
 
-  Future _handleErr(HttpConnect connect, error, StackTrace stackTrace) async {
+  Future _handleErr(HttpConnect connect, Object error, StackTrace stackTrace) async {
     if (connect.errorDetail != null) { //called twice; ignore 2nd one
       _logError(connect, error, stackTrace);
       return; //done
@@ -161,8 +161,7 @@ class _StreamServer implements StreamServer {
         } else {
           _logError(connect, error, stackTrace);
           shouted = true;
-          error = Http500.fromConnect(connect,
-              cause: error != null ? error.toString(): "");
+          error = Http500.fromConnect(connect, cause: error.toString());
         }
       }
 
@@ -188,10 +187,10 @@ class _StreamServer implements StreamServer {
     }
   }
 
-  void _logInitError(error, StackTrace stackTrace)
+  void _logInitError(Object error, StackTrace stackTrace)
   => _logError(null, error, stackTrace);
 
-  void _logError(HttpConnect? connect, error, [StackTrace? stackTrace]) {
+  void _logError(HttpConnect? connect, Object error, [StackTrace? stackTrace]) {
     final onError = _onError;
     if (onError != null) {
       try {
@@ -205,7 +204,7 @@ class _StreamServer implements StreamServer {
     }
   }
 
-  void _shout(HttpConnect? connect, err, [StackTrace? st]) {
+  void _shout(HttpConnect? connect, Object err, [StackTrace? st]) {
     final buf = StringBuffer();
     try {
       buf..write(DateTime.now())..write(':');
@@ -265,7 +264,7 @@ class _StreamServer implements StreamServer {
   ResourceLoader resourceLoader;
 
   @override
-  void onError(void onError(HttpConnect? connect, error, StackTrace? stackTrace)?) {
+  void onError(void onError(HttpConnect? connect, Object error, StackTrace? stackTrace)?) {
     _onError = onError;
   }
   @override
@@ -280,7 +279,7 @@ class _StreamServer implements StreamServer {
   }
 
   @override
-  bool get isRunning => !_channels.isEmpty;
+  bool get isRunning => _channels.isNotEmpty;
   @override
   Future<HttpChannel> start({address, int port = 8080, int backlog = 0,
       bool v6Only = false, bool shared = false, bool zoned = true,

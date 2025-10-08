@@ -217,7 +217,7 @@ List<_Range>? _parseRange(HttpConnect connect, _AssetDetail detail) {
     final values = <int>[];
     for (int i = 0; i < 2; ++i) {
       final match = matches[i + 1]!;
-      if (!match.isEmpty)
+      if (match.isNotEmpty)
         try {
           values.add(int.parse(match));
         } catch (ex) {

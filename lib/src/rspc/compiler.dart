@@ -125,7 +125,7 @@ class Compiler {
       if (_tagCtxs.length > 1) {
         final sb = StringBuffer();
         for (int i = _tagCtxs.length; --i >= 1;) {
-          if (!sb.isEmpty) sb.write(', ');
+          if (sb.isNotEmpty) sb.write(', ');
           sb..write(_tagCtxs[i].tag)..write(' at line ')..write(_tagCtxs[i].line);
         }
         _error("Unclosed tag(s): $sb");
@@ -207,7 +207,7 @@ class Compiler {
     if (parts != null && parts.isNotEmpty) {
       _writeln();
       for (String pt in parts.split(","))
-        if (!(pt = pt.trim()).isEmpty)
+        if ((pt = pt.trim()).isNotEmpty)
           _writeln("part '$pt';");
     }
 
@@ -227,7 +227,7 @@ class Compiler {
       "  //ignore: unused_local_variable\n"
       "  var response = connect.response;\n");
 
-    if (!_headers.isEmpty) {
+    if (_headers.isNotEmpty) {
       for (final _QuedTag qt in _headers) {
         push(qt.tag, qt.line);
         qt.tag
@@ -357,7 +357,7 @@ class Compiler {
 
   //Tokenizer//
   _nextToken() {
-    if (!_lookAhead.isEmpty)
+    if (_lookAhead.isNotEmpty)
       return _lookAhead.removeLast();
 
     final sb = StringBuffer();
@@ -535,10 +535,10 @@ class Compiler {
   }
   String _dartData() {
     String data = _tagData(tag: tags["dart"]);
-    if (!data.isEmpty)
+    if (data.isNotEmpty)
       _warning("The dart tag has no attribute", _line);
 
-    if (!_lookAhead.isEmpty) { //we have to check if it is [dart/]
+    if (_lookAhead.isNotEmpty) { //we have to check if it is [dart/]
       final token = _nextToken();
       if (token is _Closing && token.name == "dart")
         return ""; //[dart/]
@@ -555,7 +555,7 @@ class Compiler {
   void _outExpr() {
     final expr = _tagData(skipFollowingSpaces: false);
       //1) '/' is NOT a terminal, 2) no skip space for expression
-    if (!expr.isEmpty)
+    if (expr.isNotEmpty)
       _writeln('\n${_current.pre}response.write(Rsp.nnx($expr));${_getLineNumberComment()}\n');
       //it doesn't push, so we have to use _line instead of _current.line
       //_tagData might have multiple lines
@@ -656,7 +656,7 @@ class Compiler {
     if (libparts.contains(mynm))
       mynm = null; //no need to add
 
-    if (!importToAdd.isEmpty || mynm != null) {
+    if (importToAdd.isNotEmpty || mynm != null) {
       final srcnmDisplay = _shorten(
         sourceName ?? mypath.toString(), destinationName);
       final buf = StringBuffer();

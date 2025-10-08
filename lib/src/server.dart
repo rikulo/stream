@@ -356,7 +356,7 @@ abstract interface class StreamServer {
    * Once [onError] is assigned, the default logging will be disabled,
    * i.e., it is [onError]'s job to log it.
    */
-  void onError(void onError(HttpConnect? connect, error, StackTrace? stackTrace)?);
+  void onError(void onError(HttpConnect? connect, Object error, StackTrace? stackTrace)?);
 
   /** Specifies a callback called when the server is idle, i.e.,
    * not serving any requests ([connectionCount] is 0).

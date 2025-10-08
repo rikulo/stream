@@ -22,7 +22,7 @@ void main() {
     "/(g[a-z]*p)/(ma[a-z]*)", "/old-link(.*)",
     "/new-link.*", "/500", "/recoverable-error", "/log5", "/longop",
     "/user/([^/])*/"]) {
-    if (!patterns.isEmpty)
+    if (patterns.isNotEmpty)
       buf.write('|');
       buf.write("$p");
 //    buf.write("($p)");

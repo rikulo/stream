@@ -28,10 +28,13 @@ final _logger = Logger('proxy');
 /// * [shallRetry] a callback to decide whether to retry when
 /// [proxyRequest] receives an exception.
 /// Ignored if omitted.
+/// * [onStatusCode] if specified, it'll be called with the status code
+/// received.
 /// * [log] If specified, it'll be called if there is an ignorable error,
 /// e.g., header's value containing invalid characters
 Future proxyRequest(HttpConnect connect, url, {String? proxyName,
       FutureOr<bool> shallRetry(Object ex, StackTrace st)?,
+      void onStatusCode(int code)?,
       void log(String errmsg)?}) async {
   //COPRYRIGHT NOTICE:
   //The code is ported from [shelf_proxy](https://github.com/dart-lang/shelf_proxy)
@@ -93,7 +96,9 @@ Future proxyRequest(HttpConnect connect, url, {String? proxyName,
     }
   }
 
-  serverResponse.statusCode = clientResponse.statusCode;
+  final code = serverResponse.statusCode = clientResponse.statusCode;
+  onStatusCode?.call(code);
+
   clientResponse.headers.forEach((name, value) {
     if (!Rsp.isHeaderValueValid(value)) {
       var fixed = false;

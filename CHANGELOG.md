@@ -1,5 +1,9 @@
 # CHANGES
 
+### 4.2.3
+
+- Added a new `onStatusCode` argument to [proxyRequest] to enable monitoring of returned status codes.
+
 ### 4.2.1
 
 - [#91](https://github.com/rikulo/stream/issues/91): [HttpConnect.ifModifiedSince] added to avoid exception

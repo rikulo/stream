@@ -10,6 +10,7 @@ import "dart:convert";
 import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as p;
 import "package:logging/logging.dart" show Logger;
+import 'package:rikulo_commons/util.dart';
 
 import "stream.dart";
 
@@ -173,31 +174,33 @@ void _addHeader(Map<String, String> headers, String name, String value) {
 Future copyToSink<T>(Stream<T> stream, EventSink<T> sink,
     {bool cancelOnError = true, bool closeSink = true,
      void copyTo(T event, void close())?}) {
-  final completer = Completer();
+  final c = Completer();
 
   var done = false;
   void setDone() {
     if (!done) {
       done = true;
-      if (closeSink) sink.close();
-      completer.complete();
+      if (!c.isCompleted) c.complete();
+      if (closeSink) InvokeUtil.invokeSafely(sink.close);
     }
   }
 
-  stream.listen(
+  late final StreamSubscription<T> sub;
+  sub = stream.listen(
     copyTo == null ? sink.add: (data) => copyTo(data, setDone),
     onError: (Object e, StackTrace st) {
       if (!done) {
         sink.addError(e, st);
         if (cancelOnError) {
-          completer.complete();
-          if (closeSink) sink.close();
+          if (!c.isCompleted) c.complete();
+          if (closeSink) InvokeUtil.invokeSafely(sink.close);
+          InvokeUtil.invokeSafely(sub.cancel);
         }
       }
     },
     onDone: setDone,
     cancelOnError: cancelOnError);
 
-  return completer.future;
+  return c.future;
 }
 typedef void _CopyTo<T>(T event, void close());

@@ -1,5 +1,5 @@
 name: stream
-version: 4.2.3
+version: 4.2.3+1
 description: > 
   Lightweight Dart web server supporting request routing, filtering,
   template engine, MVC design pattern, and file-based static resources.

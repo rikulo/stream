@@ -4,6 +4,7 @@
 
 - Removed `StreamServer.logger`. The server now uses an internal `Logger`instance instead.
     - To ensure the startup message is shown, initialize `Logger` at `Level.INFO`.
+        - Example: https://github.com/rikulo/stream/commit/29c104e44b8cb2b2603081fe1827fa11aab2e5bf
 
 ### 4.2.3
 

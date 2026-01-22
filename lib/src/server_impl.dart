@@ -18,6 +18,7 @@ class _StreamServer implements StreamServer {
   final String version = _version;
 
   final List<HttpChannel> _channels = [];
+
   int _sessTimeout = 20 * 60; //20 minutes
   final Router _router;
   final RegExp? _langs;
@@ -371,6 +372,7 @@ class _StreamServer implements StreamServer {
         }
       }
     }, onError: _logInitError);
+
     _channels.add(channel);
   }
 
@@ -409,6 +411,7 @@ class _StreamServer implements StreamServer {
     final ops = <Future>[];
     for (int i = channels.length; --i >= 0;)
       ops.add(channels[i].close());
+    channels.clear();
     return Future.wait(ops);
   }
 

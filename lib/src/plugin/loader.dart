@@ -218,8 +218,7 @@ class FileLoader extends AssetLoader {
 
     if (rootDir != path && !Path.isWithin(rootDir, path)) {
       //Note: this won't happen if caller's does invoke [Path.normalize]
-      connect.server.logger.severe('$path not in $rootDir', null,
-          StackTrace.current); //for debugging
+      _logger.severe('$path not in $rootDir', null, StackTrace.current); //for debugging
       throw Http404(uri: Uri.tryParse(uri));
     }
 

@@ -9,6 +9,7 @@ import "dart:collection";
 
 import "package:path/path.dart" as Path;
 import "package:charcode/ascii.dart";
+import "package:logging/logging.dart" show Logger;
 
 import "package:rikulo_commons/util.dart";
 import "package:rikulo_commons/io.dart" show getContentType;
@@ -18,3 +19,5 @@ import "stream.dart";
 part "src/plugin/router.dart";
 part "src/plugin/loader.dart";
 part "src/plugin/loader_impl.dart";
+
+final _logger = Logger('stream.plugin');

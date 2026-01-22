@@ -16,8 +16,6 @@ typedef bool _ShallCount(HttpConnect connect);
 class _StreamServer implements StreamServer {
   @override
   final String version = _version;
-  @override
-  final Logger logger;
 
   final List<HttpChannel> _channels = [];
   int _sessTimeout = 20 * 60; //20 minutes
@@ -29,18 +27,12 @@ class _StreamServer implements StreamServer {
   int _connectionCount = 0;
 
   factory _StreamServer(Router router, String? homeDir,
-      Iterable<String>? languages, bool disableLog) {
+      Iterable<String>? languages) {
     homeDir = homeDir == null ? _getRootPath():
       Path.isAbsolute(homeDir) ? homeDir: Path.join(_getRootPath(), homeDir);
 
     if (!Directory(homeDir).existsSync())
       throw ServerError("$homeDir doesn't exist.");
-
-    final logger = Logger("stream");
-    if (!disableLog) {
-      Logger.root.level = Level.INFO;
-      logger.onRecord.listen(simpleLoggerHandler);
-    }
 
     RegExp? langs;
     if (languages != null && languages.isNotEmpty) {
@@ -54,11 +46,9 @@ class _StreamServer implements StreamServer {
       buf.write(r')(/.*)?$');
       langs = RegExp(buf.toString());
     }
-    return _StreamServer._(router, homeDir, ResourceLoader(homeDir),
-        langs, logger);
+    return _StreamServer._(router, homeDir, ResourceLoader(homeDir), langs);
   }
-  _StreamServer._(this._router, this.homeDir, this.resourceLoader,
-      this._langs, this.logger);
+  _StreamServer._(this._router, this.homeDir, this.resourceLoader, this._langs);
 
   static String _getRootPath() {
     String path;
@@ -219,7 +209,7 @@ class _StreamServer implements StreamServer {
       buf..write(err);
       if (st != null)
         buf..write("\n")..write(st);
-      logger.shout(buf.toString());
+      _logger.shout(buf.toString());
 
     } catch (_) {
       if (buf.isEmpty) {
@@ -325,14 +315,14 @@ class _StreamServer implements StreamServer {
       message = getStartupMessage(this, channel, message);
       if (message == null) return; //log nothing
     }
-    logger.info(message);
+    _logger.info(message);
   }
   @override
   HttpChannel startOn(ServerSocket socket, {bool zoned = true}) {
     final channel = _HttpChannel.fromSocket(
         this, HttpServer.listenOn(socket), socket);
     _startChannel(channel, zoned);
-    logger.info("Rikulo Stream Server $_version starting on $socket\n"
+    _logger.info("Rikulo Stream Server $_version starting on $socket\n"
       "Home: ${homeDir}");
     return channel;
   }

@@ -5,6 +5,8 @@ import "dart:io";
 import "dart:async";
 import "package:stream/stream.dart";
 import "package:rikulo_commons/mirrors.dart" show ObjectUtil;
+import "package:rikulo_commons/logging.dart";
+import "package:logging/logging.dart" show Logger, Level;
 
 part "includerView.rsp.dart";
 part "fragView.rsp.dart";
@@ -16,7 +18,12 @@ part 'lastModified.rsp.dart'; //auto-inject from ../lastModified.rsp.html
 /// A special error to be handled specially (recover it).
 const recoverableError = -900;
 
+final logger = Logger('test');
+
 void main() {
+  Logger.root.level = Level.INFO;
+  logger.onRecord.listen(simpleLoggerHandler);
+
   StreamServer(
     uriMapping: _uriMapping, errorMapping: _errMapping, filterMapping: _filterMapping)
     .start(zoned: true);
@@ -111,11 +118,11 @@ var _errMapping = <int, dynamic> {
 //Filtering
 var _filterMapping = <String, RequestFilter> {
   "/log.*": (HttpConnect connect, Future chain(HttpConnect conn)) {
-    connect.server.logger.info("Filter 1: ${connect.request.uri}");
+    logger.info("Filter 1: ${connect.request.uri}");
     return chain(connect);
   },
   "/log[0-9]*": (HttpConnect connect, Future chain(HttpConnect conn)) {
-    connect.server.logger.info("Filter 2: ${connect.request.uri}");
+    logger.info("Filter 2: ${connect.request.uri}");
     return chain(connect);
   }
 };

@@ -14,7 +14,7 @@ import 'package:rikulo_commons/util.dart';
 
 import "stream.dart";
 
-final _logger = Logger('proxy');
+final _logger = Logger('stream.proxy');
 
 /// Proxies the request of [url] to [connect].
 ///

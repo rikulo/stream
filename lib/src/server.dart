@@ -90,9 +90,6 @@ abstract interface class StreamServer {
    * an exception that can be recovered.
    * **Trick**: You can also override ([DefaultRouter.getErrorHandler]) to
    * detect the type and return a proper handle it for it.
-   * * [disableLog] - whether to disable logs.
-   * If false (default), [Logger.root] will be set to [Level.INFO], and
-   * a listener will be added [logger].
    * * [languages] the supported languages. If specified and the first element
    * matches one of them, the first element will be ignored when searching
    * the handler. For example, if it is `{'fr'}` and `/fr/about` is requested,
@@ -103,18 +100,18 @@ abstract interface class StreamServer {
   factory StreamServer({Map<String, dynamic>? uriMapping,
       Map<int, dynamic>? errorMapping,
       Map<String, RequestFilter>? filterMapping,
-      String? homeDir, Iterable<String>? languages, bool disableLog = false})
+      String? homeDir, Iterable<String>? languages})
   => _StreamServer(
       DefaultRouter(uriMapping: uriMapping,
         errorMapping: errorMapping, filterMapping: filterMapping),
-      homeDir, languages, disableLog);
+      homeDir, languages);
 
   /** Constructs a server with the given router.
    * It is used if you'd like to use your own router, rather than the default one.
    */
   factory StreamServer.router(Router router, {
-      String? homeDir, Iterable<String>? languages, bool disableLog = false})
-  => _StreamServer(router, homeDir, languages, disableLog);
+      String? homeDir, Iterable<String>? languages})
+  => _StreamServer(router, homeDir, languages);
 
   /** The version.
    */
@@ -406,10 +403,6 @@ abstract interface class StreamServer {
    * In other words, if true, this mapping will be interpreted first.
    */
   void filter(String uri, RequestFilter filter, {bool preceding = false});
-
-  /** The logger for logging information.
-   */
-  Logger get logger;
 
   /** Returns a readonly list of channels served by this server.
    * Each time [start], [startSecure] or [startOn] is called, an instance

@@ -1,5 +1,10 @@
 # CHANGES
 
+### 4.3.0
+
+- Removed `StreamServer.logger`. The server now uses an internal `Logger`instance instead.
+    - To ensure the startup message is shown, initialize `Logger` at `Level.INFO`.
+
 ### 4.2.3
 
 - Added a new `onStatusCode` argument to [proxyRequest] to enable monitoring of returned status codes.

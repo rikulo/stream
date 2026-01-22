@@ -4,8 +4,12 @@ library hello_mvc;
 import "dart:async";
 import "dart:io";
 import "package:stream/stream.dart";
+import "package:rikulo_commons/logging.dart";
+import "package:logging/logging.dart" show Logger, Level;
 
 part "listView.rsp.dart"; //generated from listView.rsp.html
+
+final logger = Logger('test');
 
 //URI mapping
 var _mapping = {
@@ -34,5 +38,8 @@ Future helloMVC(HttpConnect connect) {
 }
 
 void main() {
+  Logger.root.level = Level.INFO;
+  logger.onRecord.listen(simpleLoggerHandler);
+
   StreamServer(uriMapping: _mapping).start();
 }

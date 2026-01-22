@@ -4,6 +4,10 @@ library hello_dynamic;
 import "dart:convert" show json;
 import "package:stream/stream.dart";
 import "package:rikulo_commons/io.dart" show getContentType;
+import "package:rikulo_commons/logging.dart";
+import "package:logging/logging.dart" show Logger, Level;
+
+final logger = Logger('test');
 
 //URI mapping
 var _mapping = {
@@ -18,5 +22,8 @@ void serverInfo(HttpConnect connect) {
 }
 
 void main() {
+  Logger.root.level = Level.INFO;
+  logger.onRecord.listen(simpleLoggerHandler);
+
   StreamServer(uriMapping: _mapping).start();
 }

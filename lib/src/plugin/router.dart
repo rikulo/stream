@@ -343,7 +343,7 @@ class _UriMapping {
           uri = uri.substring(i + 1);
         }
         break; //done
-      } else if (!StringUtil.isCharCode(cc, upper:true, lower:true)) {
+      } else if (!isCharCode(cc, upper:true, lower:true)) {
         break;
       }
     }

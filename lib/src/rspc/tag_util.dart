@@ -5,7 +5,7 @@ part of stream_rspc;
 
 ///Test if the given character can be used in a variable name.
 bool isValidVarCharCode(int cc, bool firstChar)
- => StringUtil.isCharCode(cc, lower: true, upper: true, digit: !firstChar)
+ => isCharCode(cc, lower: true, upper: true, digit: !firstChar)
     || cc == $underscore || cc == $$;
 
 /** Test if the given value is enclosed with `[= ]`.

@@ -143,7 +143,7 @@ class Compiler {
 
       var name = Path.basename(srcnm);
       int i = name.indexOf('.');
-      name = StringUtil.camelize(i < 0 ? name: name.substring(0, i));
+      name = camelize(i < 0 ? name: name.substring(0, i));
         //don't use basenameWithoutExtension since there might be multiple '.'
       for (i = name.length; --i >= 0;) { //check if name is legal
         final cc = name.codeUnitAt(i);
@@ -385,7 +385,7 @@ class Compiler {
             return _Expr();
           } else if (c2 == $colon || c2 == $slash) { //[:beginning-tag] or [/closing-tag]
             int k = j + 1;
-            if (k < _len && StringUtil.isCharCode(source.codeUnitAt(k), lower:true)) {
+            if (k < _len && isCharCode(source.codeUnitAt(k), lower:true)) {
               int m = _skipTagId(k);
               final tagnm = source.substring(k, m);
               final tag = tags[tagnm];
@@ -481,7 +481,7 @@ class Compiler {
     for (; from < _len; ++from) {
       final cc = source.codeUnitAt(from);
       //dash is allowed in a tag name
-      if (!StringUtil.isCharCode(cc, lower:true, upper:true) && cc != $dash)
+      if (!isCharCode(cc, lower:true, upper:true) && cc != $dash)
         break;
     }
     return from;

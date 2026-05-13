@@ -33,7 +33,7 @@ class Rsp {
       final response = connect.response;
       final headers = response.headers;
       if (contentType != null && contentType.isNotEmpty)
-        headers.contentType = parseContentType(contentType);
+        headers.contentType = ContentType.parse(contentType);
 
       bool isPreconditionFailed = false;
       if (etag != null || lastModified != null) {

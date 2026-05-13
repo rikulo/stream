@@ -4,7 +4,6 @@ library features;
 import "dart:io";
 import "dart:async";
 import "package:stream/stream.dart";
-import "package:rikulo_commons/mirrors.dart" show ObjectUtil;
 import "package:rikulo_commons/logging.dart";
 import "package:logging/logging.dart" show Logger, Level;
 
@@ -139,7 +138,23 @@ class Criteria {
   bool hasAttachment = false;
 }
 Future search(HttpConnect connect) {
-  final criteria = ObjectUtil.inject(Criteria(),
-      connect.request.uri.queryParameters, silent: true);
+  final params = connect.request.uri.queryParameters;
+  final criteria = Criteria()
+    ..text = params['text'] ?? ''
+    ..since = _parseDateTime(params['since'])
+    ..within = _parseInt(params['within'])
+    ..hasAttachment = _parseBool(params['hasAttachment']);
   return searchResult(connect, criteria: criteria); //generated from searchResult.rsp.html
+}
+
+DateTime? _parseDateTime(String? s)
+=> s == null || s.isEmpty ? null : DateTime.tryParse(s);
+
+int? _parseInt(String? s)
+=> s == null || s.isEmpty ? null : int.tryParse(s);
+
+bool _parseBool(String? s) {
+  if (s == null || s.isEmpty) return false;
+  final v = s.toLowerCase();
+  return v != 'false' && v != 'no' && v != 'off' && v != 'none';
 }

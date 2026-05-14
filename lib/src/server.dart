@@ -366,7 +366,7 @@ abstract interface class StreamServer {
    *
    * * See also [connectionCount] and [shallCount].
    */
-  void onIdle(void onIdle());
+  void onIdle(void onIdle()?);
 
   /** The number of active connections.
    * It is also the number of requests in processing.
@@ -380,7 +380,7 @@ abstract interface class StreamServer {
    *
    * Note: it also affects when [onIdle] is called.
    */
-  void set shallCount(bool shallCount(HttpConnect connect));
+  void set shallCount(bool shallCount(HttpConnect connect)?);
 
   /** Maps the given URI to the given handler.
    *

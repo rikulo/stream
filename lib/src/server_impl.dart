@@ -79,13 +79,13 @@ class _StreamServer implements StreamServer {
     HttpRequest? request, HttpResponse? response})
   => _handle(HttpConnect.chain(connect, inclusion: false,
       uri: uri, request: request, response: response)) ?? Future.value(); //no filter invocation
-    //spec: for easy use, forward/include won't never return null
+    //spec: for easy use, forward/include will never return null
   @override
   Future include(HttpConnect connect, String uri, {
     HttpRequest? request, HttpResponse? response})
   => _handle(HttpConnect.chain(connect, inclusion: true,
       uri: uri, request: request, response: response)) ?? Future.value(); //no filter invocation
-    //spec: for easy use, forward/include won't never return null
+    //spec: for easy use, forward/include will never return null
 
   /// [iFilter] - the index of filter to start. It must be non-negative.
   /// Ignored if null.
@@ -144,6 +144,11 @@ class _StreamServer implements StreamServer {
     bool shouted = false;
     connect.errorDetail = ErrorDetail(error, stackTrace);
 
+    //Preserve the original error/stack; `error` may be replaced by an
+    //HTTP-status wrapper (e.g. Http413, Http500) below.
+    final origError = error;
+    final origStack = stackTrace;
+
     var handler = _router.getErrorHandler(error);
     if (handler == null) {
       if (error is! HttpStatusException) {
@@ -173,7 +178,7 @@ class _StreamServer implements StreamServer {
         forward(connect, handler as String));
     } catch (ex, st) {
       if (!shouted)
-        _logError(connect, error, stackTrace);
+        _logError(connect, origError, origStack);
       _logError(connect, ex, st);
     }
   }

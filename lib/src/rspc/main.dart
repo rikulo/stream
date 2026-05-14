@@ -60,7 +60,11 @@ Future main(List<String> arguments) async {
         }
       }
     } else {
-      compile(name);
+      try {
+        await compile(name);
+      } catch (ex, st) {
+        print("Unable to compile $name: $ex\n$st");
+      }
     }
   }
 

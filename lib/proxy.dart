@@ -52,110 +52,117 @@ Future proxyRequest(HttpConnect connect, url, {String? proxyName,
   final client = http.Client(),
     serverRequest = connect.request,
     serverResponse = connect.response;
-  http.StreamedResponse clientResponse;
+  try {
+    http.StreamedResponse clientResponse;
 
-  for (List<int>? requestBody;;) {
-    try {
-      final clientRequest = http.StreamedRequest(serverRequest.method, uri);
-      clientRequest.followRedirects = false;
-      serverRequest.headers.forEach((name, values) {
-        for (final value in values)
-          if (Rsp.isHeaderValueValid(value))
-            _addHeader(clientRequest.headers, name, value);
-          else
-            (log ?? _logger.warning)('Ignored: invalid request header value: $name=${json.encode(value)}');
-      });
-      clientRequest.headers['Host'] = uri.authority;
+    for (List<int>? requestBody;;) {
+      try {
+        final clientRequest = http.StreamedRequest(serverRequest.method, uri);
+        clientRequest.followRedirects = false;
+        serverRequest.headers.forEach((name, values) {
+          for (final value in values)
+            if (Rsp.isHeaderValueValid(value))
+              _addHeader(clientRequest.headers, name, value);
+            else
+              (log ?? _logger.warning)('Ignored: invalid request header value: $name=${json.encode(value)}');
+        });
+        clientRequest.headers['Host'] = uri.authority;
 
-      // Add a Via header. See
-      // http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.45
-      _addHeader(clientRequest.headers, 'via',
-          '${serverRequest.protocolVersion} ${proxyName??"Stream"}');
+        // Add a Via header. See
+        // http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.45
+        _addHeader(clientRequest.headers, 'via',
+            '${serverRequest.protocolVersion} ${proxyName??"Stream"}');
 
-      if (requestBody == null) { //first time
-        _CopyTo<List<int>>? copyTo;
-        if (shallRetry != null) {
-          final body = requestBody = <int>[];
-          copyTo = (List<int> event, void close()) {
-            body.addAll(event);
-            clientRequest.sink.add(event);
-          };
+        if (requestBody == null) { //first time
+          _CopyTo<List<int>>? copyTo;
+          if (shallRetry != null) {
+            final body = requestBody = <int>[];
+            copyTo = (List<int> event, void close()) {
+              body.addAll(event);
+              clientRequest.sink.add(event);
+            };
+          }
+
+          await copyToSink(serverRequest, clientRequest.sink,
+              copyTo: copyTo, closeSink: true);
+        } else { //retries
+          clientRequest.sink.add(requestBody);
+          await clientRequest.sink.close();
         }
 
-        await copyToSink(serverRequest, clientRequest.sink, copyTo: copyTo);
-      } else { //retries
-        clientRequest.sink.add(requestBody);
-      }
+        clientResponse = await client.send(clientRequest);
+        break; //done
 
-      clientResponse = await client.send(clientRequest);
-      break; //done
-
-    } catch (ex, st) {
-      if (shallRetry == null || (await shallRetry(ex, st)) != true)
-        rethrow;
-      //retry
-    }
-  }
-
-  final code = serverResponse.statusCode = clientResponse.statusCode;
-  onStatusCode?.call(code);
-
-  clientResponse.headers.forEach((name, value) {
-    if (!Rsp.isHeaderValueValid(value)) {
-      var fixed = false;
-      if (name.toLowerCase() == 'content-disposition') {
-        value = value.replaceAllMapped(
-            RegExp(r'(name=")([^"]+)(")'),
-            (m) => '${m[1]}${Uri.encodeComponent(m[2]!)}${m[3]}');
-        fixed = Rsp.isHeaderValueValid(value);
-      }
-
-      if (!fixed) {
-        (log ?? _logger.warning)('Ignored: invalid response header value: $name=${json.encode(value)}');
-        return; //skip
+      } catch (ex, st) {
+        if (shallRetry == null || (await shallRetry(ex, st)) != true)
+          rethrow;
+        //retry
       }
     }
 
-    serverResponse.headers.add(name, value, preserveHeaderCase: true);
-  });
+    final code = serverResponse.statusCode = clientResponse.statusCode;
+    onStatusCode?.call(code);
 
-  // Add a Via header. See
-  // http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.45
-  if (proxyName != null)
-    serverResponse.headers.add('via', '1.1 $proxyName');
+    clientResponse.headers.forEach((name, value) {
+      if (!Rsp.isHeaderValueValid(value)) {
+        var fixed = false;
+        if (name.toLowerCase() == 'content-disposition') {
+          value = value.replaceAllMapped(
+              RegExp(r'(name=")([^"]+)(")'),
+              (m) => '${m[1]}${Uri.encodeComponent(m[2]!)}${m[3]}');
+          fixed = Rsp.isHeaderValueValid(value);
+        }
 
-  // Remove the transfer-encoding since the body has already been decoded by
-  // [client].
-  serverResponse.headers.removeAll('transfer-encoding');
+        if (!fixed) {
+          (log ?? _logger.warning)('Ignored: invalid response header value: $name=${json.encode(value)}');
+          return; //skip
+        }
+      }
 
-  // If the original response was gzipped, it will be decoded by [client]
-  // and we'll have no way of knowing its actual content-length.
-  if (clientResponse.headers['content-encoding'] == 'gzip') {
-    serverResponse.headers
-      ..removeAll(HttpHeaders.contentEncodingHeader)
-      ..removeAll(HttpHeaders.contentLengthHeader);
+      serverResponse.headers.add(name, value, preserveHeaderCase: true);
+    });
 
-    // Add a Warning header. See
-    // http://www.w3.org/Protocols/rfc2616/rfc2616-sec13.html#sec13.5.2
-    serverResponse.headers.add('warning', '214 ${proxyName??'Stream'} "GZIP decoded"');
-  }
+    // Add a Via header. See
+    // http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.45
+    if (proxyName != null)
+      serverResponse.headers.add('via', '1.1 $proxyName');
 
-  // Make sure the Location header is pointing to the proxy server rather
-  // than the destination server, if possible.
-  if (clientResponse.isRedirect) {
-    final rawLocation = clientResponse.headers['location'];
-    if (rawLocation != null) {
-      var location = uri.resolve(rawLocation).toString();
-      if (p.url.isWithin(uri.toString(), location)) {
-        serverResponse.headers.set('location',
-            '/' + p.url.relative(location, from: uri.toString()));
-      } else {
-        serverResponse.headers.set('location', location);
+    // Remove the transfer-encoding since the body has already been decoded by
+    // [client].
+    serverResponse.headers.removeAll('transfer-encoding');
+
+    // If the original response was gzipped, it will be decoded by [client]
+    // and we'll have no way of knowing its actual content-length.
+    if (clientResponse.headers['content-encoding'] == 'gzip') {
+      serverResponse.headers
+        ..removeAll(HttpHeaders.contentEncodingHeader)
+        ..removeAll(HttpHeaders.contentLengthHeader);
+
+      // Add a Warning header. See
+      // http://www.w3.org/Protocols/rfc2616/rfc2616-sec13.html#sec13.5.2
+      serverResponse.headers.add('warning', '214 ${proxyName??'Stream'} "GZIP decoded"');
+    }
+
+    // Make sure the Location header is pointing to the proxy server rather
+    // than the destination server, if possible.
+    if (clientResponse.isRedirect) {
+      final rawLocation = clientResponse.headers['location'];
+      if (rawLocation != null) {
+        var location = uri.resolve(rawLocation).toString();
+        if (p.url.isWithin(uri.toString(), location)) {
+          serverResponse.headers.set('location',
+              '/' + p.url.relative(location, from: uri.toString()));
+        } else {
+          serverResponse.headers.set('location', location);
+        }
       }
     }
-  }
 
-  await copyToSink(clientResponse.stream, serverResponse);
+    await copyToSink(clientResponse.stream, serverResponse,
+        closeSink: true);
+  } finally {
+    client.close();
+  }
 }
 
 void _addHeader(Map<String, String> headers, String name, String value) {
@@ -171,10 +178,17 @@ void _addHeader(Map<String, String> headers, String name, String value) {
 /// - [copyTo] if specified, it is called instead of [sink.add].
 /// The implementation can call `close()` if it'd like to stop
 /// the reading.
+///
+/// Note: stream errors are forwarded to [sink] via `sink.addError` but
+/// the returned [Future] still completes successfully — callers cannot
+/// observe stream errors via `await`. If you need to react to errors,
+/// listen for them on [sink] or catch them upstream.
 Future copyToSink<T>(Stream<T> stream, EventSink<T> sink,
     {bool cancelOnError = true, bool closeSink = true,
      void copyTo(T event, void close())?}) {
   final c = Completer();
+
+  late final StreamSubscription<T> sub;
 
   var done = false;
   void setDone() {
@@ -182,20 +196,17 @@ Future copyToSink<T>(Stream<T> stream, EventSink<T> sink,
       done = true;
       if (!c.isCompleted) c.complete();
       if (closeSink) InvokeUtil.invokeSafely(sink.close);
+      InvokeUtil.invokeSafely(sub.cancel);
     }
   }
 
-  late final StreamSubscription<T> sub;
   sub = stream.listen(
     copyTo == null ? sink.add: (data) => copyTo(data, setDone),
     onError: (Object e, StackTrace st) {
       if (!done) {
         sink.addError(e, st);
-        if (cancelOnError) {
-          if (!c.isCompleted) c.complete();
-          if (closeSink) InvokeUtil.invokeSafely(sink.close);
-          InvokeUtil.invokeSafely(sub.cancel);
-        }
+        if (cancelOnError)
+          setDone();
       }
     },
     onDone: setDone,

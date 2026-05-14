@@ -91,7 +91,6 @@ class DefaultRouter implements Router {
 
     if (errorMapping != null)
       errorMapping.forEach((code, handler) {
-        final handler = errorMapping[code];
         if (handler is String) {
           if (!handler.startsWith('/'))
             throw ServerError("URI must start with '/'; not '$handler'");

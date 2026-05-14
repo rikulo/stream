@@ -96,7 +96,7 @@ class Rsp {
       }
     }
 
-    if (maxLength > 0 && maxLength > str.length)
+    if (maxLength > 0 && maxLength < str.length)
       str = maxLength < 3 ? "...": str.substring(0, maxLength - 3) + "...";
 
     switch (encode) {

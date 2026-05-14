@@ -112,7 +112,7 @@ Future<File> _locate(String flnm) async {
     path = Path.join(path, segs[i]);
   final dir = Directory(path);
   if (!await dir.exists())
-    dir.create(recursive: true);
+    await dir.create(recursive: true);
   path = Path.relative(path);
   return File(Path.join(path, segs[0]));
 }
@@ -142,18 +142,18 @@ Future build(List<String> arguments, {String filenameMapper(String source)?,
     clean = args["clean"] as bool;
   
   if (clean) { // clean only
-    Directory.current.list(recursive: true).listen((fse) {
+    await for (final fse in Directory.current.list(recursive: true)) {
       if (fse is File && fse.path.endsWith(".rsp.dart"))
-        fse.delete();
-    });
+        await fse.delete();
+    }
 
   } else if (removed.isEmpty && changed.isEmpty) { // full build
-    Directory.current.list(recursive: true).listen((fse) {
+    await for (final fse in Directory.current.list(recursive: true)) {
       if (fse is File && _rspSource(fse.path) >= 0)
-        compileFile(fse.path, encoding: encoding,
+        await compileFile(fse.path, encoding: encoding,
           destinationName: filenameMapper != null ? filenameMapper(fse.path): null,
           imports: imports);
-    });
+    }
 
   } else {
     for (String name in removed) {
@@ -161,13 +161,13 @@ Future build(List<String> arguments, {String filenameMapper(String source)?,
       if (i >= 0) {
         final File gen = File("${name.substring(0, i)}dart");
         if (await gen.exists())
-          gen.delete();
+          await gen.delete();
       }
     }
 
     for (String name in changed) {
       if (_rspSource(name) >= 0)
-        compileFile(name, encoding: encoding,
+        await compileFile(name, encoding: encoding,
           destinationName: filenameMapper != null ? filenameMapper(name): null,
           imports: imports);
     }

@@ -48,12 +48,14 @@ class _AssetCache implements AssetCache {
   @override
   List<int>? getContent(Asset asset, DateTime lastModified) {
     final path = asset.path;
-    final entry = _cache[path];
+    final entry = _cache.remove(path);
     if (entry != null) {
-      if (entry.lastModified == lastModified)
+      if (entry.lastModified == lastModified) {
+        //LRU bump: re-insert so frequently-hit entries land at the tail
+        _cache[path] = entry;
         return entry.content;
+      }
 
-      _cache.remove(path);
       _cacheSize -= entry.assetSize;
     }
     return null;
@@ -64,8 +66,10 @@ class _AssetCache implements AssetCache {
     if (shallCache(asset, assetSize)) {
       final path = asset.path;
       final entry = _cache[path];
-      if (entry != null)
+      if (entry != null) {
+        _cache.remove(path); //remove first to keep new at the end
         _cacheSize -= entry.assetSize;
+      }
       _cache[path] = _CacheEntry(content, lastModified, assetSize);
       _cacheSize += assetSize;
 
@@ -108,7 +112,7 @@ bool _setHeaders(HttpConnect connect, _AssetDetail detail, List<_Range>? ranges)
   final bool isPreconditionFailed = response.statusCode == HttpStatus.preconditionFailed;
     //Set by checkIfHeaders (see also Issue 59)
   if (isPreconditionFailed || response.statusCode < HttpStatus.badRequest) {
-      headers.set(HttpHeaders.lastModifiedHeader, detail.lastModified);
+    headers.set(HttpHeaders.lastModifiedHeader, detail.lastModified);
 
     if (detail.cache != null) {
       final etag = detail.etag;
@@ -141,7 +145,7 @@ bool _setHeaders(HttpConnect connect, _AssetDetail detail, List<_Range>? ranges)
   }
 
   if (request.protocolVersion != "1.0") { //1.1 or later
-    headers.chunkedTransferEncoding = _isTextType(headers.contentType); //gzip text only
+    headers.chunkedTransferEncoding = _isTextType(headers.contentType); //chunked for text only
   }
   return true;
 }
@@ -189,15 +193,20 @@ class _Range {
 List<_Range>? _parseRange(HttpConnect connect, _AssetDetail detail) {
   final ifRange = connect.headerValue(HttpHeaders.ifRangeHeader);
   if (ifRange != null) {
+    //If-Range is either an HTTP-date OR an entity-tag (RFC 7233 §3.2).
+    DateTime? ifRangeDate;
     try {
-      if (detail.lastModified.isAfter(HttpDate.parse(ifRange).add(_oneSecond)))
-        return null; //dirty
-    } catch (e) { //ignore it silently
+      ifRangeDate = HttpDate.parse(ifRange);
+    } catch (_) { //not a date — fall through to etag check
     }
-
-    final etag = detail.etag;
-    if (etag != null && etag != ifRange.trim())
-      return null; //dirty
+    if (ifRangeDate != null) {
+      if (detail.lastModified.isAfter(ifRangeDate.add(_oneSecond)))
+        return null; //dirty
+    } else {
+      final etag = detail.etag;
+      if (etag != null && etag != ifRange.trim())
+        return null; //dirty
+    }
   }
 
   final srange = connect.headerValue(HttpHeaders.rangeHeader);
@@ -210,24 +219,27 @@ List<_Range>? _parseRange(HttpConnect connect, _AssetDetail detail) {
   for (int i = 6;;) {
     final j = srange.indexOf(',', i);
     final matches = _reRange.firstMatch(
-      j >= 0 ? srange.substring(i, j): srange.substring(i));
+      (j >= 0 ? srange.substring(i, j): srange.substring(i)).trim());
     if (matches == null)
       return _rangeError(connect);
 
-    final values = <int>[];
-    for (int i = 0; i < 2; ++i) {
-      final match = matches[i + 1]!;
+    //Preserve positional info — empty group means "absent on that side"
+    //(e.g. `bytes=-100` is a suffix range with values[0]=null, values[1]=100).
+    final values = List<int?>.filled(2, null);
+    for (int k = 0; k < 2; ++k) {
+      final match = matches[k + 1]!;
       if (match.isNotEmpty)
         try {
-          values.add(int.parse(match));
-        } catch (ex) {
+          values[k] = int.parse(match);
+        } catch (_) {
           return _rangeError(connect);
         }
     }
 
-    final vlen = values.length;
-    final range = _Range(vlen > 0 ? values[0]: null,
-        vlen > 1 ? values[1]: null, detail.assetSize);
+    if (values[0] == null && values[1] == null)
+      return _rangeError(connect); //reject `bytes=-`
+
+    final range = _Range(values[0], values[1], detail.assetSize);
     if (!range.validate(detail.assetSize)) {
       connect.response.headers.set(
           HttpHeaders.contentRangeHeader, "bytes */${detail.assetSize}");
@@ -247,7 +259,7 @@ T? _rangeError<T>(HttpConnect connect, [int code = HttpStatus.badRequest]) {
   connect.response.statusCode = code;
   return null;
 }
-final _reRange = RegExp(r"(\d*)\-(\d*)");
+final _reRange = RegExp(r"^(\d*)-(\d*)$");
 
 typedef FutureOr _WriteRange(_Range range);
 class _RangeWriter {

@@ -177,7 +177,9 @@ class _Range {
 
   factory _Range(int? start, int? end, int assetSize) {
     if (start == null) {
-      start = end == null ? 0: assetSize - end;
+      //bytes=-N → last N bytes. RFC 7233 §2.1: if N exceeds the asset
+      //size, serve the entire representation instead of rejecting.
+      start = end == null || end >= assetSize ? 0: assetSize - end;
       end = assetSize;
     } else {
       end = end == null ? assetSize: end + 1; //from inclusive to exclusive
@@ -191,69 +193,108 @@ class _Range {
 }
 
 List<_Range>? _parseRange(HttpConnect connect, _AssetDetail detail) {
-  final ifRange = connect.headerValue(HttpHeaders.ifRangeHeader);
-  if (ifRange != null) {
+  final result = parseRangeHeaders(
+      connect.headerValue(HttpHeaders.rangeHeader),
+      connect.headerValue(HttpHeaders.ifRangeHeader),
+      detail.lastModified, detail.etag, detail.assetSize);
+  if (result.errorStatus != null) {
+    if (result.indicateAssetSize)
+      connect.response.headers.set(
+          HttpHeaders.contentRangeHeader, "bytes */${detail.assetSize}");
+    return _rangeError(connect, result.errorStatus!);
+  }
+  return result.ranges
+      ?.map((r) => _Range._(r.start, r.end, r.length))
+      .toList(growable: false);
+}
+
+///Outcome of [parseRangeHeaders] — exposed for testing.
+class RangeParseResult {
+  ///Parsed ranges as (start, end-exclusive, length) records. `null` means
+  ///"serve the whole asset" (no Range header, or If-Range validator did not
+  ///match the current asset). Always `null` when [errorStatus] is set.
+  final List<({int start, int end, int length})>? ranges;
+  ///HTTP status to return on error (400 or 416), or `null` if parsing succeeded.
+  final int? errorStatus;
+  ///When true, the caller should set `Content-Range: bytes */SIZE` alongside
+  ///[errorStatus]. Only true for 416 outcomes.
+  final bool indicateAssetSize;
+
+  const RangeParseResult._(this.ranges, this.errorStatus, this.indicateAssetSize);
+
+  static const _serveFull = RangeParseResult._(null, null, false);
+  static const _badRequest = RangeParseResult._(null, HttpStatus.badRequest, false);
+  static const _notSatisfiable =
+      RangeParseResult._(null, HttpStatus.requestedRangeNotSatisfiable, true);
+}
+
+///Pure parser for the Range and If-Range request headers — exposed for
+///testing. Production callers should use [_parseRange] which translates
+///the result into [HttpConnect] response side effects.
+RangeParseResult parseRangeHeaders(String? rangeHeader, String? ifRangeHeader,
+    DateTime lastModified, String? etag, int assetSize) {
+  if (ifRangeHeader != null) {
     //If-Range is either an HTTP-date OR an entity-tag (RFC 7233 §3.2).
     DateTime? ifRangeDate;
     try {
-      ifRangeDate = HttpDate.parse(ifRange);
+      ifRangeDate = HttpDate.parse(ifRangeHeader);
     } catch (_) { //not a date — fall through to etag check
     }
     if (ifRangeDate != null) {
-      if (detail.lastModified.isAfter(ifRangeDate.add(_oneSecond)))
-        return null; //dirty
-    } else {
-      final etag = detail.etag;
-      if (etag != null && etag != ifRange.trim())
-        return null; //dirty
+      if (lastModified.isAfter(ifRangeDate.add(_oneSecond)))
+        return RangeParseResult._serveFull; //dirty
+    } else if (etag != null
+        //RFC 7233 §3.2 + RFC 7232 §2.3.2: strong comparison — equal opaque
+        //tags AND neither side weak. Checking one side's W/ prefix suffices
+        //since unequal strings are already rejected by the first clause.
+        && (etag != ifRangeHeader.trim() || etag.startsWith('W/'))) {
+      return RangeParseResult._serveFull; //dirty
     }
   }
 
-  final srange = connect.headerValue(HttpHeaders.rangeHeader);
-  if (srange == null)
-    return null;
-  if (!srange.startsWith("bytes="))
-    return _rangeError(connect);
+  if (rangeHeader == null)
+    return RangeParseResult._serveFull;
+  if (!rangeHeader.startsWith("bytes="))
+    return RangeParseResult._badRequest;
 
-  var ranges = <_Range>[];
+  final ranges = <({int start, int end, int length})>[];
   for (int i = 6;;) {
-    final j = srange.indexOf(',', i);
+    final j = rangeHeader.indexOf(',', i);
     final matches = _reRange.firstMatch(
-      (j >= 0 ? srange.substring(i, j): srange.substring(i)).trim());
+      (j >= 0 ? rangeHeader.substring(i, j): rangeHeader.substring(i)).trim());
     if (matches == null)
-      return _rangeError(connect);
+      return RangeParseResult._badRequest;
 
     //Preserve positional info — empty group means "absent on that side"
     //(e.g. `bytes=-100` is a suffix range with values[0]=null, values[1]=100).
     final values = List<int?>.filled(2, null);
     for (int k = 0; k < 2; ++k) {
       final match = matches[k + 1]!;
-      if (match.isNotEmpty)
-        try {
-          values[k] = int.parse(match);
-        } catch (_) {
-          return _rangeError(connect);
-        }
+      if (match.isNotEmpty) {
+        final v = int.tryParse(match); //null on overflow only — regex is digits-only
+        if (v == null) return RangeParseResult._badRequest;
+        values[k] = v;
+      }
     }
 
     if (values[0] == null && values[1] == null)
-      return _rangeError(connect); //reject `bytes=-`
+      return RangeParseResult._badRequest; //reject `bytes=-`
+    //RFC 7233 §2.1: a suffix-length of 0 → 416 Range Not Satisfiable.
+    if (values[0] == null && values[1] == 0)
+      return RangeParseResult._notSatisfiable;
 
-    final range = _Range(values[0], values[1], detail.assetSize);
-    if (!range.validate(detail.assetSize)) {
-      connect.response.headers.set(
-          HttpHeaders.contentRangeHeader, "bytes */${detail.assetSize}");
-      return _rangeError(connect, HttpStatus.requestedRangeNotSatisfiable);
-    }
-    ranges.add(range);
+    final range = _Range(values[0], values[1], assetSize);
+    if (!range.validate(assetSize))
+      return RangeParseResult._notSatisfiable;
+    ranges.add((start: range.start, end: range.end, length: range.length));
 
     if (j < 0)
       break;
     i = j + 1;
   }
   if (ranges.isEmpty)
-    return _rangeError(connect);
-  return ranges;
+    return RangeParseResult._badRequest;
+  return RangeParseResult._(ranges, null, false);
 }
 T? _rangeError<T>(HttpConnect connect, [int code = HttpStatus.badRequest]) {
   connect.response.statusCode = code;

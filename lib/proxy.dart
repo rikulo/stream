@@ -196,6 +196,7 @@ Future copyToSink<T>(Stream<T> stream, EventSink<T> sink,
       done = true;
       if (!c.isCompleted) c.complete();
       if (closeSink) InvokeUtil.invokeSafely(sink.close);
+      //Required for the copyTo-`close()` path; redundant but idempotent elsewhere.
       InvokeUtil.invokeSafely(sub.cancel);
     }
   }

@@ -1,5 +1,10 @@
 # CHANGES
 
+### 4.3.2
+
+- Bug fixes from code review: range requests (suffix `-N`, If-Range with a date, malformed inputs), asset cache LRU, proxy `http.Client` lifecycle and retry hang, RSP `build()` / file-mode await semantics, `Rsp.nnx` maxLength.
+- RFC 7233 compliance for byte-range parsing: strong-etag comparison for `If-Range` (per §3.2 + RFC 7232 §2.3.2 — weak `W/"…"` etags on either side never match); suffix-range `bytes=-N` where `N` exceeds the asset size now serves the entire representation (per §2.1); `bytes=-0` now correctly returns 416 instead of an empty 206.
+
 ### 4.3.0
 
 - Removed `StreamServer.logger`. The server now uses an internal `Logger`instance instead.

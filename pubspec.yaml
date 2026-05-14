@@ -16,6 +16,9 @@ dependencies:
   charcode: any
   web: any
 
+dev_dependencies:
+  test: any
+
 executables:
   rspc:
 

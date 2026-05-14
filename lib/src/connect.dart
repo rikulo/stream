@@ -153,11 +153,11 @@ abstract interface class HttpConnect {
   bool get isForwarded;
 
   /// The language specified as the first element of the request's URL.
-  /// The language is detected only if it is specified in the langauages
+  /// The language is detected only if it is specified in the languages
   /// parameter of [StreamServer]'s constructor.
-  /// 
+  ///
   /// For example, if the app supports French and Spanish, it can specify
-  /// `{'fr', 'es'}` in the languages parameters when starting the server.
+  /// `{'fr', 'es'}` in the languages parameter when starting the server.
   /// Then, any request starting with any of them will be mapped the same as
   /// the request without any of language. For example, `/fr/about`
   /// and `/es/about` will be both handled by the same handler of `/about`.

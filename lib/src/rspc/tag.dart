@@ -340,7 +340,7 @@ class JsonTag extends Tag {
     for (; i < len && $whitespaces.contains(data.codeUnitAt(i)); ++i)
       ;
     if (i >= len || data.codeUnitAt(i) != $equal)
-      tc.error("Expect '=', not '${data[i]}");
+      tc.error("Expect '=', not '${data[i]}'");
 
     final val = data.substring(i + 1).trim();
     if (val.isEmpty)
@@ -385,7 +385,7 @@ class JsonJsTag extends Tag {
     for (; i < len && $whitespaces.contains(data.codeUnitAt(i)); ++i)
       ;
     if (i >= len || data.codeUnitAt(i) != $equal)
-      tc.error("Expect '=', not '${data[i]}");
+      tc.error("Expect '=', not '${data[i]}'");
 
     final val = data.substring(i + 1).trim();
     if (val.isEmpty)

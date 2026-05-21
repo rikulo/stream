@@ -1,5 +1,9 @@
 # CHANGES
 
+### 4.3.3
+
+- Added `Http204`, `Http304`, `Http422`, `Http502` — throw to short-circuit a handler with the corresponding status code (No Content / Not Modified / Unprocessable Entity / Bad Gateway).
+
 ### 4.3.2
 
 - Bug fixes from code review: range requests (suffix `-N`, If-Range with a date, malformed inputs), asset cache LRU, proxy `http.Client` lifecycle and retry hang, RSP `build()` / file-mode await semantics, `Rsp.nnx` maxLength.

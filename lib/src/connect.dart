@@ -375,6 +375,22 @@ class HttpStatusException extends HttpException {
   }
 }
 
+/// HTTP 204 No Content. Throw to short-circuit a handler with an
+/// empty 204 response.
+class Http204 extends HttpStatusException {
+  Http204({Uri? uri, String? message}): super(204, uri: uri, message: message);
+  Http204.fromConnect(HttpConnect connect, {String? message})
+  : super.fromConnect(connect, 204, message: message);
+}
+
+/// HTTP 304 Not Modified. Throw from a conditional-GET handler to
+/// short-circuit with an empty 304 response.
+class Http304 extends HttpStatusException {
+  Http304({Uri? uri, String? message}): super(304, uri: uri, message: message);
+  Http304.fromConnect(HttpConnect connect, {String? message})
+  : super.fromConnect(connect, 304, message: message);
+}
+
 /// HTTP 400 exception.
 class Http400 extends HttpStatusException {
   Http400({Uri? uri, String? message}): super(400, uri: uri, message: message);
@@ -483,6 +499,13 @@ class Http421 extends HttpStatusException {
   Http421.fromConnect(HttpConnect connect, {String? message})
   : super.fromConnect(connect, 421, message: message);
 }
+/// HTTP 422 Unprocessable Entity. Use for requests whose payload
+/// parses but fails semantic validation.
+class Http422 extends HttpStatusException {
+  Http422({Uri? uri, String? message}): super(422, uri: uri, message: message);
+  Http422.fromConnect(HttpConnect connect, {String? message})
+  : super.fromConnect(connect, 422, message: message);
+}
 /// HTTP 425 exception.
 class Http425 extends HttpStatusException {
   Http425({Uri? uri, String? message}): super(425, uri: uri, message: message);
@@ -527,6 +550,13 @@ class Http501 extends HttpStatusException {
   : super(501, uri: uri, message: cause != null ? "501: $cause": null);
   Http501.fromConnect(HttpConnect connect, {String? cause})
   : super.fromConnect(connect, 501, message: cause != null ? "501: $cause": null);
+}
+/// HTTP 502 Bad Gateway. Use when an upstream/proxied request fails.
+class Http502 extends HttpStatusException {
+  Http502({Uri? uri, String? cause})
+  : super(502, uri: uri, message: cause != null ? "502: $cause": null);
+  Http502.fromConnect(HttpConnect connect, {String? cause})
+  : super.fromConnect(connect, 502, message: cause != null ? "502: $cause": null);
 }
 /// HTTP 503 exception.
 class Http503 extends HttpStatusException {

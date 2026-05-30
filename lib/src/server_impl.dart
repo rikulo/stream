@@ -27,6 +27,8 @@ class _StreamServer implements StreamServer {
   _ShallCount? _shallCount;
   int _connectionCount = 0;
 
+  static final _reEncodedSep = RegExp('%2f|%5c', caseSensitive: false);
+
   factory _StreamServer(Router router, String? homeDir,
       Iterable<String>? languages) {
     homeDir = homeDir == null ? _getRootPath():
@@ -47,7 +49,8 @@ class _StreamServer implements StreamServer {
       buf.write(r')(/.*)?$');
       langs = RegExp(buf.toString());
     }
-    return _StreamServer._(router, homeDir, ResourceLoader(homeDir), langs);
+    return _StreamServer._(router, homeDir,
+        ResourceLoader(homeDir, protectRSP: router.protectRSP), langs);
   }
   _StreamServer._(this._router, this.homeDir, this.resourceLoader, this._langs);
 
@@ -96,6 +99,13 @@ class _StreamServer implements StreamServer {
     if (!uri.startsWith('/'))
       uri = "/$uri"; //not possible; just in case
 
+    //Reject encoded path separators (%2F/%5C): Uri.path keeps them encoded,
+    //so the guards below (filters, protectRSP, /webapp) match the encoded URI,
+    //but Uri.decodeComponent later turns them into real separators for the file
+    //path -- a parser differential that would bypass every guard.
+    if (_reEncodedSep.hasMatch(uri))
+      throw Http400(uri: Uri.tryParse(uri));
+
     if (iFilter != null) { //null means ignore filters
       iFilter = _router.getFilterIndex(connect, uri, iFilter);
       if (iFilter != null) { //found
@@ -120,8 +130,7 @@ class _StreamServer implements StreamServer {
     }
 
     //protect from access
-    if (!connect.isForwarded && !connect.isIncluded &&
-    (uri.startsWith("/webapp/") || uri == "/webapp"))
+    if (!connect.isForwarded && !connect.isIncluded && reWebapp.hasMatch(uri))
       throw Http403(uri: Uri.tryParse(uri));
 
     String path;

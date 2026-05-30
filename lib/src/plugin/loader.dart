@@ -16,8 +16,8 @@ part of stream_plugin;
  * loading.
  */
 abstract class ResourceLoader {
-  factory ResourceLoader(String rootDir)
-  => FileLoader(rootDir);
+  factory ResourceLoader(String rootDir, {bool protectRSP = true})
+  => FileLoader(rootDir, protectRSP: protectRSP);
 
   /** The root directory.
    */
@@ -200,10 +200,14 @@ abstract class AssetLoader implements ResourceLoader {
  *     loadAsset(connect, FileAsset(File.fromUri(uri)));
  */
 class FileLoader extends AssetLoader {
-  FileLoader(String this.rootDir);
+  FileLoader(String this.rootDir, {this.protectRSP = true});
 
   @override
   final String rootDir;
+
+  /// Whether to refuse serving RSP source files (`.rsp`/`.rsp.*`).
+  /// A defense-in-depth backstop for [DefaultRouter]'s protectRSP mapping.
+  final bool protectRSP;
 
   @override
   Asset getAsset(String path) => FileAsset(File(path));
@@ -212,6 +216,15 @@ class FileLoader extends AssetLoader {
   Future load(HttpConnect connect, String uri, {bool useCache = true}) async {
     assert(uri.startsWith('/'), uri);
     assert(uri == Path.normalize(uri), uri); //caller's job to avoid HTTP directory traversal
+
+    //Defense in depth: refuse RSP source and the server-side `webapp` directory
+    //here too, so a caller reaching the loader directly can't bypass the
+    //router/_handle guards. See StreamServer._handle.
+    if (protectRSP && _reRspSource.hasMatch(uri))
+      throw Http404(uri: Uri.tryParse(uri));
+
+    if (!connect.isForwarded && !connect.isIncluded && reWebapp.hasMatch(uri))
+      throw Http404(uri: Uri.tryParse(uri));
 
     var path = uri.substring(1); //uri must start with '/', but path can't
     path = Path.join(rootDir, path);

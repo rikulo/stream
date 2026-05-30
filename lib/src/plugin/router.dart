@@ -5,6 +5,10 @@ part of stream_plugin;
 
 /// Router for mapping URI to renderers.
 abstract class Router {
+  /// Whether RSP source files (`.rsp` and `.rsp.*`) are protected from being
+  /// served to the client. The file loader honors this too as a backstop.
+  bool get protectRSP => true;
+
   /// Maps the given URI to the given handler.
   ///
   /// The interpretation of [uri] and [handler] is really up to the
@@ -61,6 +65,9 @@ class DefaultRouter implements Router {
     _uriCache = _UriCache();
   final int _cacheSize;
 
+  @override
+  final bool protectRSP;
+
   static final _notFound = Object();
 
   /// The constructor.
@@ -75,7 +82,7 @@ class DefaultRouter implements Router {
   DefaultRouter({Map<Pattern, dynamic>? uriMapping,
       Map<int, dynamic>? errorMapping,
       Map<String, RequestFilter>? filterMapping,
-      int cacheSize = 1000, bool protectRSP = true}):
+      int cacheSize = 1000, this.protectRSP = true}):
       _cacheSize = cacheSize {
 
     if (uriMapping != null)
@@ -83,7 +90,7 @@ class DefaultRouter implements Router {
 
     //default mapping
     if (protectRSP)
-      _uriMapping.add(_UriMapping("/.*[.]rsp(|[.][^/]*)", _f404));
+      _uriMapping.add(_UriMapping(_reRspSource, _f404));
         //prevent .rsp and .rsp.* from access
 
     if (filterMapping != null)
@@ -261,6 +268,11 @@ class DefaultRouter implements Router {
 
 ///Renderer for 404
 final RequestHandler _f404 = (HttpConnect _) {throw Http404();};
+
+///Matches a request path targeting an RSP source file (`.rsp` or `.rsp.<ext>`).
+///Such files hold server-side template source and must never be served as-is.
+///Shared by [DefaultRouter] (protectRSP) and [FileLoader]'s backstop check.
+final _reRspSource = RegExp(r'^/.*[.]rsp(?:[.][^/]*)?$');
 
 typedef Future _WSHandler(WebSocket socket);
 

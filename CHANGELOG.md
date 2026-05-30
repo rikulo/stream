@@ -1,7 +1,10 @@
 # CHANGES
 
-### 4.3.3
+### 4.5.0
 
+- Security: a request whose path contains an encoded separator (`%2F` or `%5C`) is now rejected with `400`. Such a request could previously slip past the routing guards (RSP protection, the `webapp/` source directory, and request filters) yet still be decoded to a real path when the file was opened — potentially exposing server-side templates or source.
+- `FileLoader` now enforces the `.rsp` and `webapp/` protections itself, so they hold even when the loader is invoked directly (e.g. `connect.server.resourceLoader.load(...)`), not only through the router.
+- `protectRSP` is now part of the `Router` interface (default `true`) and is honored by the file loader. Custom routers using `implements Router` must provide it; those using `extends` inherit the default.
 - Added `Http204`, `Http304`, `Http422`, `Http502` — throw to short-circuit a handler with the corresponding status code (No Content / Not Modified / Unprocessable Entity / Bad Gateway).
 
 ### 4.3.2

@@ -20,6 +20,7 @@ import "package:rikulo_commons/browser.dart";
 import "plugin.dart";
 export "plugin.dart" show Router, DefaultRouter;
 import "src/version.dart" as version;
+import "src/util.dart";
 
 export "package:rikulo_commons/browser.dart" show Browser;
 

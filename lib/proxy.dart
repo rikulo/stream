@@ -108,8 +108,8 @@ Future proxyRequest(HttpConnect connect, url, {String? proxyName,
         var fixed = false;
         if (name.toLowerCase() == 'content-disposition') {
           value = value.replaceAllMapped(
-              RegExp(r'(name=")([^"]+)(")'),
-              (m) => '${m[1]}${Uri.encodeComponent(m[2]!)}${m[3]}');
+              RegExp(r'name="([^"]+)"'),
+              (m) => 'name="${Uri.encodeComponent(m[1]!)}"');
           fixed = Rsp.isHeaderValueValid(value);
         }
 

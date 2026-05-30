@@ -15,6 +15,7 @@ import "package:rikulo_commons/util.dart";
 import "package:rikulo_commons/io.dart" show getContentType;
 
 import "stream.dart";
+import "src/util.dart";
 
 part "src/plugin/router.dart";
 part "src/plugin/loader.dart";

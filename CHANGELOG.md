@@ -1,5 +1,10 @@
 # CHANGES
 
+### 5.0.0
+
+- **Breaking:** `proxyRequest`'s `onStatusCode(int code)` callback is removed. Use `onResponseHeaders` instead — it also receives the status code.
+- `proxyRequest` gains an optional `onResponseHeaders(int statusCode, HttpHeaders headers)` callback, invoked after the upstream response headers are merged into the response and before the body is sent. The headers are still mutable, so a caller can inspect what the upstream returned and adjust it — e.g., apply a default header only when the upstream didn't provide one.
+
 ### 4.5.0
 
 - Security: a request whose path contains an encoded separator (`%2F` or `%5C`) is now rejected with `400`. Such a request could previously slip past the routing guards (RSP protection, the `webapp/` source directory, and request filters) yet still be decoded to a real path when the file was opened — potentially exposing server-side templates or source.

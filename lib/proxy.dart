@@ -29,13 +29,16 @@ final _logger = Logger('stream.proxy');
 /// * [shallRetry] a callback to decide whether to retry when
 /// [proxyRequest] receives an exception.
 /// Ignored if omitted.
-/// * [onStatusCode] if specified, it'll be called with the status code
-/// received.
+/// * [onResponseHeaders] if specified, it'll be called after the upstream
+/// response headers have been merged into [connect]'s response and before the
+/// body is sent. The given [HttpHeaders] is the (still mutable) response
+/// headers, so the caller can inspect what the upstream returned and adjust it
+/// -- e.g., apply a default header only when the upstream didn't provide one.
 /// * [log] If specified, it'll be called if there is an ignorable error,
 /// e.g., header's value containing invalid characters
 Future proxyRequest(HttpConnect connect, url, {String? proxyName,
       FutureOr<bool> shallRetry(Object ex, StackTrace st)?,
-      void onStatusCode(int code)?,
+      void onResponseHeaders(int statusCode, HttpHeaders headers)?,
       void log(String errmsg)?}) async {
   //COPRYRIGHT NOTICE:
   //The code is ported from [shelf_proxy](https://github.com/dart-lang/shelf_proxy)
@@ -101,7 +104,6 @@ Future proxyRequest(HttpConnect connect, url, {String? proxyName,
     }
 
     final code = serverResponse.statusCode = clientResponse.statusCode;
-    onStatusCode?.call(code);
 
     clientResponse.headers.forEach((name, value) {
       if (!Rsp.isHeaderValueValid(value)) {
@@ -157,6 +159,10 @@ Future proxyRequest(HttpConnect connect, url, {String? proxyName,
         }
       }
     }
+
+    // Let the caller inspect/adjust the response headers (already merged from
+    // the upstream response) before the body is sent.
+    onResponseHeaders?.call(code, serverResponse.headers);
 
     await copyToSink(clientResponse.stream, serverResponse,
         closeSink: true);

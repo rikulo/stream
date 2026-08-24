@@ -61,7 +61,7 @@ class Rsp {
    * If the given value is not null, `toString` is called.
    * If null, an empty string is returned.
    */
-  static String nns([v]) => v != null ? v.toString(): "";
+  static String nns([Object? v]) => v != null ? v.toString(): "";
 
   /** Converts the given value to a non-null string with the given conditions.
    *
@@ -77,7 +77,7 @@ class Rsp {
    * * [pre]: whether to replace whitespace with `&nbsp;` (default: false).
    * It is meaningful only if encode is `xml`.
    */
-  static String nnx(value, {String? encode, int maxLength = 0,
+  static String nnx(Object? value, {String? encode, int maxLength = 0,
     bool firstLine = false, bool pre = false}) {
     String str = encode == "json" ? json(value):
         value != null ? value.toString(): "";
@@ -125,12 +125,12 @@ class Rsp {
       query = uri.substring(i);
       uri = uri.substring(0, i);
     }
-    final query2 = HttpUtil.encodeQuery(parameters);
+    final query2 = encodeQueryString(parameters);
     return uri + (query == null ? "?$query2": "$query&$query2");
   }
 
   /// Serializes the given object into a JSON string by use of `jsonEncode`.
-  static String json(data) => cvt.json.encode(data).replaceAll(_scriptPtn, r"<\/");
+  static String json(Object? data) => cvt.json.encode(data).replaceAll(_scriptPtn, r"<\/");
   static final _scriptPtn = RegExp(r"</(?=script>)", caseSensitive: false);
     //it is possible that a string contains </script>
 }

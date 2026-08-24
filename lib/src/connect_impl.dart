@@ -43,7 +43,7 @@ class _HttpChannel implements HttpChannel {
   @override
   final ServerSocket? socket;
   @override
-  final address;
+  final Object? address;
   @override
   final int port;
   @override

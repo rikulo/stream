@@ -767,12 +767,12 @@ class _TagContext extends TagContext {
   String unindent() => _pre = _pre.isEmpty ? _pre: _pre.substring(2);
 
   @override
-  void push(value) {
+  void push(Object? value) {
     _stack.add(value);
   }
   @override
-  pop() => _stack.removeLast();
-  final List _stack = [];
+  Object? pop() => _stack.removeLast();
+  final _stack = <Object?>[];
 
   @override
   Never error(String message, [int? line]) {

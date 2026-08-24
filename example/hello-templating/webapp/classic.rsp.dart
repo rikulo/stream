@@ -3,7 +3,7 @@
 part of hello_templating;
 
 /// Template, classic, for rendering the view.
-Future classic(HttpConnect connect, {header, sidebar, body, footer}) async {
+Future classic(HttpConnect connect, {String? header, String? sidebar, String? body, String? footer}) async {
   //ignore: unused_local_variable
   var response = connect.response;
   if (!Rsp.init(connect, "text/html; charset=utf-8"))

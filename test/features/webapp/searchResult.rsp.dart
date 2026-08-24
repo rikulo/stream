@@ -3,7 +3,7 @@
 part of features;
 
 /// Template, searchResult, for rendering the view.
-Future searchResult(HttpConnect connect, {criteria}) async {
+Future searchResult(HttpConnect connect, {required Criteria criteria}) async {
   //ignore: unused_local_variable
   var response = connect.response;
   if (!Rsp.init(connect, "text/html; charset=utf-8"))

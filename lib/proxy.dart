@@ -36,7 +36,7 @@ final _logger = Logger('stream.proxy');
 /// -- e.g., apply a default header only when the upstream didn't provide one.
 /// * [log] If specified, it'll be called if there is an ignorable error,
 /// e.g., header's value containing invalid characters
-Future proxyRequest(HttpConnect connect, url, {String? proxyName,
+Future proxyRequest(HttpConnect connect, Object url, {String? proxyName,
       FutureOr<bool> shallRetry(Object ex, StackTrace st)?,
       void onResponseHeaders(int statusCode, HttpHeaders headers)?,
       void log(String errmsg)?}) async {

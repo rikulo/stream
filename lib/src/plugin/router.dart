@@ -286,7 +286,7 @@ class _UriMapping {
   final RegExp _reUri;
   ///It could be a function, a string or a list of (string or _Var).
   /// It is a list if it contains the named group.
-  final handler;
+  final Object handler;
   ///The method to match with. (It is in upper case)
   final String? method;
   ///The uri pattern likely contains name group
@@ -300,7 +300,7 @@ class _UriMapping {
     //for skipping the invocation of [match] if possible
     //AVOID lookbehind: `(?<=)` or `(?<!)`
 
-  factory _UriMapping(Pattern pattern, final rawhandler) {
+  factory _UriMapping(Pattern pattern, Object rawhandler) {
     //1. Parse handler: split String into List for named capturing group
     //For example: `/new-link/(group1)`
     var handler = rawhandler;

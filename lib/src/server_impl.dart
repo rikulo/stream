@@ -286,7 +286,7 @@ class _StreamServer implements StreamServer {
   @override
   bool get isRunning => _channels.isNotEmpty;
   @override
-  Future<HttpChannel> start({address, int port = 8080, int backlog = 0,
+  Future<HttpChannel> start({Object? address, int port = 8080, int backlog = 0,
       bool v6Only = false, bool shared = false, bool zoned = true,
       String? getStartupMessage(StreamServer server, HttpChannel channel,
           String defaultMessage)?}) async {
@@ -302,7 +302,7 @@ class _StreamServer implements StreamServer {
   }
   @override
   Future<HttpChannel> startSecure(SecurityContext context,
-      {address, int port = 8443,
+      {Object? address, int port = 8443,
       bool v6Only = false, bool requestClientCertificate = false,
       int backlog = 0, bool shared = false, bool zoned = true,
       String? getStartupMessage(StreamServer server, HttpChannel channel,
@@ -430,7 +430,7 @@ class _StreamServer implements StreamServer {
   }
 
   @override
-  void map(String uri, handler, {bool preceding = false}) {
+  void map(String uri, Object? handler, {bool preceding = false}) {
     _router.map(uri, handler, preceding: preceding);
   }
   @override

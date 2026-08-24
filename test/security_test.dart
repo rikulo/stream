@@ -37,9 +37,10 @@ void main() {
       _writeRoot(root);
       server = StreamServer(homeDir: root.path)
         // direct loader calls -- exercise FileLoader's defense-in-depth backstop
-        ..map("/direct-rsp", (c) => c.server.resourceLoader.load(c, "/index.rsp"))
+        ..map("/direct-rsp",
+            (HttpConnect c) => c.server.resourceLoader.load(c, "/index.rsp"))
         ..map("/direct-webapp",
-            (c) => c.server.resourceLoader.load(c, "/webapp/main.dart"));
+            (HttpConnect c) => c.server.resourceLoader.load(c, "/webapp/main.dart"));
       final ch =
           await server.start(address: InternetAddress.loopbackIPv4, port: 0);
       port = ch.port;

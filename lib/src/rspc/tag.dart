@@ -40,9 +40,9 @@ abstract class TagContext {
   String unindent();
 
   ///Push a value into the stack.
-  void push(value);
+  void push(Object? value);
   ///Pops the value back
-  pop();
+  Object? pop();
 
   ///Returns the comment containing the line number.
   String getLineNumberComment([int? line])

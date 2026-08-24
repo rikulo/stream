@@ -46,7 +46,7 @@ abstract class HttpChannel {
 
   /// The address. It can be either a [String] or an [InternetAddress].
   /// It is null if the channel is started by [StreamServer.startOn].
-  get address;
+  Object? get address;
   ///The port.
   int get port;
   ///Whether it is a HTTPS channel

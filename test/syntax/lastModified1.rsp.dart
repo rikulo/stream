@@ -11,7 +11,7 @@ import 'package:stream/stream.dart';
   
 
 /// Template, lastModified1, for rendering the view.
-Future lastModified1(HttpConnect connect, {input}) async {
+Future lastModified1(HttpConnect connect, {dynamic input}) async {
   //ignore: unused_local_variable
   var response = connect.response;
   if (!Rsp.init(connect, "text/html; charset=utf-8",

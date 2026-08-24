@@ -208,7 +208,7 @@ abstract interface class StreamServer {
    * If not specified, the default message is used.
    */
   Future<HttpChannel> start({
-      address, int port = 8080, int backlog = 0,
+      Object? address, int port = 8080, int backlog = 0,
       bool v6Only = false, bool shared = false, bool zoned = true,
       String? getStartupMessage(StreamServer server, HttpChannel channel,
           String defaultMessage)?});
@@ -238,7 +238,7 @@ abstract interface class StreamServer {
    * If not specified, the default message is used.
    */
   Future<HttpChannel> startSecure(SecurityContext context, {
-      address, int port = 8443,
+      Object? address, int port = 8443,
       bool v6Only = false, bool requestClientCertificate = false,
       int backlog = 0, bool shared = false, bool zoned = true,
       String? getStartupMessage(StreamServer server, HttpChannel channel,
@@ -394,7 +394,7 @@ abstract interface class StreamServer {
    * * [preceding] - whether to make the mapping preceding any previous mappings.
    * In other words, if true, this mapping will be interpreted first.
    */
-  void map(String uri, handler, {bool preceding = false});
+  void map(String uri, Object? handler, {bool preceding = false});
   /** Maps the given URI to the given filter.
    *
    * * [uri]: a regular expression used to match the request URI.

@@ -3,4 +3,4 @@
 // Author: tomyeh
 library stream.version;
 
-const String version = "5.0.0";
+const String version = "5.1.0";

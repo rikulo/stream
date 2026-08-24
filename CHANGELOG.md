@@ -1,5 +1,13 @@
 # CHANGES
 
+### 5.1.0
+
+- Untyped (implicit-`dynamic`) parameters and members are now explicitly typed:
+  `proxyRequest`'s `url` must be a `String` or `Uri` (`Object`);
+  `StreamServer.start`/`startSecure`'s `address` and `map`'s `handler`, `Rsp.nns`/`nnx`/`json`'s value,
+  `TagContext.push`/`pop`, and `HttpChannel.address` are `Object?`.
+- `Rsp.cat` uses `encodeQueryString` (was the deprecated `HttpUtil.encodeQuery`).
+
 ### 5.0.0
 
 - **Breaking:** `proxyRequest`'s `onStatusCode(int code)` callback is removed. Use `onResponseHeaders` instead — it also receives the status code.

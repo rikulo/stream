@@ -18,35 +18,32 @@ Add this to your `pubspec.yaml` (or create it):
 
 ## Usage
 
-* Introduction
-* Getting Started with Hello World
+See [the examples](https://github.com/rikulo/stream/tree/master/example), from serving static files to RSP templating, MVC and Ajax.
 
-### Compile RSP (Rikulo Stream Page) to dart files
-
-There are two ways to compile RSP files into dart files: automatic building with Dart Editor or manual compiling.
+### Compile RSP (Rikulo Stream Page) to Dart files
 
 > RSP is a template technology allowing developers to create dynamically generated web pages based on HTML, XML or other document types (such as [this](https://github.com/rikulo/stream/blob/master/example/hello-mvc/webapp/listView.rsp.html) and [this](https://github.com/rikulo/stream/blob/master/test/features/webapp/includerView.rsp.html)).
 
-### Build with Dart Editor
-
-To compile your RSP files automatically, you just need to add a build.dart file in the root directory of your project, with the following content:
-
-    import 'package:stream/rspc.dart';
-    void main(List<String> arguments) {
-      build(arguments);
-    }
-
-With this build.dart script, whenever your RSP is modified, it will be re-compiled.
-
-### Compile Manually
-
-To compile RSP files manually, run the `rspc` executable from a Dart package that depends on Stream:
+To compile RSP files, run the `rspc` executable from a Dart package that depends on Stream:
 
     dart run stream:rspc -n dir1 dir2 file1 file2...
 
-A Dart file is generated for each RSP file you provide. For more options, run:
+A Dart file is generated for each RSP file you provide (e.g., `foo.rsp.html` to `foo.rsp.dart`). For more options, run:
 
     dart run stream:rspc -h
+
+Alternatively, activate it globally and run `rspc` directly:
+
+    dart pub global activate stream
+    rspc -n dir1 dir2 file1 file2...
+
+To compile from your own build script, call `compileFile` instead:
+
+    import 'package:stream/rspc.dart';
+
+    Future<void> main() async {
+      await compileFile("webapp/home.rsp.html", newer: true);
+    }
 
 ## Notes to Contributors
 
@@ -57,6 +54,10 @@ If you'd like to contribute back to the core, you can [fork this repository](htt
 Please be aware that one of Stream's design goals is to keep the sphere of API as neat and consistency as possible. Strong enhancement always demands greater consensus.
 
 If you are new to Git or GitHub, please read [this guide](https://help.github.com/) first.
+
+### Compile Test and Example RSP Files
+
+To recompile the RSP files under `test/` and `example/`, run `tool/rspc` from the repository root (only newer files; `tool/rspc -f` compiles all).
 
 ## Who Uses
 

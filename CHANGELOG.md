@@ -1,5 +1,10 @@
 # CHANGES
 
+### 5.1.1 (not released yet)
+
+- `build()` in `package:stream/rspc.dart` is deprecated. It implemented the obsolete Dart Editor `build.dart` convention; use `main()` (or `dart run stream:rspc`) or `compileFile()` instead.
+- README: the manual `rspc` instructions are updated for current Dart.
+
 ### 5.1.0
 
 - Untyped (implicit-`dynamic`) parameters and members are now explicitly typed:

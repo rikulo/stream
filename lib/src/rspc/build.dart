@@ -127,6 +127,7 @@ Future<File> _locate(String flnm) async {
  * folder with the same path structure.
  * * [imports] - additional imported packages, such as `["package:foo/foo.dart"]`.
  */
+@Deprecated("build.dart was a Dart Editor convention; use main() or compileFile() instead")
 Future build(List<String> arguments, {String filenameMapper(String source)?,
     Encoding encoding = utf8, List<String>? imports}) async {
   final ArgParser argParser = ArgParser()

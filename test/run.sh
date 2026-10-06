@@ -5,25 +5,15 @@ set -e
 
 DIR=$( cd $( dirname "${BASH_SOURCE[0]}" ) && pwd )
 
-# Note: dartanalyzer needs to be run from the root directory for proper path
-# canonicalization.
+# Note: dart analyze needs to be run from the root directory to analyze the whole package.
 pushd $DIR/..
 echo Compile RSP files
 find . -name *.rsp.dart | xargs rm -rf
-dart tool/rspc.dart */*/*.rsp.html
+tool/rspc -f
 
-echo Analyzing library for warnings or type errors
-dartanalyzer --fatal-warnings lib/*.dart \
-  || echo -e "Ignoring analyzer errors"
+echo Analyzing for warnings or type errors
+dart analyze --fatal-warnings
 
-for fn in `grep -l 'main[(][)]' */*/*/*.dart|grep -v packages/`; do
-	echo Analyzing $fn
-	dartanalyzer --fatal-warnings lib/*.dart \
-	  || echo -e "Ignoring analyzer errors"
-done
-
-rm -rf out/*
+echo Running tests
+dart test "$@"
 popd
-
-#dart --enable-type-checks --enable-asserts test/run_all.dart $@
-#no unit test yet

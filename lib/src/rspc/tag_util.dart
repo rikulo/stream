@@ -218,23 +218,20 @@ typedef void _Output(TagContext tc, String id, Map<String, String> args);
 
 /** A tag simplifies the implementation of simple tags. For example,
  *
- *     import 'package:stream/rspc.dart';
- *     
+ *     import 'package:stream/rspc.dart' as rspc;
+ *
  *     void main(List<String> arguments) {
- *       tags["m"] = SimpleTag("m",
- *         (TagContext tc, String id, Map<String, String> args) {
- *           if (id == null)
- *             throw ArgumentError("id required");
+ *       rspc.tags["m"] = rspc.SimpleTag("m",
+ *         (rspc.TagContext tc, String id, Map<String, String> args) {
  *           tc.write("\n${tc.pre}response.write(message(connect, $id");
- *           if (args != null && args.isNotEmpty) {
+ *           if (args.isNotEmpty) {
  *             tc.write(", ");
- *             outMap(tc, args);
+ *             rspc.outMap(tc, args);
  *           }
  *           tc.writeln("));");
  *         });
- *     
- *       build(arguments,
- *         imports: ["package:foo/server/intl.dart"]);
+ *
+ *       rspc.main(arguments);
  *     }
  *
  */

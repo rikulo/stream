@@ -40,13 +40,13 @@ With this build.dart script, whenever your RSP is modified, it will be re-compil
 
 ### Compile Manually
 
-To compile a RSP file manually, run `rspc` (RSP compiler) to compile it into the dart file with [command line interface](https://en.wikipedia.org/wiki/Command-line_interface) as follows:
+To compile RSP files manually, run the `rspc` executable from a Dart package that depends on Stream:
 
-    dart -c lib/rspc.dart -n dir1 dir2 file1 fire2...
+    dart run stream:rspc -n dir1 dir2 file1 file2...
 
-A dart file is generated for each RSP file you gave. Fore more options, please run:
+A Dart file is generated for each RSP file you provide. For more options, run:
 
-    dart -c lib/rspc.dart -h
+    dart run stream:rspc -h
 
 ## Notes to Contributors
 
